@@ -1,0 +1,7 @@
+node_modules/
+build/
+inputs/
+outputs/
+*leo.lock
+.env
+.DS_Store
