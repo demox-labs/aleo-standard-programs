@@ -1059,7 +1059,7 @@ program core_protocol.aleo {
     let fee_calc: u128 = ale_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
     let fee: u64 = fee_calc as u64;
     let min_block_height: u32 = current_height + WITHDRAW_WAIT_MINIMUM;
-    let min_block_rounded_down: u32 = min_block_height >> 4u8 << 4u8;
+    let min_block_rounded_down: u32 = min_block_height / 10_000u32 * 10_000u32;
     let min_block_round_up: u32 = min_block_rounded_down + 10_000u32;
     // burn full amount of ale, but immediately mint the fee to the protocol. Only withdraw credits_to_claim as the difference
     ale.aleo/burn_private(ale_record, ale_burn_amount, credits_claim_amount, min_block_round_up);
