@@ -10,7 +10,7 @@
     "test": "yarn jest",
     "clean": "rm -rf node_modules",
     "get-program-addresses": "tsc ./util/getProgramAddresses.ts && node ./util/getPromgramAddresses.js",
-    "convert-leo": "yarn tsx ./util/leoToTSConverter.ts"
+    "convert-leo": "yarn tsx ./util/convertAll.ts"
   },
   "dependencies": {
     "@demox-labs/aleo-sdk-web": "0.3.29",
