@@ -359,7 +359,7 @@ program core_protocol.aleo {
 
   transition rebalance_unbond(
     public unbond_amounts: [u64; 5],
-    public reward_amounts: [u64; 5],
+    public reward_amounts: [u64; 5]
     ) {
     delegator1.aleo/unbond(unbond_amounts[0u8]);
     delegator2.aleo/unbond(unbond_amounts[1u8]);
@@ -375,7 +375,7 @@ program core_protocol.aleo {
 
   finalize rebalance_unbond(
     public unbond_amounts: [u64; 5],
-    public reward_amounts: [u64; 5],
+    public reward_amounts: [u64; 5]
     ) {
     let d1_state: state = delegator_state.get(DELEGATOR_1);
     let d2_state: state = delegator_state.get(DELEGATOR_2);
@@ -773,11 +773,11 @@ program core_protocol.aleo {
 
     // portion_delegator mapping was set in previous rebalancing part, make sure
     // the calculated portion matches the ideal portion_delegator mapping
-    assert_eq(DELEGATOR_1, portion_delegator.get(d1_quotient as u128));
-    assert_eq(DELEGATOR_2, portion_delegator.get(d2_quotient as u128));
-    assert_eq(DELEGATOR_3, portion_delegator.get(d3_quotient as u128));
-    assert_eq(DELEGATOR_4, portion_delegator.get(d4_quotient as u128));
-    assert_eq(DELEGATOR_5, portion_delegator.get(d5_quotient as u128));
+    assert_eq(portion_delegator.get(d1_quotient as u128), DELEGATOR_1);
+    assert_eq(portion_delegator.get(d2_quotient as u128), DELEGATOR_2);
+    assert_eq(portion_delegator.get(d3_quotient as u128), DELEGATOR_3);
+    assert_eq(portion_delegator.get(d4_quotient as u128), DELEGATOR_4);
+    assert_eq(portion_delegator.get(d5_quotient as u128), DELEGATOR_5);
 
     // ********** UPDATE DELEGATOR STATES **********
     let new_d1_state: state = state {
@@ -1044,14 +1044,14 @@ program core_protocol.aleo {
   const WITHDRAW_FEE: u128 = 30u128; // out of 1000, 3% fee
  
   transition create_withdraw_claim(
-    private ale_record: ale.aleo/token.record,
+    private ale_record: ale.aleo/token,
     public current_height: u32,
     public total_ale_minted: u64,
     public total_ale_burned: u64,
     // total amount of ale to burn, including fee
     public ale_burn_amount: u64,
     // amount of credits to claim, minus fee
-    public credits_claim_amount: u64,
+    public credits_claim_amount: u64
     ) {
     ale.aleo/assert_totals(total_ale_minted, total_ale_burned);
     let total_ale_pool: u64 = total_ale_minted - total_ale_burned;
@@ -1059,8 +1059,8 @@ program core_protocol.aleo {
     let fee_calc: u128 = ale_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
     let fee: u64 = fee_calc as u64;
     let min_block_height: u32 = current_height + WITHDRAW_WAIT_MINIMUM;
-    let min_block_rounded_down: u32 = min_block_height / 10_000u32 * 10_000u32;
-    let min_block_round_up: u32 = min_block_rounded_down + 10_000u32;
+    let min_block_rounded_down: u32 = min_block_height / 10000u32 * 10000u32;
+    let min_block_round_up: u32 = min_block_rounded_down + 10000u32;
     // burn full amount of ale, but immediately mint the fee to the protocol. Only withdraw credits_to_claim as the difference
     ale.aleo/burn_private(ale_record, ale_burn_amount, credits_claim_amount, min_block_round_up);
     ale.aleo/mint_public(fee, AXEL);

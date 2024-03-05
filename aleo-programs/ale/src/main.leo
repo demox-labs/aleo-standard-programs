@@ -55,7 +55,7 @@ program ale.aleo {
 
     finalize unapprove_public(public approval_hash: field, public amount: u64) {
         let approvals_value: u64 = Mapping::get_or_use(approvals, approval_hash, 0u64);
-        let new_approvals_value: u64 = approvals_value.sub(amount);
+        let new_approvals_value: u64 = approvals_value - amount;
 
         Mapping::set(approvals, approval_hash, new_approvals_value);
     }
@@ -73,11 +73,11 @@ program ale.aleo {
 
     finalize transfer_from_public(public approval_hash: field, public approver: address, public receiver: address, public amount: u64) {
         let approvals_value: u64 = Mapping::get(approvals, approval_hash);
-        let new_approvals_value: u64 = approvals_value.sub(amount);
+        let new_approvals_value: u64 = approvals_value - amount;
         Mapping::set(approvals, approval_hash, new_approvals_value);
 
         let approver_balance: u64 = Mapping::get(account, approver);
-        let new_approver_balance: u64 = approver_balance.sub(amount);
+        let new_approver_balance: u64 = approver_balance - amount;
         Mapping::set(account, approver, new_approver_balance);
 
         let receiver_balance: u64 = Mapping::get_or_use(account, receiver, 0u64);
@@ -91,7 +91,7 @@ program ale.aleo {
 
     finalize transfer_public(public sender: address, public receiver: address, public amount: u64) {
         let sender_balance: u64 = Mapping::get_or_use(account, sender, 0u64);
-        let new_sender_balance: u64 = sender_balance.sub(amount);
+        let new_sender_balance: u64 = sender_balance - amount;
         Mapping::set(account, sender, new_sender_balance);
 
         let receiver_balance: u64 = Mapping::get_or_use(account, receiver, 0u64);
@@ -103,7 +103,7 @@ program ale.aleo {
     transition transfer_private(private input_record: token, private receiver: address, private amount: u64) -> (private token, private token) {
         let new_input_record: token = token {
             owner: input_record.owner,
-            amount: input_record.amount.sub(amount)
+            amount: input_record.amount - amount
         };
 
         let receiver_record: token = token {
@@ -118,7 +118,7 @@ program ale.aleo {
     transition transfer_private_to_public(private input_record: token, public receiver: address, public amount: u64) -> (private token) {
         let output_record: token = token {
             owner: input_record.owner,
-            amount: input_record.amount.sub(amount)
+            amount: input_record.amount - amount
         };
 
         return output_record then finalize(receiver, amount);
@@ -142,7 +142,7 @@ program ale.aleo {
 
     finalize transfer_public_to_private(public sender: address, public amount: u64) {
         let sender_balance: u64 = Mapping::get_or_use(account, sender, 0u64);
-        let new_sender_balance: u64 = sender_balance.sub(amount);
+        let new_sender_balance: u64 = sender_balance - amount;
         Mapping::set(account, sender, new_sender_balance);
     }
 
@@ -174,7 +174,7 @@ program ale.aleo {
         totals.set(0u8, new_total_minted);
 
         let receiver_balance: u64 = account.get_or_use(receiver, 0u64);
-        let new_receiver_balance: u64 = receiver_balance.add(amount);
+        let new_receiver_balance: u64 = receiver_balance + amount;
         account.set(receiver, new_receiver_balance);
     }
 
