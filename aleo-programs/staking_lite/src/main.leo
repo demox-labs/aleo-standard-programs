@@ -6,7 +6,7 @@ program staking_lite.aleo {
   // Address of this program
   const CORE_PROTOCOL: address = aleo17hwvp7fl5da40hd29heasjjm537uqce489hhuc3lwhxfm0njucpq0rvfny;
   const PRECISION_UNSIGNED: u128 = 1000u128;
-  const UNBONDING_PERIOD: u32: 360u32; // should this be a mapping?
+  const UNBONDING_PERIOD: u32 = 360u32; // should this be a mapping?
   const MINIMUM_DELEGATOR_BALANCE: u64 = 10_000_000u64; // 10 credits (may change before mainnet)
 
   mapping commission_percent: u8 => u128;
@@ -50,6 +50,7 @@ program staking_lite.aleo {
 
   transition initialize(commission_rate: u128, validator_address: address) {
     assert_eq(self.caller, ADMIN);
+    return then finalize(commission_rate, validator_address);
   }
 
   finalize initialize(commission_rate: u128, validator_address: address) {
@@ -73,7 +74,7 @@ program staking_lite.aleo {
   }
 
   finalize set_commission_percent(commission_rate: u128) {
-    commission.set(0u8, commission_rate);
+    commission_percent.set(0u8, commission_rate);
   }
 
   transition unbond_all(pool_balance: u64) {
@@ -84,12 +85,12 @@ program staking_lite.aleo {
   }
 
   finalize unbond_all(pool_balance: u64) {
-    let current_state = state.get(0u8);
-    assert_eq(current_state, 0u8, "Action not allowed at this time"); // should this always be allowed?
+    let current_state: u8 = state.get(0u8);
+    assert_eq(current_state, 0u8); // should this always be allowed?
 
-    let balance_diff: i64 = pool_balance - credits.aleo/bonded.get(CORE_PROTOCOL).microcredits;
+    let balance_diff: u64 = pool_balance - 0u64;
     let residual_balance: bool = balance_diff > MINIMUM_DELEGATOR_BALANCE;
-    assert(!residual_balance, "Incorrect balance. Pool will not be fully unbonded");
+    assert(!residual_balance);
 
     state.set(0u8, 10u8);
   }
@@ -104,17 +105,17 @@ program staking_lite.aleo {
 
   finalize change_validator(new_validator: address, rebond_amount: u64) {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 10u8, "Please unbond before changing validators");
+    assert_eq(current_state, 10u8);
 
     let current_validator: address = validator.get(0u8);
-    assert(new_validator != current_validator, "New validator is the same as the current validator");
+    assert(new_validator != current_validator);
 
-    let account_balance: u64 = credits.aleo/account.get(CORE_PROTOCOL);
-    let unbonding_balance: u64 = credits.aleo/unbonding.get(CORE_PROTOCOL).microcredits; // should theoretically be 0
+    let account_balance: u64 = 0u64;
+    let unbonding_balance: u64 = 0u64; // should theoretically be 0
     let total_balance: u64 = account_balance + unbonding_balance;
     let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
     let rebond_balance: u64 = total_balance - pending_withdrawals;
-    assert(rebond_amount <= rebond_balance, "Rebond amount is greater than available balance");
+    assert(rebond_amount <= rebond_balance);
 
     // Update validator
     validator.set(0u8, new_validator);
@@ -126,10 +127,11 @@ program staking_lite.aleo {
   inline calculate_commission_earned(
     bonded: u64,
     total_deposits: u64,
-    remaining_at_last_claim: u64
+    remaining_at_last_claim: u64,
+    commission_rate: u128
   ) -> u64 {
     let total_rewards: u64 = bonded - total_deposits;
-    let rewards_since_last_claim: i64 = total_rewards - remaining_at_last_claim;
+    let rewards_since_last_claim: i64 = total_rewards as i64 - remaining_at_last_claim as i64;
     let rewards_pos: bool = rewards_since_last_claim > 0i64;
 
     if (!rewards_pos) {
@@ -137,7 +139,7 @@ program staking_lite.aleo {
     }
 
     let rewards_unsigned: u128 = rewards_since_last_claim as u128;
-    let new_commission: u128 = rewards_unsigned * commission_percent.get(0u8) / PRECISION_UNSIGNED;
+    let new_commission: u128 = rewards_unsigned * commission_rate / PRECISION_UNSIGNED;
     let new_commission_64: u64 = new_commission as u64;
     return new_commission_64;
   }
@@ -151,20 +153,22 @@ program staking_lite.aleo {
 
   finalize unbond_commission(amount: u64) {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8, "Commission cannot be claimed at this time");
+    assert_eq(current_state, 0u8);
 
     // Calculate commission earned since last claim
-    let bonded: u64 = credits.aleo/bonded.get(CORE_PROTOCOL).microcredits;
+    let bonded: u64 = 0u64;
     let total_deposits: u64 = net_deposits.get(0u8);
     let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
-    let commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim);
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
 
-    assert(commission_earned > 0u64, "No commission to claim");
-    assert(commission_earned >= amount, "Incorrect commission amount");
+    assert(commission_earned > 0u64);
+    assert(commission_earned >= amount);
 
     state.set(0u8, 1u8);
 
     // Set last_commission_claim
+    let total_rewards: u64 = bonded - total_deposits;
     let new_claim: commission_claim = commission_claim {
       height: block.height + UNBONDING_PERIOD,
       microcredits_claimed: commission_earned,
@@ -181,10 +185,10 @@ program staking_lite.aleo {
 
   finalize claim_commission() {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 1u8, "Commission claiming not in progress");
+    assert_eq(current_state, 1u8);
 
     let unbonding_height: u32 = last_commission_claim.get(0u8).height;
-    assert(block.height >= unbonding_height, "Unbonding period not over");
+    assert(block.height >= unbonding_height);
 
     // Update state
     state.set(0u8, 0u8);
@@ -201,13 +205,13 @@ program staking_lite.aleo {
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
-    let unbonding_balance: u64 = credits.aleo/unbonding.get(CORE_PROTOCOL).microcredits;
-    assert_eq(unbonding_balance, 0u64, "Claim unbonded credits before rebonding");
+    let unbonding_balance: u64 = 0u64;
+    assert_eq(unbonding_balance, 0u64);
 
-    let account_balance: u64 = credits.aleo/account.get(CORE_PROTOCOL);
+    let account_balance: u64 = 0u64;
     let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
     let available_balance: u64 = account_balance - pending_withdrawals;
-    assert(amount <= available_balance, "Rebond amount is greater than available balance");
+    assert(amount <= available_balance);
   }
 
   transition transfer_commission(recipient: address, amount: u64) {
@@ -219,17 +223,14 @@ program staking_lite.aleo {
 
   finalize transfer_commission(recipient: address, amount: u64) {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8, "Commission cannot be transferred at this time");
+    assert_eq(current_state, 0u8);
 
-    let stored_validator: address = validator.get(0u8);
-    assert_eq(validator_address, stored_validator, "Validator address does not match");
-
-    let account_balance: u64 = credits.aleo/account.get(CORE_PROTOCOL);
-    let unbonding_balance: u64 = credits.aleo/unbonding.get(CORE_PROTOCOL).microcredits;
+    let account_balance: u64 = 0u64;
+    let unbonding_balance: u64 = 0u64;
     let total_balance: u64 = account_balance + unbonding_balance;
     let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
     let available_commission: u64 = total_balance - pending_withdrawals;
-    assert(amount <= available_commission, "Amount is greater than available balance");
+    assert(amount <= available_commission);
   }
 
   transition deposit_public(
@@ -239,30 +240,32 @@ program staking_lite.aleo {
     expected_mint_amount: u64,
     minimum_mint_amount: u64
   ) -> credits.aleo/credits {
-    let updated_record: credits.aleo.credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, amount);
+    let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, amount);
     credits.aleo/bond_public(validator_address, amount);
 
-    return (updated_record) then finalize(amount, validator_address, expected_mint_amount, minimum_mint_amount);
+    return (updated_record) then finalize(self.caller, amount, validator_address, expected_mint_amount, minimum_mint_amount);
   }
 
   finalize deposit_public(
+    caller: address,
     amount: u64,
     validator_address: address,
     expected_mint_amount: u64,
     minimum_mint_amount: u64
   ) {
     let stored_validator: address = validator.get(0u8);
-    assert_eq(validator_address, stored_validator, "Validator address does not match");
+    assert_eq(validator_address, stored_validator);
 
     // Assert that we're not switching validators
     let current_state: u8 = state.get(0u8);
-    assert(current_state !== 10u8, "Deposit is not allowed at this time");
+    assert(current_state != 10u8);
 
     // Calculate new commission earned
-    let bonded: u64 = credits.aleo/bonded.get(CORE_PROTOCOL).microcredits;
+    let bonded: u64 = 0u64;
     let total_deposits: u64 = net_deposits.get(0u8);
     let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
-    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim);
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
 
     // Calculate mint amount
     let total_balance: u128 = bonded as u128 - new_commission_earned as u128;
@@ -271,8 +274,8 @@ program staking_lite.aleo {
     let mint_amount: u64 = calculate_mint_amount(total_balance, delta_aleo, pool);
 
     // Assert mint amount
-    assert(mint_amount >= minimum_mint_amount, "Mint amount is less than minimum mint amount");
-    assert(mint_amount <= expected_mint_amount, "Mint amount is greater than expected mint amount");
+    assert(mint_amount >= minimum_mint_amount);
+    assert(mint_amount <= expected_mint_amount);
 
     // Update pool balance
     let new_pool_balance: u64 = delegator_pool.get(0u8) + mint_amount;
@@ -283,14 +286,16 @@ program staking_lite.aleo {
     net_deposits.set(0u8, new_deposits);
 
     // Update delegators mapping
-    let new_delegator_state: delegator_state = delegator_state {
+    let base_delegator_state: delegator_state = delegator_state {
       microcredits: 0u64,
       pool_balance: 0u64
     };
-    new_delegator_state: delegator_state = delegators.get_or_use(self.caller, new_delegator_state);
-    new_delegator_state.microcredits += amount;
-    new_delegator_state.pool_balance += mint_amount;
-    delegators.set(self.caller, new_delegator_state);
+    let current_delegator_state: delegator_state = delegators.get_or_use(caller, base_delegator_state);
+    let new_delegator_state: delegator_state = delegator_state {
+      microcredits: current_delegator_state.microcredits + amount,
+      pool_balance: current_delegator_state.pool_balance + mint_amount
+    };
+    delegators.set(caller, new_delegator_state);
   }
 
   inline calculate_mint_amount(total_balance: u128, delta_aleo: u128, pool: u128) -> u64 {
@@ -309,11 +314,11 @@ program staking_lite.aleo {
 
   finalize withdraw_public(microcredits: u64, total_withdrawal: u64, owner: address) {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8, "Withdrawal not allowed at this time");
+    assert_eq(current_state, 0u8);
 
     // Assert that they have enough to withdraw
     let delegator: delegator_state = delegators.get(owner);
-    assert(delegator.microcredits >= microcredits, "Not enough microcredits to withdraw");
+    assert(delegator.microcredits >= microcredits);
 
     // Calculate how much to withdraw from delegator pool
     let pool_balance: u128 = delegator.pool_balance as u128;
@@ -321,10 +326,11 @@ program staking_lite.aleo {
     let pool_withdrawal: u128 = (microcredits as u128 * pool_ratio) / PRECISION_UNSIGNED;
 
     // Calculate new commission earned
-    let bonded: u64 = credits.aleo/bonded.get(CORE_PROTOCOL).microcredits;
+    let bonded: u64 = 0u64;
     let total_deposits: u64 = net_deposits.get(0u8);
     let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
-    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim);
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
 
     // Get withdrawal amount with rewards
     let delegator_pool_balance: u128 = delegator_pool.get(0u8) as u128;
@@ -334,16 +340,18 @@ program staking_lite.aleo {
     let withdraw_amount_with_rewards: u128 = (total_balance * withdraw_ratio) / PRECISION_UNSIGNED;
 
     // If the calculated withdrawal amount is greater than total_withdrawal, the excess will become commission
-    assert(withdraw_amount_with_rewards >= total_withdrawal as u128, "Incorrect withdrawal amount");
+    assert(withdraw_amount_with_rewards >= total_withdrawal as u128);
 
     // Update withdrawals mappings
-    let withdrawal: withdrawal_state = withdrawal_state {
+    let base_withdrawal: withdrawal_state = withdrawal_state {
       microcredits: 0u64,
       claim_block: block.height + UNBONDING_PERIOD // plus buffer?
     };
-    let new_withdrawal_state = withdrawals.get_or_use(owner, withdrawal);
-    new_withdrawal_state.microcredits += withdraw_amount_with_rewards as u64;
-    new_withdrawal_state.claim_block = block.height + UNBONDING_PERIOD;
+    let current_withdrawal: withdrawal_state = withdrawals.get_or_use(owner, base_withdrawal);
+    let new_withdrawal_state: withdrawal_state = withdrawal_state {
+      microcredits: current_withdrawal.microcredits + withdraw_amount_with_rewards as u64,
+      claim_block: block.height + UNBONDING_PERIOD
+    };
     withdrawals.set(owner, new_withdrawal_state);
 
 
@@ -360,13 +368,15 @@ program staking_lite.aleo {
     net_deposits.set(0u8, new_deposits);
 
     // Update delegators mapping
-    delegator.microcredits -= microcredits;
-    delegator.pool_balance -= pool_withdrawal as u64;
+    let new_delegator_state: delegator_state = delegator_state {
+      microcredits: delegator.microcredits - microcredits,
+      pool_balance: delegator.pool_balance - pool_withdrawal as u64
+    };
 
     if (delegator.microcredits == 0u64) {
       delegators.remove(owner);
     } else {
-      delegators.set(self.caller, delegator);
+      delegators.set(owner, delegator);
     }
   }
 
@@ -379,11 +389,11 @@ program staking_lite.aleo {
 
   finalize withdraw_claim(owner: address, amount: u64) {
     let withdrawal: withdrawal_state = withdrawals.get(owner);
-    assert(block.height >= withdrawal.claim_block, "Unbonding period not over");
-    assert_eq(withdrawal_amount.microcredits, amount, "Claim amount does not match withdrawal amount");
+    assert(block.height >= withdrawal.claim_block);
+    assert_eq(withdrawal.microcredits, amount);
 
     // Remove withdrawal from mapping
-    withdrawals.remove(self.caller);
+    withdrawals.remove(owner);
 
     // Update pending withdrawal
     let currently_pending: u64 = pending_withdrawal.get(0u8);
