@@ -6,51 +6,63 @@ program staking_lite.aleo {
   // Address of this program
   const CORE_PROTOCOL: address = aleo17hwvp7fl5da40hd29heasjjm537uqce489hhuc3lwhxfm0njucpq0rvfny;
   const PRECISION_UNSIGNED: u128 = 1000u128;
-  const UNBONDING_PERIOD: u32 = 360u32; // should this be a mapping?
-  const MINIMUM_DELEGATOR_BALANCE: u64 = 10_000_000u64; // 10 credits (may change before mainnet)
+  const UNBONDING_PERIOD: u32 = 360u32;
 
+  /** Commission rate: 0u8 -> u128
+    * percentage of rewards taken as commission
+    * relative to precision of 1000
+    * e.g. 100u128 = 10%
+  */
   mapping commission_percent: u8 => u128;
 
+  // 0u8 -> address of validator
   mapping validator: u8 => address;
 
   /** Program controls: 0u8 ->
     * 0u8: functioning as normal
-    * 1u8: commission unbonding in progress
-    * 10u8: full unbond in progress
+    * 1u8: full unbond in progress
+    * 2u8: protocol fully unbonded
   */
   mapping state: u8 => u8;
 
-  mapping delegator_pool: u8 => u64;
+  // 0u8 -> total pool of delegator tokens
+  mapping total_shares: u8 => u64;
 
-  mapping net_deposits: u8 => u64;
+  // address -> number of shares held by the delegator with this address
+  mapping delegator_shares: address => u64;
 
-  struct commission_claim {
-    height: u32;
-    microcredits_claimed: u64;
-    remaining_rewards: u64;
-  }
+  // 0u8 -> total balance in microcredits, updated for each deposit and withdrawal
+  mapping total_balance: u8 => u64;
 
-  mapping last_commission_claim: u8 => commission_claim;
+  // 0u8 -> balance pending withdrawal in microcredits
+  mapping pending_withdrawal: u8 => u64;
 
-  struct delegator_state {
-    microcredits: u64;
-    pool_balance: u64;
-  }
-
-  mapping delegators: address => delegator_state;
+  /** Unbonding allowed: 0u8 ->
+    * The height at which the current withdrawal batch will be done unbonding
+    * if not present or == 0u32, a new batch can begin unbonding
+  */
+  mapping current_batch_height: u8 => u32;
 
   struct withdrawal_state {
     microcredits: u64;
     claim_block: u32;
   }
 
+  // address -> pending withdrawal for the delegator with this address
   mapping withdrawals: address => withdrawal_state;
 
-  mapping pending_withdrawal: u8 => u64;
-
-  transition initialize(commission_rate: u128, validator_address: address) {
+  transition initialize(
+    commission_rate: u128,
+    validator_address: address,
+    seed_record: credits.aleo/credits,
+    seed_microcredits: u64
+  ) -> credits.aleo/credits {
     assert_eq(self.caller, ADMIN);
-    return then finalize(commission_rate, validator_address);
+    assert(commission_rate < PRECISION_UNSIGNED);
+    // Must be a credits record because credits.aleo uses self.caller for transfers
+    let updated_record = initial_deposit(seed_record, seed_microcredits, validator_address);
+
+    return (updated_record) then finalize(commission_rate, validator_address);
   }
 
   finalize initialize(commission_rate: u128, validator_address: address) {
@@ -58,22 +70,49 @@ program staking_lite.aleo {
     validator.set(0u8, validator_address);
     state.set(0u8, 0u8);
 
-    delegator_pool.set(0u8, 0u64);
-    net_deposits.set(0u8, 0u64);
-    last_commission_claim.set(0u8, commission_claim {
-      height: block.height,
-      microcredits_claimed: 0u64,
-      remaining_rewards: 0u64
-    });
     pending_withdrawal.set(0u8, 0u64);
+  }
+
+  transition initial_deposit(
+    input_record: credits.aleo/credits,
+    microcredits: u64,
+    validator_address: address
+  ) -> credits.aleo/credits {
+    assert_eq(self.caller, ADMIN);
+    // Must be a credits record because credits.aleo uses self.caller for transfers
+    let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, microcredits);
+    credits.aleo/bond_public(validator_address, microcredits);
+
+    return (updated_record) then finalize(self.caller, microcredits, validator_address, expected_shares, minimum_shares);
+  }
+
+  finalize initial_deposit(microcredits: u64) {
+    let balance: u64 = total_balance.get_or_use(0u8, 0u64);
+    let shares: u64 = total_shares.get_or_use(0u8, 0u64);
+    assert_eq(balance, 0u64);
+    assert_eq(shares, 0u64);
+
+    total_balance.set(0u8, microcredits);
+    total_shares.set(0u8, microcredits);
+    delegator_shares.set(ADMIN, microcredits);
   }
 
   transition set_commission_percent(commission_rate: u128) {
     assert_eq(self.caller, ADMIN);
+    assert(commission_rate < PRECISION_UNSIGNED);
+
     return then finalize(commission_rate);
   }
 
   finalize set_commission_percent(commission_rate: u128) {
+    let current_state: u8 = state.get(0u8);
+    assert_eq(current_state, 0u8);
+
+    // Make sure all commission is claimed before changing the rate
+    let total_balance: u64 = total_balance.get(0u8);
+    let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
+    assert_eq(total_balance, bonded);
+
     commission_percent.set(0u8, commission_rate);
   }
 
@@ -81,121 +120,36 @@ program staking_lite.aleo {
     assert_eq(self.caller, ADMIN);
     credits.aleo/unbond_public(pool_balance);
 
-    return then finalize(pool_balance);
+    return then finalize();
   }
 
-  finalize unbond_all(pool_balance: u64) {
-    let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8); // should this always be allowed?
-
-    let balance_diff: u64 = pool_balance - 0u64;
-    let residual_balance: bool = balance_diff > MINIMUM_DELEGATOR_BALANCE;
-    assert(!residual_balance);
-
-    state.set(0u8, 10u8);
-  }
-
-  transition change_validator(new_validator: address, rebond_amount: u64) {
-    assert_eq(self.caller, ADMIN);
-    credits.aleo/claim_unbond_public();
-    credits.aleo/bond_public(new_validator, rebond_amount);
-
-    return then finalize(new_validator, rebond_amount);
-  }
-
-  finalize change_validator(new_validator: address, rebond_amount: u64) {
-    let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 10u8);
-
-    let current_validator: address = validator.get(0u8);
-    assert(new_validator != current_validator);
-
-    let account_balance: u64 = 0u64;
-    let unbonding_balance: u64 = 0u64; // should theoretically be 0
-    let total_balance: u64 = account_balance + unbonding_balance;
-    let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
-    let rebond_balance: u64 = total_balance - pending_withdrawals;
-    assert(rebond_amount <= rebond_balance);
-
-    // Update validator
-    validator.set(0u8, new_validator);
-
-    // Update state
-    state.set(0u8, 0u8);
-  }
-
-  inline calculate_commission_earned(
-    bonded: u64,
-    total_deposits: u64,
-    remaining_at_last_claim: u64,
-    commission_rate: u128
-  ) -> u64 {
-    let total_rewards: u64 = bonded - total_deposits;
-    let rewards_since_last_claim: i64 = total_rewards as i64 - remaining_at_last_claim as i64;
-    let rewards_pos: bool = rewards_since_last_claim > 0i64;
-
-    if (!rewards_pos) {
-      return 0u64;
-    }
-
-    let rewards_unsigned: u128 = rewards_since_last_claim as u128;
-    let new_commission: u128 = rewards_unsigned * commission_rate / PRECISION_UNSIGNED;
-    let new_commission_64: u64 = new_commission as u64;
-    return new_commission_64;
-  }
-
-  transition unbond_commission(amount: u64) {
-    assert_eq(self.caller, ADMIN);
-    credits.aleo/unbond_public(amount);
-
-    return then finalize(amount);
-  }
-
-  finalize unbond_commission(amount: u64) {
-    let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8);
-
-    // Calculate commission earned since last claim
-    let bonded: u64 = 0u64;
-    let total_deposits: u64 = net_deposits.get(0u8);
-    let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
-    let commission_rate: u128 = commission_percent.get(0u8);
-    let commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
-
-    assert(commission_earned > 0u64);
-    assert(commission_earned >= amount);
+  finalize unbond_all() {
+    // Make sure all commission is claimed before unbonding
+    let total_balance: u64 = total_balance.get(0u8);
+    let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
+    assert_eq(total_balance, bonded);
 
     state.set(0u8, 1u8);
-
-    // Set last_commission_claim
-    let total_rewards: u64 = bonded - total_deposits;
-    let new_claim: commission_claim = commission_claim {
-      height: block.height + UNBONDING_PERIOD,
-      microcredits_claimed: commission_earned,
-      remaining_rewards: total_rewards - amount
-    };
-    last_commission_claim.set(0u8, new_claim);
   }
 
-  transition claim_commission() {
+  transition claim_all() {
+    assert_eq(self.caller, ADMIN);
     credits.aleo/claim_unbond_public();
 
     return then finalize();
   }
 
-  finalize claim_commission() {
+  finalize claim_all() {
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 1u8);
 
-    let unbonding_height: u32 = last_commission_claim.get(0u8).height;
-    assert(block.height >= unbonding_height);
-
-    // Update state
-    state.set(0u8, 0u8);
+    state.set(0u8, 2u8);
+    current_batch_height.remove(0u8);
   }
 
   transition bond_all(validator_address: address, amount: u64) {
     assert_eq(self.caller, ADMIN);
+    // Call will fail if there is any balance still bonded to another validator
     credits.aleo/bond_public(validator_address, amount);
 
     return then finalize(validator_address, amount);
@@ -203,181 +157,206 @@ program staking_lite.aleo {
 
   finalize bond_all(validator_address: address, amount: u64) {
     let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8);
+    // Bonding allowed during normal operations or after full unbonding
+    assert(current_state == 0u8 || current_state == 2u8);
 
-    let unbonding_balance: u64 = 0u64;
+    let unbonding_balance: u64 = 0u64; // credits.aleo/unbonding.get(CORE_PROTOCOL);
     assert_eq(unbonding_balance, 0u64);
 
-    let account_balance: u64 = 0u64;
+    let account_balance: u64 = 0u64; // credits.aleo/account.get(CORE_PROTOCOL);
     let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
     let available_balance: u64 = account_balance - pending_withdrawals;
     assert(amount <= available_balance);
+
+    // Set validator and state in case this was part of a validator change
+    validator.set(0u8, validator_address);
+    state.set(0u8, 0u8);
   }
 
-  transition transfer_commission(recipient: address, amount: u64) {
+  transition claim_commission() {
     assert_eq(self.caller, ADMIN);
-    credits.aleo/transfer_public(recipient, amount);
-
-    return then finalize(recipient, amount);
+    return then finalize();
   }
 
-  finalize transfer_commission(recipient: address, amount: u64) {
+  finalize claim_commission() {
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
-    let account_balance: u64 = 0u64;
-    let unbonding_balance: u64 = 0u64;
-    let total_balance: u64 = account_balance + unbonding_balance;
-    let pending_withdrawals: u64 = pending_withdrawal.get(0u8);
-    let available_commission: u64 = total_balance - pending_withdrawals;
-    assert(amount <= available_commission);
+    // Distribute shares for new commission
+    let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
+    let current_balance: u64 = total_balance.get(0u8);
+    let current_shares: u64 = total_shares.get(0u8);
+    let rewards: u64 = bonded - current_balance;
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission: u64 = rewards > 0u64 ? get_commission(rewards as u128, commission_rate) : 0u64;
+    current_balance += rewards - new_commission;
+
+    let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, new_commission as u128, current_shares as u128);
+    let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
+    delegator_shares.set(ADMIN, current_commission + new_commission_shares);
+
+    total_shares.set(current_shares += new_commission_shares);
+    total_balance.set(current_balance += new_commission);
+  }
+
+  inline get_commission(
+    rewards: u128,
+    commission_rate: u128,
+  ) -> u64 {
+    let commission: u128 = rewards * commission_rate / PRECISION_UNSIGNED;
+    let commission_64: u64 = commission as u64;
+    return commission_64;
+  }
+
+  inline calculate_new_shares(total_balance: u128, deposit: u128, total_shares: u128) -> u64 {
+    let balance_safe: u128 = total_balance > 0u128 ? total_balance : 1u128;
+    let pool_ratio: u128 = ((total_shares * PRECISION_UNSIGNED) / balance_safe);
+    let new_total_shares: u128 = (total_balance + deposit) * pool_ratio;
+    let diff: u128 = (new_total_shares / PRECISION_UNSIGNED) - total_shares;
+    let shares_to_mint: u64 = total_balance > 0u128 ? diff as u64 : deposit as u64;
+    return shares_to_mint;
   }
 
   transition deposit_public(
     input_record: credits.aleo/credits,
-    amount: u64,
+    microcredits: u64,
     validator_address: address,
-    expected_mint_amount: u64,
-    minimum_mint_amount: u64
+    expected_shares: u64,
+    minimum_shares: u64
   ) -> credits.aleo/credits {
-    let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, amount);
-    credits.aleo/bond_public(validator_address, amount);
+    // Must be a credits record because credits.aleo uses self.caller for transfers
+    let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, microcredits);
+    credits.aleo/bond_public(validator_address, microcredits);
 
-    return (updated_record) then finalize(self.caller, amount, validator_address, expected_mint_amount, minimum_mint_amount);
+    return (updated_record) then finalize(self.caller, microcredits, validator_address, expected_shares, minimum_shares);
   }
 
   finalize deposit_public(
     caller: address,
-    amount: u64,
+    microcredits: u64,
     validator_address: address,
-    expected_mint_amount: u64,
-    minimum_mint_amount: u64
+    expected_shares: u64,
+    minimum_shares: u64
   ) {
     let stored_validator: address = validator.get(0u8);
     assert_eq(validator_address, stored_validator);
 
-    // Assert that we're not switching validators
-    let current_state: u8 = state.get(0u8);
-    assert(current_state != 10u8);
-
-    // Calculate new commission earned
-    let bonded: u64 = 0u64;
-    let total_deposits: u64 = net_deposits.get(0u8);
-    let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
-    let commission_rate: u128 = commission_percent.get(0u8);
-    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
-
-    // Calculate mint amount
-    let total_balance: u128 = bonded as u128 - new_commission_earned as u128;
-    let delta_aleo: u128 = amount as u128;
-    let pool: u128 = delegator_pool.get(0u8) as u128;
-    let mint_amount: u64 = calculate_mint_amount(total_balance, delta_aleo, pool);
-
-    // Assert mint amount
-    assert(mint_amount >= minimum_mint_amount);
-    assert(mint_amount <= expected_mint_amount);
-
-    // Update pool balance
-    let new_pool_balance: u64 = delegator_pool.get(0u8) + mint_amount;
-    delegator_pool.set(0u8, new_pool_balance);
-
-    // Update net_deposits
-    let new_deposits: u64 = net_deposits.get(0u8) + amount;
-    net_deposits.set(0u8, new_deposits);
-
-    // Update delegators mapping
-    let base_delegator_state: delegator_state = delegator_state {
-      microcredits: 0u64,
-      pool_balance: 0u64
-    };
-    let current_delegator_state: delegator_state = delegators.get_or_use(caller, base_delegator_state);
-    let new_delegator_state: delegator_state = delegator_state {
-      microcredits: current_delegator_state.microcredits + amount,
-      pool_balance: current_delegator_state.pool_balance + mint_amount
-    };
-    delegators.set(caller, new_delegator_state);
-  }
-
-  inline calculate_mint_amount(total_balance: u128, delta_aleo: u128, pool: u128) -> u64 {
-    let pool_ratio: u128 = ((pool * PRECISION_UNSIGNED) / total_balance);
-    let new_pool: u128 = (total_balance + delta_aleo) * pool_ratio;
-    let diff: u128 = (new_pool / PRECISION_UNSIGNED) - pool;
-    let pool_delta: u64 = diff as u64;
-    return pool_delta;
-  }
-
-  transition withdraw_public(microcredits: u64, total_withdrawal: u64) {
-    credits.aleo/unbond_public(total_withdrawal);
-
-    return then finalize(microcredits, total_withdrawal, self.caller);
-  }
-
-  finalize withdraw_public(microcredits: u64, total_withdrawal: u64, owner: address) {
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
-    // Assert that they have enough to withdraw
-    let delegator: delegator_state = delegators.get(owner);
-    assert(delegator.microcredits >= microcredits);
-
-    // Calculate how much to withdraw from delegator pool
-    let pool_balance: u128 = delegator.pool_balance as u128;
-    let pool_ratio: u128 = (pool_balance * PRECISION_UNSIGNED) / delegator.microcredits as u128;
-    let pool_withdrawal: u128 = (microcredits as u128 * pool_ratio) / PRECISION_UNSIGNED;
-
-    // Calculate new commission earned
-    let bonded: u64 = 0u64;
-    let total_deposits: u64 = net_deposits.get(0u8);
-    let rewards_at_last_claim: u64 = last_commission_claim.get(0u8).remaining_rewards;
+    // Distribute shares for new commission
+    let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
+    let current_balance: u64 = total_balance.get(0u8);
+    let current_shares: u64 = total_shares.get(0u8);
+    let rewards: u64 = bonded - current_balance;
     let commission_rate: u128 = commission_percent.get(0u8);
-    let new_commission_earned: u64 = calculate_commission_earned(bonded, total_deposits, rewards_at_last_claim, commission_rate);
+    let new_commission: u64 = rewards > 0u64 ? get_commission(rewards as u128, commission_rate) : 0u64;
+    current_balance += rewards - new_commission;
 
-    // Get withdrawal amount with rewards
-    let delegator_pool_balance: u128 = delegator_pool.get(0u8) as u128;
-    let withdraw_ratio: u128 = (pool_withdrawal * PRECISION_UNSIGNED) / delegator_pool_balance;
+    let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, new_commission as u128, current_shares as u128);
+    let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
+    delegator_shares.set(ADMIN, current_commission + new_commission_shares);
 
-    let total_balance: u128 = bonded as u128 - new_commission_earned as u128;
-    let withdraw_amount_with_rewards: u128 = (total_balance * withdraw_ratio) / PRECISION_UNSIGNED;
+    current_shares += new_commission_shares;
+    current_balance += new_commission;
 
-    // If the calculated withdrawal amount is greater than total_withdrawal, the excess will become commission
-    assert(withdraw_amount_with_rewards >= total_withdrawal as u128);
+    // Calculate mint for deposit
+    let new_shares: u64 = calculate_new_shares(current_balance as u128, microcredits as u128, current_shares as u128);
+
+    // Ensure mint amount is valid
+    assert(new_shares >= 1u64);
+    assert(new_shares >= minimum_shares);
+    assert(new_shares <= expected_shares);
+
+    // Update delegator_shares mapping
+    let shares: u64 = delegator_shares.get_or_use(caller, 0u64);
+    delegator_shares.set(caller, shares + new_shares);
+
+    // Update total shares
+    total_shares.set(0u8, current_shares + new_shares);
+
+    // Update total_balance
+    total_balance.set(0u8, current_balance + microcredits);
+  }
+
+  transition withdraw_public(withdrawal_shares: u64, total_withdrawal: u64) {
+    credits.aleo/unbond_public(total_withdrawal);
+
+    return then finalize(withdrawal_shares, total_withdrawal, self.caller);
+  }
+
+  finalize withdraw_public(withdrawal_shares: u64, total_withdrawal: u64, owner: address) {
+    let current_state: u8 = state.get(0u8);
+    assert_eq(current_state, 0u8);
+
+    // Assert that they don't have any pending withdrawals
+    let currently_withdrawing: withdrawal_state = withdrawals.contains(owner);
+    assert_eq(currently_withdrawing, false);
+
+    // Determine if the withdrawal can fit into the current batch
+    let current_batch: u32 = current_batch_height.get_or_use(0u8, 0u32);
+    let min_claim_height: u32 = block.height + UNBONDING_PERIOD;
+    let new_batch: bool = current_batch == 0u32;
+    let unbonding_allowed: bool = new_batch || current_batch >= min_claim_height;
+    assert(unbonding_allowed);
+
+    if (new_batch) {
+      let new_batch_height: u32 = get_new_batch_height(block.height);
+      current_batch_height.set(0u8, new_batch_height);
+    }
+
+    // Assert that they have enough to withdraw
+    let delegator_balance: u64 = delegator_shares.get(owner);
+    assert(delegator_balance >= withdrawal_shares);
+
+    // Distribute shares for new commission
+    let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
+    let current_balance: u64 = total_balance.get(0u8);
+    let current_shares: u64 = total_shares.get(0u8);
+    let rewards: u64 = bonded - current_balance;
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission: u64 = rewards > 0u64 ? get_commission(rewards as u128, commission_rate) : 0u64;
+    current_balance += rewards - new_commission;
+
+    let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, new_commission as u128, current_shares as u128);
+    let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
+    delegator_shares.set(ADMIN, current_commission + new_commission_shares);
+
+    current_shares += new_commission_shares;
+    current_balance += new_commission;
+
+    // Calculate withdrawal amount
+    let withdraw_ratio: u128 = (withdrawal_shares * PRECISION_UNSIGNED) / current_shares;
+    let withdraw_calculation: u128 = (current_balance * withdraw_ratio) / PRECISION_UNSIGNED;
+
+    // If the calculated withdrawal amount is greater than total_withdrawal, the excess will stay in the pool
+    assert(withdraw_calculation >= total_withdrawal as u128);
 
     // Update withdrawals mappings
-    let base_withdrawal: withdrawal_state = withdrawal_state {
-      microcredits: 0u64,
-      claim_block: block.height + UNBONDING_PERIOD // plus buffer?
+    let withdrawal: withdrawal_state = withdrawal_state {
+      microcredits: total_withdrawal,
+      claim_block: batch_height
     };
-    let current_withdrawal: withdrawal_state = withdrawals.get_or_use(owner, base_withdrawal);
-    let new_withdrawal_state: withdrawal_state = withdrawal_state {
-      microcredits: current_withdrawal.microcredits + withdraw_amount_with_rewards as u64,
-      claim_block: block.height + UNBONDING_PERIOD
-    };
-    withdrawals.set(owner, new_withdrawal_state);
-
+    withdrawals.set(owner, withdrawal);
 
     // Update pending withdrawal
     let currently_pending: u64 = pending_withdrawal.get(0u8);
     pending_withdrawal.set(0u8, currently_pending + total_withdrawal);
 
-    // Update pool balance
-    let new_pool_balance: u128 = delegator_pool_balance - pool_withdrawal;
-    delegator_pool.set(0u8, new_pool_balance as u64);
+    // Update total balance
+    total_balance.set(0u8, current_balance - total_withdrawal);
 
-    // Update net deposits
-    let new_deposits: u64 = net_deposits.get(0u8) - microcredits;
-    net_deposits.set(0u8, new_deposits);
+    // Update total shares
+    total_shares.set(0u8, current_shares - withdrawal_shares);
 
-    // Update delegators mapping
-    let new_delegator_state: delegator_state = delegator_state {
-      microcredits: delegator.microcredits - microcredits,
-      pool_balance: delegator.pool_balance - pool_withdrawal as u64
-    };
+    // Update delegator_shares mapping
+    delegator_shares.set(owner, delegator_balance - withdrawal_shares);
+  }
 
-    if (delegator.microcredits == 0u64) {
-      delegators.remove(owner);
-    } else {
-      delegators.set(owner, delegator);
-    }
+  inline get_new_batch_height(height: u32) -> u32 {
+    let rounded_down: u32 = (height) / 1_000u32 * 1_000u32;
+    let rounded_up: u32 = rounded_down + 1_000u32;
+    return rounded_up;
   }
 
   transition withdraw_claim(amount: u64) {
@@ -391,6 +370,9 @@ program staking_lite.aleo {
     let withdrawal: withdrawal_state = withdrawals.get(owner);
     assert(block.height >= withdrawal.claim_block);
     assert_eq(withdrawal.microcredits, amount);
+
+    // Allow unbonding now that credits have been claimed
+    current_batch_height.remove(0u8);
 
     // Remove withdrawal from mapping
     withdrawals.remove(owner);
