@@ -6,7 +6,9 @@ program staking_lite.aleo {
   // Address of this program
   const CORE_PROTOCOL: address = aleo17hwvp7fl5da40hd29heasjjm537uqce489hhuc3lwhxfm0njucpq0rvfny;
   const PRECISION_UNSIGNED: u128 = 1000u128;
+  const MAX_COMMISSION_RATE: u128 = 500u128; // Max Commission Rate set to 50%
   const UNBONDING_PERIOD: u32 = 360u32;
+  const NULL_ADDRESS: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
 
   /** Commission rate: 0u8 -> u128
     * percentage of rewards taken as commission
@@ -16,6 +18,7 @@ program staking_lite.aleo {
   mapping commission_percent: u8 => u128;
 
   // 0u8 -> address of validator
+  // 1u8 -> the address of the next validator, automatically updated after calling "bond_all"
   mapping validator: u8 => address;
 
   /** Program controls: 0u8 ->
@@ -24,6 +27,9 @@ program staking_lite.aleo {
     * 2u8: protocol fully unbonded
   */
   mapping state: u8 => u8;
+
+  // 0u8 -> Whether the program has been initialized;
+  mapping is_initalized: u8 => u8;
 
   // 0u8 -> total pool of delegator tokens
   mapping total_shares: u8 => u64;
@@ -52,13 +58,18 @@ program staking_lite.aleo {
   mapping withdrawals: address => withdrawal_state;
 
   transition initialize(commission_rate: u128, validator_address: address) {
-    assert_eq(self.caller, ADMIN);
+    assert_eq(self.signer, ADMIN);
     assert(commission_rate < PRECISION_UNSIGNED);
 
     return then finalize(commission_rate, validator_address);
   }
 
   finalize initialize(commission_rate: u128, validator_address: address) {
+    // Ensure program is only initialized once
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 0u8);
+
+    is_initalized.set(0u8, 1u8);
     commission_percent.set(0u8, commission_rate);
     validator.set(0u8, validator_address);
     state.set(0u8, 0u8);
@@ -73,7 +84,7 @@ program staking_lite.aleo {
     microcredits: u64,
     validator_address: address
   ) -> credits.aleo/credits {
-    assert_eq(self.caller, ADMIN);
+    assert_eq(self.signer, ADMIN);
     // Must be a credits record because credits.aleo uses self.caller for transfers
     let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, microcredits);
     credits.aleo/bond_public(validator_address, microcredits);
@@ -82,10 +93,16 @@ program staking_lite.aleo {
   }
 
   finalize initial_deposit(microcredits: u64) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let balance: u64 = total_balance.get_or_use(0u8, 0u64);
     let shares: u64 = total_shares.get_or_use(0u8, 0u64);
+    let pending: u64 = pending_withdrawal.get_or_use(0u8, 0u64);
     assert_eq(balance, 0u64);
     assert_eq(shares, 0u64);
+    assert_eq(pending, 0u64);
 
     total_balance.set(0u8, microcredits);
     total_shares.set(0u8, microcredits);
@@ -93,48 +110,108 @@ program staking_lite.aleo {
   }
 
   transition set_commission_percent(commission_rate: u128) {
-    assert_eq(self.caller, ADMIN);
+    assert_eq(self.signer, ADMIN);
     assert(commission_rate < PRECISION_UNSIGNED);
+    assert(commission_rate < MAX_COMMISSION_RATE);
 
     return then finalize(commission_rate);
   }
 
-  finalize set_commission_percent(commission_rate: u128) {
+  finalize set_commission_percent(new_commission_rate: u128) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
+    /** Claim Existing Commission Block */
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
-    // Make sure all commission is claimed before changing the rate
-    let balance: u64 = total_balance.get(0u8);
+    // Distribute shares for new commission
     let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
-    assert_eq(balance, bonded);
+    let current_balance: u64 = total_balance.get(0u8);
+    let current_shares: u64 = total_shares.get(0u8);
+    let rewards: u64 = bonded - current_balance;
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission: u64 = rewards > 0u64 ? get_commission(rewards as u128, commission_rate) : 0u64;
+    current_balance += rewards - new_commission;
 
-    commission_percent.set(0u8, commission_rate);
+    let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, new_commission as u128, current_shares as u128);
+    let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
+    delegator_shares.set(ADMIN, current_commission + new_commission_shares);
+
+    total_shares.set(0u8, current_shares + new_commission_shares);
+    total_balance.set(0u8, current_balance + new_commission);
+
+    /** End Claim Existing Commision Block */
+
+    commission_percent.set(0u8, new_commission_rate);
+  }
+
+  // Update the validator address, to be applied automatically on the next bond_all call
+  transition update_validator(validator_address: address) {
+    assert_eq(self.signer, ADMIN);
+
+    return then finalize(validator_address);
+  }
+
+  finalize update_validator(validator_address: address) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
+    validator.set(1u8, validator_address);
   }
 
   transition unbond_all(pool_balance: u64) {
-    assert_eq(self.caller, ADMIN);
+    assert_eq(self.signer, ADMIN);
     credits.aleo/unbond_public(pool_balance);
 
     return then finalize();
   }
 
   finalize unbond_all() {
-    // Make sure all commission is claimed before unbonding
-    let balance: u64 = total_balance.get(0u8);
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
+    /** Claim Existing Commission Block */
+    let current_state: u8 = state.get(0u8);
+    assert_eq(current_state, 0u8);
+
+    // Distribute shares for new commission
     let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
-    assert_eq(balance, bonded);
+    let current_balance: u64 = total_balance.get(0u8);
+    let current_shares: u64 = total_shares.get(0u8);
+    let rewards: u64 = bonded - current_balance;
+    let commission_rate: u128 = commission_percent.get(0u8);
+    let new_commission: u64 = rewards > 0u64 ? get_commission(rewards as u128, commission_rate) : 0u64;
+    current_balance += rewards - new_commission;
+
+    let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, new_commission as u128, current_shares as u128);
+    let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
+    delegator_shares.set(ADMIN, current_commission + new_commission_shares);
+
+    total_shares.set(0u8, current_shares + new_commission_shares);
+    total_balance.set(0u8, current_balance + new_commission);
+
+    /** End Claim Existing Commision Block */
+
 
     state.set(0u8, 1u8);
   }
 
+  // Permissionless call to claim all of the rewards
   transition claim_all() {
-    assert_eq(self.caller, ADMIN);
     credits.aleo/claim_unbond_public();
 
     return then finalize();
   }
 
   finalize claim_all() {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 1u8);
 
@@ -143,7 +220,6 @@ program staking_lite.aleo {
   }
 
   transition bond_all(validator_address: address, amount: u64) {
-    assert_eq(self.caller, ADMIN);
     // Call will fail if there is any balance still bonded to another validator
     credits.aleo/bond_public(validator_address, amount);
 
@@ -151,6 +227,10 @@ program staking_lite.aleo {
   }
 
   finalize bond_all(validator_address: address, amount: u64) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let current_state: u8 = state.get(0u8);
     // Bonding allowed during normal operations or after full unbonding
     assert(current_state == 0u8 || current_state == 2u8);
@@ -163,17 +243,28 @@ program staking_lite.aleo {
     let available_balance: u64 = account_balance - pending_withdrawals;
     assert(amount <= available_balance);
 
+    // Ensure the updated validator is used
+    let new_valdiator = validator.get_or_use(1u8, NULL_ADDRESS);
+    let existing_validator = validator.get(0u8);
+    let next_validator = new_validator == NULL_ADDRESS ? existing_validator : new_validator;
+    assert_eq(next_validator, validator_address);
+
     // Set validator and state in case this was part of a validator change
     validator.set(0u8, validator_address);
+    validator.set(1u8, NULL_ADDRESS);
     state.set(0u8, 0u8);
   }
 
   transition claim_commission() {
-    assert_eq(self.caller, ADMIN);
+    assert_eq(self.signer, ADMIN);
     return then finalize();
   }
 
   finalize claim_commission() {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
@@ -221,7 +312,6 @@ program staking_lite.aleo {
   ) -> credits.aleo/credits {
     // Must be a credits record because credits.aleo uses self.caller for transfers
     let updated_record: credits.aleo/credits = credits.aleo/transfer_private_to_public(input_record, CORE_PROTOCOL, microcredits);
-    credits.aleo/bond_public(validator_address, microcredits);
 
     return (updated_record) then finalize(self.caller, microcredits, validator_address, expected_shares, minimum_shares);
   }
@@ -233,6 +323,10 @@ program staking_lite.aleo {
     expected_shares: u64,
     minimum_shares: u64
   ) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let stored_validator: address = validator.get(0u8);
     assert_eq(validator_address, stored_validator);
 
@@ -281,6 +375,10 @@ program staking_lite.aleo {
   }
 
   finalize withdraw_public(withdrawal_shares: u64, total_withdrawal: u64, owner: address) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let current_state: u8 = state.get(0u8);
     assert_eq(current_state, 0u8);
 
@@ -359,6 +457,10 @@ program staking_lite.aleo {
   }
 
   finalize withdraw_claim(owner: address, amount: u64) {
+    // Ensure program is initialized
+    let initialized: u8 = is_initalized.get_or_use(0u8, 0u8);
+    assert_eq(initialized, 1u8);
+
     let withdrawal: withdrawal_state = withdrawals.get(owner);
     assert(block.height >= withdrawal.claim_block);
     assert_eq(withdrawal.microcredits, amount);
