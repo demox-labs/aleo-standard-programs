@@ -330,9 +330,6 @@ program staking_lite.aleo {
     let stored_validator: address = validator.get(0u8);
     assert_eq(validator_address, stored_validator);
 
-    let current_state: u8 = state.get(0u8);
-    assert_eq(current_state, 0u8);
-
     // Distribute shares for new commission
     let bonded: u64 = 0u64; // credits.aleo/bonded.get(CORE_PROTOCOL);
     let current_balance: u64 = total_balance.get(0u8);
