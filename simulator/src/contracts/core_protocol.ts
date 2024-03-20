@@ -127,7 +127,7 @@ export class core_protocolProgram {
     assert(boostee !== this.CORE_PROTOCOL);
 // minimum boost amount?
     assert(amount > this.MINIMUM_BOOST);
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_private_to_public(input_record, this.CORE_PROTOCOL, amount);
     return this.finalize_boost(boostee, amount);
     }
@@ -213,7 +213,7 @@ export class core_protocolProgram {
     reward_amounts: bigint[],
     ideal_portions: bigint[],
   ) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_data(new_validators, performances, reward_amounts);
     
     return this.finalize_prep_rebalance(
@@ -305,13 +305,13 @@ export class core_protocolProgram {
     
 // ********** CALCULATE IF IT IS PROFITABLE TO REBALANCE **********
     let rewards_from_last_period: bigint = reward_amounts[0] + reward_amounts[1] + reward_amounts[2] + reward_amounts[3] + reward_amounts[4];
-    let last_period_duration: bigint = (this.block.height - this.last_rebalance_height.get(BigInt("0"))! || BigInt("0"));
+    let last_period_duration: bigint = (this.block.height - this.last_rebalance_height.get(BigInt("0")) || BigInt("0"));
     let current_stake: bigint = d1_state.stake + d2_state.stake + d3_state.stake + d4_state.stake + d5_state.stake;
     let last_period_weekly_yield: bigint = this.PRECISION_UNSIGNED * rewards_from_last_period * this.PROFITABILITY_TIMEFRAME / (last_period_duration * current_stake);
 // compound once
     let current_distribution_projected_yield: bigint = total_balance * last_period_weekly_yield / this.PRECISION_UNSIGNED;
     
-    let projected_stake_after_rebalance: bigint = current_stake + this.core_protocol_balance.get(BigInt("0"))! || BigInt("0") + rewards_from_last_period;
+    let projected_stake_after_rebalance: bigint = current_stake + this.core_protocol_balance.get(BigInt("0")) || BigInt("0") + rewards_from_last_period;
     let projected_weekly_performance: bigint = ideal_portions[0] * performances[0] + ideal_portions[1] * performances[1] + ideal_portions[2] * performances[2] + ideal_portions[3] * performances[3] + ideal_portions[4] * performances[4];
     let projected_weekly_yield: bigint = projected_weekly_performance * projected_stake_after_rebalance / this.PRECISION_UNSIGNED;
     assert(projected_weekly_yield >= current_distribution_projected_yield);
@@ -408,15 +408,15 @@ export class core_protocolProgram {
     unbond_amounts: bigint[],
     reward_amounts: bigint[],
   ) {
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.unbond(unbond_amounts[0]);
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.unbond(unbond_amounts[1]);
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.unbond(unbond_amounts[2]);
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.unbond(unbond_amounts[3]);
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.unbond(unbond_amounts[4]);
     
     return this.finalize_rebalance_unbond(
@@ -513,25 +513,25 @@ export class core_protocolProgram {
     total_ale_minted: bigint,
     total_ale_burned: bigint,
   ) {
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.assert_totals(total_ale_minted, total_ale_burned);
     let total_ale_pool: bigint = total_ale_minted - total_ale_burned;
     
 // Mint Ale to the validators
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(validator_mint_amounts[0], current_validators[0]);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(validator_mint_amounts[1], current_validators[1]);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(validator_mint_amounts[2], current_validators[2]);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(validator_mint_amounts[3], current_validators[3]);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(validator_mint_amounts[4], current_validators[4]);
     
 // Mint Ale to the axel pool
     let fee_mint: bigint = validator_mint_amounts[0] + validator_mint_amounts[1] + validator_mint_amounts[2] + validator_mint_amounts[3] + validator_mint_amounts[4];
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(fee_mint, this.AXEL);
     return this.finalize_rebalance_collect_rewards(
     current_validators,
@@ -662,29 +662,29 @@ export class core_protocolProgram {
 // ********** CLAIM UNBOND AND SEND TO PROTOCOL ALEO POOL **********
 // note -- in the case that a validator has forcibly unbonded a delegator,
 // the fix_orphaned_delegator transition must be called
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.claim_unbond();
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.transfer_to_core_protocol(unbond_amounts[0]);
     
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.claim_unbond();
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.transfer_to_core_protocol(unbond_amounts[1]);
     
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.claim_unbond();
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.transfer_to_core_protocol(unbond_amounts[2]);
     
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.claim_unbond();
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.transfer_to_core_protocol(unbond_amounts[3]);
     
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.claim_unbond();
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.transfer_to_core_protocol(unbond_amounts[4]);
     
     return this.finalize_rebalance_claim_unbond(unbond_amounts);
@@ -771,29 +771,29 @@ export class core_protocolProgram {
 // ********** REDISTRIBUTE PROTOCOL POOL **********
 // note -- in the case that a delegator is changing validators, the delegator
 // may not have cleared its entire stake, so clear_residual_bonded_delegators must be called
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_1, rebond_amounts[0]);
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.bond(validators[0], rebond_amounts[0]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_2, rebond_amounts[1]);
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.bond(validators[1], rebond_amounts[1]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_3, rebond_amounts[2]);
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.bond(validators[2], rebond_amounts[2]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_4, rebond_amounts[3]);
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.bond(validators[3], rebond_amounts[3]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_5, rebond_amounts[4]);
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.bond(validators[4], rebond_amounts[4]);
     
     return this.finalize_rebalance_redistribute(rebond_amounts, validators);
@@ -924,37 +924,37 @@ export class core_protocolProgram {
   ) {
 // no rewards minted for residue clearing, as this should be a rare event
     if (residual_amounts[0] > BigInt("0")) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.clear_residual_delegator(this.DELEGATOR_1, residual_amounts[0]);
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.unbond(residual_amounts[0]);
     }
     
     if (residual_amounts[1] > BigInt("0")) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.clear_residual_delegator(this.DELEGATOR_2, residual_amounts[1]);
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.unbond(residual_amounts[1]);
     }
     
     if (residual_amounts[2] > BigInt("0")) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.clear_residual_delegator(this.DELEGATOR_3, residual_amounts[2]);
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.unbond(residual_amounts[2]);
     }
     
     if (residual_amounts[3] > BigInt("0")) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.clear_residual_delegator(this.DELEGATOR_4, residual_amounts[3]);
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.unbond(residual_amounts[3]);
     }
     
     if (residual_amounts[4] > BigInt("0")) {
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.clear_residual_delegator(this.DELEGATOR_5, residual_amounts[4]);
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.unbond(residual_amounts[4]);
     }
     
@@ -1033,47 +1033,47 @@ export class core_protocolProgram {
     amounts: bigint[],
   ) {
     if (amounts[0] > BigInt("0")) {
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.claim_unbond();
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.transfer_to_core_protocol(amounts[0]);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_orphaned_delegator(this.DELEGATOR_1, amounts[0]);
     }
     
     if (amounts[1] > BigInt("0")) {
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.claim_unbond();
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.transfer_to_core_protocol(amounts[1]);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_orphaned_delegator(this.DELEGATOR_2, amounts[1]);
     }
     
     if (amounts[2] > BigInt("0")) {
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.claim_unbond();
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.transfer_to_core_protocol(amounts[2]);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_orphaned_delegator(this.DELEGATOR_3, amounts[2]);
     }
     
     if (amounts[3] > BigInt("0")) {
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.claim_unbond();
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.transfer_to_core_protocol(amounts[3]);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_orphaned_delegator(this.DELEGATOR_4, amounts[3]);
     }
     
     if (amounts[4] > BigInt("0")) {
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.claim_unbond();
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.transfer_to_core_protocol(amounts[4]);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_orphaned_delegator(this.DELEGATOR_5, amounts[4]);
     }
     
@@ -1152,7 +1152,7 @@ export class core_protocolProgram {
     ale_burn_amount: bigint,
     credits_claim_amount: bigint,
   ) {
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.assert_totals(total_ale_minted, total_ale_burned);
     let total_ale_pool: bigint = total_ale_minted - total_ale_burned;
     
@@ -1162,9 +1162,9 @@ export class core_protocolProgram {
     let min_block_rounded_down: bigint = min_block_height / BigInt("10000") * BigInt("10000");
     let min_block_round_up: bigint = min_block_rounded_down + BigInt("10000");
 // burn full amount of ale, but immediately mint the fee to the protocol. Only withdraw credits_to_claim as the difference
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.burn_private(ale_record, ale_burn_amount, credits_claim_amount, min_block_round_up);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_public(fee, this.AXEL);
     let net_ale_burn_amount: bigint = ale_burn_amount - fee;
     return this.finalize_create_withdraw_claim(
@@ -1219,15 +1219,15 @@ export class core_protocolProgram {
     withdraw_block: bigint,
   ) {
     assert(total_amount === unbond_amounts[0] + unbond_amounts[1] + unbond_amounts[2] + unbond_amounts[3] + unbond_amounts[4]);
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.unbond(unbond_amounts[0]);
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.unbond(unbond_amounts[1]);
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.unbond(unbond_amounts[2]);
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.unbond(unbond_amounts[3]);
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.unbond(unbond_amounts[4]);
     
     return this.finalize_withdraw_unbond(unbond_amounts, total_amount, withdraw_block);
@@ -1342,29 +1342,29 @@ export class core_protocolProgram {
 // ********** CLAIM UNBOND AND SEND TO ALEO POOL OWNED BY ALE **********
 // note -- in the case that a validator has forcibly unbonded a delegator,
 // the fix_orphaned_delegator transition must be called
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.claim_unbond();
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.transfer_to_ale(unbond_amounts[0]);
     
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.claim_unbond();
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.transfer_to_ale(unbond_amounts[1]);
     
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.claim_unbond();
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.transfer_to_ale(unbond_amounts[2]);
     
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.claim_unbond();
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.transfer_to_ale(unbond_amounts[3]);
     
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.claim_unbond();
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.transfer_to_ale(unbond_amounts[4]);
     
     return this.finalize_withdraw_claim_unbond(unbond_amounts);
@@ -1454,14 +1454,14 @@ export class core_protocolProgram {
     average_block_reward: bigint,
   ) {
 // transfer aleo to pool
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.assert_totals(total_ale_minted, total_ale_burned);
-    this.oracle.caller = "contract";
+    this.oracle.caller = "core_protocol.aleo";
     this.oracle.confirm_average_block_reward(average_block_reward);
     let total_ale_pool: bigint = total_ale_minted - total_ale_burned;
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     let updated_record: credits = this.credits.transfer_private_to_public(input_record, this.CORE_PROTOCOL, credits_deposit);
-    this.ale.caller = "contract";
+    this.ale.caller = "core_protocol.aleo";
     this.ale.mint_private(ale_to_mint, this.caller);
     this.finalize_deposit_private(
     credits_deposit,
@@ -1530,29 +1530,29 @@ export class core_protocolProgram {
     transfer_amounts: bigint[],
   ) {
 // Transfer to each validator
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_1, transfer_amounts[0]);
-    this.delegator1.caller = "contract";
+    this.delegator1.caller = "core_protocol.aleo";
     this.delegator1.bond(validators[0], transfer_amounts[0]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_2, transfer_amounts[1]);
-    this.delegator2.caller = "contract";
+    this.delegator2.caller = "core_protocol.aleo";
     this.delegator2.bond(validators[1], transfer_amounts[1]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_3, transfer_amounts[2]);
-    this.delegator3.caller = "contract";
+    this.delegator3.caller = "core_protocol.aleo";
     this.delegator3.bond(validators[2], transfer_amounts[2]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_4, transfer_amounts[3]);
-    this.delegator4.caller = "contract";
+    this.delegator4.caller = "core_protocol.aleo";
     this.delegator4.bond(validators[3], transfer_amounts[3]);
     
-    this.credits.caller = "contract";
+    this.credits.caller = "core_protocol.aleo";
     this.credits.transfer_public(this.DELEGATOR_5, transfer_amounts[4]);
-    this.delegator5.caller = "contract";
+    this.delegator5.caller = "core_protocol.aleo";
     this.delegator5.bond(validators[4], transfer_amounts[4]);
     
     return this.finalize_bond_deposit_pool(validators, transfer_amounts);
