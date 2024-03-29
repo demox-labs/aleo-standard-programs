@@ -461,6 +461,7 @@ program arc_0038.aleo {
     total_shares.set(0u8, current_shares - withdrawal_shares);
 
     // Update delegator_shares mapping
+    delegator_balance = delegator_shares.get(owner);
     delegator_shares.set(owner, delegator_balance - withdrawal_shares);
   }
 
