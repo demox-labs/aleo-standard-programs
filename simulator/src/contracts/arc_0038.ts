@@ -308,17 +308,13 @@ export class arc_0038Program {
   finalize_bond_all(
     validator_address: string
   ) {
-    let account_balance: bigint = this.credits.account.get(this.CORE_PROTOCOL)!; // this.credits.get(this.CORE_PROTOCOL);
+    let account_balance: bigint = this.credits.account.get(this.CORE_PROTOCOL)!;
     let pending_withdrawals: bigint = this.pending_withdrawal.get(BigInt("1"))!;
     assert(account_balance >= pending_withdrawals);
 
-    // Set validator
     let next_validator: string = this.validator.get(BigInt("1"))!;
     assert(validator_address === next_validator);
-    this.validator.set(BigInt("0"), next_validator);
-    this.validator.delete(BigInt("1"));
 
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
     let base: bond_state = {
       validator: 'test-validator',
       microcredits: BigInt("0")
@@ -328,6 +324,10 @@ export class arc_0038Program {
     let pending_deposit_balance: bigint = this.pending_deposits.get(BigInt("0"))!;
 
     pending_deposit_balance = pending_deposit_balance + current_balance - bonded;
+    assert(pending_deposit_balance >= BigInt("0"));
+
+    this.validator.set(BigInt("0"), next_validator);
+    this.validator.delete(BigInt("1"));
     this.pending_deposits.set(BigInt("0"), pending_deposit_balance);
     this.total_balance.set(BigInt("0"), bonded);
   }
@@ -371,6 +371,7 @@ export class arc_0038Program {
     let pending_deposit_balance: bigint = this.pending_deposits.get(BigInt("0"))!;
 
     pending_deposit_balance = pending_deposit_balance - amount;
+    assert(pending_deposit_balance >= BigInt("0"));
     this.pending_deposits.set(BigInt("0"), pending_deposit_balance);
     this.total_balance.set(BigInt("0"), current_balance + amount);
   }
@@ -560,6 +561,7 @@ export class arc_0038Program {
 
     // Calculate withdrawal amount
     let withdrawal_calculation: bigint = (withdrawal_shares * full_pool * this.PRECISION_UNSIGNED) / (current_shares * this.PRECISION_UNSIGNED);
+    // console.log(`withdrawal_calculation: ${withdrawal_calculation}, total_withdrawal: ${total_withdrawal}`);
 
     // If the calculated withdrawal amount is greater than total_withdrawal, the excess will stay in the pool
     assert(withdrawal_calculation >= total_withdrawal, `withdrawal_calculation: ${withdrawal_calculation}, total_withdrawal: ${total_withdrawal}`);
@@ -639,6 +641,7 @@ export class arc_0038Program {
     let current_shares: bigint = this.total_shares.get(BigInt("0"))!;
     let withdrawal_calculation: bigint = (withdrawal_shares * full_pool * this.PRECISION_UNSIGNED) / (current_shares * this.PRECISION_UNSIGNED);
     let total_withdrawal: bigint = withdrawal_calculation;
+    // console.log(`withdrawal_calculation: ${withdrawal_calculation}, total_withdrawal: ${total_withdrawal}`);
 
     // Update withdrawals mappings
     let withdrawal: withdrawal_state = {

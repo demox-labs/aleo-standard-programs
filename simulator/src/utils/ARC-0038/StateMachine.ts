@@ -97,22 +97,23 @@ export class StateMachine {
   runTransitions(
     transitions: Transition[],
     title: string = '',
-    lastBlock: number = 5,
-    verbose: boolean = false,
     verboseStartHeight?: bigint | number,
     verboseEndHeight?: bigint | number
   ) {
     const blockToTransition: Map<bigint, Transition[]> = new Map();
+    let lastBlock = 0;
     transitions.forEach((transition) => {
+      if (transition.height > lastBlock) {
+        lastBlock = Number(transition.height);
+      }
       if (!blockToTransition.has(transition.height)) {
         blockToTransition.set(transition.height, []);
       }
       blockToTransition.get(transition.height)?.push(transition);
     });
 
-    console.log(`Running ${title}...`);
-    this.setVerbose(verbose);
     if (verboseStartHeight !== undefined) {
+      console.log(`Running ${title}...`);
       this.setVerboseHeights(verboseStartHeight || 0, verboseEndHeight);
     }
     for (let i = 0; i <= lastBlock; i++) {
@@ -133,7 +134,9 @@ export class StateMachine {
     if (this.verbose) {
       console.log(`--- END BLOCK ${this.block.height.toLocaleString()} ---`);
     }
-    console.log(`Finished running ${title}`);
+    if (verboseStartHeight !== undefined) {
+      console.log(`Finished running ${title}`);
+    }
   }
 
   runTransition(transition: Transition) {
@@ -275,7 +278,7 @@ export class StateMachine {
           const userShares = this.arc0038.delegator_shares.get(transition.caller)!;
           const sharesDecimal = transition.sharesPercent! * Number(userShares);
           const sharesToWithdraw = BigInt(Math.floor(sharesDecimal));
-          console.log(`shares to withdraw: ${sharesToWithdraw}`)
+          // console.log(`shares to withdraw: ${sharesToWithdraw}`)
           this.arc0038.withdraw_public(sharesToWithdraw, transition.amount!);
         } catch (e: any) {
           failed = true;

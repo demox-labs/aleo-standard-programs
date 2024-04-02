@@ -5,9 +5,10 @@ import { MICROCREDITS_TO_CREDITS } from '../src/contracts/credits';
 import { blockEvent, StateMachine } from '../src/utils/ARC-0038/StateMachine';
 import {
   admin, bondAll, bondDeposits, claimCommission, claimUnbond, claimWithdrawPublic, createWithdrawClaim, deposit,
-  initialDeposit, initialize, setNextValidator, testValidator, unbondAll, user0, user1, user2,
+  initialDeposit, initialize, protocol, setNextValidator, testValidator, unbondAll, user0, user1, user2,
   user3, user4, withdrawPublic
 } from '../src/utils/ARC-0038/transition-definitions';
+import { set } from 'idb-keyval';
 
 const jestConsole = console;
 const oneMillionCredits = 1000000 * MICROCREDITS_TO_CREDITS;
@@ -85,7 +86,7 @@ describe('ARC0038', () => {
       claimWithdrawPublic(1000, admin, 24999999, user1, false),
     ];
 
-    stateMachine.runTransitions(transitions, 'changing validator', 1000, false);
+    stateMachine.runTransitions(transitions, 'changing validator');
   });
 
   it('deposit every block to minimize commission', () => {
@@ -133,7 +134,7 @@ describe('ARC0038', () => {
 
     //stateMachine.arc0038.SHARES_TO_MICROCREDITS = BigInt(1);
     stateMachine.credits.account.set(user0, BigInt(oneMillionCredits * 3));
-    stateMachine.runTransitions(transitions, 'deposit every block to minimize commission', 25, false, 25);
+    stateMachine.runTransitions(transitions, 'deposit every block to minimize commission');
 
     const transitions2 = [
       initialize(),
@@ -154,15 +155,15 @@ describe('ARC0038', () => {
     setup(); // reset state machine
     //stateMachine.arc0038.SHARES_TO_MICROCREDITS = BigInt(1);
     stateMachine.credits.account.set(user0, BigInt(oneMillionCredits * 3));
-    stateMachine.runTransitions(transitions2, 'deposit once', 25, false, 25);
+    stateMachine.runTransitions(transitions2, 'deposit once');
 
-    console.log(`${adminBalanceMultipleDeposits!.toLocaleString()} multiple deposits`);
-    console.log(`${adminBalanceOneDeposit!.toLocaleString()} one deposit`);
-    console.log(`${(adminBalanceMultipleDeposits! - adminBalanceOneDeposit!).toLocaleString()} delta`);
-    console.log('depositor');
-    console.log(`${depositorBalanceMultipleDeposits!.toLocaleString()} multiple deposits`);
-    console.log(`${depositorBalanceOneDeposit!.toLocaleString()} one deposit`);
-    console.log(`${(depositorBalanceMultipleDeposits! - depositorBalanceOneDeposit!).toLocaleString()} delta`);
+    // console.log(`${adminBalanceMultipleDeposits!.toLocaleString()} multiple deposits`);
+    // console.log(`${adminBalanceOneDeposit!.toLocaleString()} one deposit`);
+    // console.log(`${(adminBalanceMultipleDeposits! - adminBalanceOneDeposit!).toLocaleString()} delta`);
+    // console.log('depositor');
+    // console.log(`${depositorBalanceMultipleDeposits!.toLocaleString()} multiple deposits`);
+    // console.log(`${depositorBalanceOneDeposit!.toLocaleString()} one deposit`);
+    // console.log(`${(depositorBalanceMultipleDeposits! - depositorBalanceOneDeposit!).toLocaleString()} delta`);
   });
 
   it('withdraw batching', () => {
@@ -193,10 +194,10 @@ describe('ARC0038', () => {
       withdrawPublic(1000, users[users.length - 1].user, 1, 99.999999 * MICROCREDITS_TO_CREDITS, false),
     ];
 
-    stateMachine.runTransitions(transitions, 'withdraw batching', 1000, false);
+    stateMachine.runTransitions(transitions, 'withdraw batching');
   });
 
-  fit('clearing out program', () => {
+  it('clearing out program', () => {
     const transtions = [
       initialize(),
       initialDeposit(),
@@ -210,34 +211,80 @@ describe('ARC0038', () => {
       withdrawPublic(7, user2, 1, 0.5 * MICROCREDITS_TO_CREDITS),
       claimUnbond(400),
       claimCommission(401, admin),
-      withdrawPublic(401, user0, 0.99, 9600 * MICROCREDITS_TO_CREDITS),
+      withdrawPublic(401, user0, 0.50368, 9600 * MICROCREDITS_TO_CREDITS),
       claimUnbond(761),
       claimWithdrawPublic(1000, admin, 10060631369, admin),
+      claimWithdrawPublic(1000, user0, 9600 * MICROCREDITS_TO_CREDITS, user0),
+      claimWithdrawPublic(1000, user1, 10 * MICROCREDITS_TO_CREDITS, user1),
+      claimWithdrawPublic(1000, user2, 0.5 * MICROCREDITS_TO_CREDITS, user2),
+      withdrawPublic(1001, user0, 1, 9459750325, true),
+      createWithdrawClaim(1001, user0, 1),
+      createWithdrawClaim(1001, admin, 1),
+      claimWithdrawPublic(1002, user0, 9459750325, user0),
+      claimWithdrawPublic(1002, admin, 479618306, admin),
+      initialDeposit(1003)
     ];
 
-    stateMachine.runTransitions(transtions, 'clearing out program', 1000, true, 400, 402);
+    stateMachine.runTransitions(transtions, 'clearing out program');
   });
 
   it('too small deposit', () => {
     const transtions = [
       initialize(),
-      initialDeposit(1, oneMillionCredits * 1000),
-      deposit(2, oneMillionCredits, user0),
-      deposit(3, oneMillionCredits - 1, user1),
-      deposit(3, 1, user1, true),
-      deposit(3, oneMillionCredits, user3),
-      //deposit(4, 1, user4, true),
+      initialDeposit(1, oneMillionCredits * 200),
+      deposit(2, 10, user0),
+      withdrawPublic(900, user0, 1, 10),
     ];
 
-    stateMachine.runTransitions(transtions, 'too small deposit', 5, true);
+    stateMachine.runTransitions(transtions, 'too small deposit');
   });
 
   it('forced unbond', () => {
     const transtions = [
       initialize(),
       initialDeposit(),
+      deposit(2, 100 * MICROCREDITS_TO_CREDITS, user0, false, (stateMachine) => {
+        stateMachine.credits.caller = protocol;
+        stateMachine.credits.unbond_public(BigInt(10000 * MICROCREDITS_TO_CREDITS));
+      }),
+      claimUnbond(362, user0),
+      createWithdrawClaim(362, user0, 1),
     ];
 
-    stateMachine.runTransitions(transtions, 'forced unbond', 1);
+    stateMachine.runTransitions(transtions, 'forced unbond');
+  });
+
+  it('transfer and bond_all without using initial_deposit', () => {
+    const transtions = [
+      initialize(1, 0.01, testValidator, admin, false, (stateMachine) => {
+        stateMachine.credits.caller = admin;
+        stateMachine.credits.transfer_public(protocol, BigInt(10000 * MICROCREDITS_TO_CREDITS));
+      }),
+      setNextValidator(1, testValidator, admin, false),
+      bondAll(1, 10000 * MICROCREDITS_TO_CREDITS, testValidator, admin, true),
+      initialDeposit(2),
+      bondDeposits(2, 10000 * MICROCREDITS_TO_CREDITS, testValidator, admin, true),
+      setNextValidator(2, testValidator, admin, false),
+      unbondAll(2, admin, 10000 * MICROCREDITS_TO_CREDITS),
+      claimUnbond(362, admin),
+      bondAll(362, 20000 * MICROCREDITS_TO_CREDITS, testValidator, admin, true),
+      bondAll(362, 10000 * MICROCREDITS_TO_CREDITS, testValidator, admin),
+    ];
+
+    stateMachine.runTransitions(transtions, 'transfer and bond_all without using initial_deposit');
+  });
+
+  it('transfer and bond_deposits using initial_deposit', () => {
+    const transtions = [
+      initialize(1, 0.01, testValidator, admin, false, (stateMachine) => {
+        stateMachine.credits.caller = admin;
+        stateMachine.credits.transfer_public(protocol, BigInt(10000 * MICROCREDITS_TO_CREDITS));
+      }),
+      bondDeposits(1, 10000 * MICROCREDITS_TO_CREDITS, testValidator, admin, true),
+      initialDeposit(2),
+      bondDeposits(2, 10000 * MICROCREDITS_TO_CREDITS, testValidator, admin, true),
+    ];
+
+    stateMachine.runTransitions(transtions, 'transfer and bond_deposits without using initial_deposit');
   });
 });
