@@ -100,7 +100,7 @@ program core_protocol.aleo {
 
     let current_total_boost: u64 = boost_pool.get_or_use(CORE_PROTOCOL, 0u64);
     let new_total_boost: u64 = current_total_boost + amount;
-    
+
     boost_pool.set(CORE_PROTOCOL, new_boost);
 
     let current_total_protocol_balance: u64 = core_protocol_balance.get_or_use(0u8, 0u64);
@@ -1042,7 +1042,7 @@ program core_protocol.aleo {
   mapping withdraw_pool: u32 => u64;
   const WITHDRAW_WAIT_MINIMUM: u32 = 15_000u32; // aproximately 2.5 days' of blocks
   const WITHDRAW_FEE: u128 = 30u128; // out of 1000, 3% fee
- 
+
   transition create_withdraw_claim(
     private ale_record: ale.aleo/token,
     public current_height: u32,
@@ -1059,8 +1059,8 @@ program core_protocol.aleo {
     let fee_calc: u128 = ale_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
     let fee: u64 = fee_calc as u64;
     let min_block_height: u32 = current_height + WITHDRAW_WAIT_MINIMUM;
-    let min_block_rounded_down: u32 = min_block_height / 10000u32 * 10000u32;
-    let min_block_round_up: u32 = min_block_rounded_down + 10000u32;
+    let min_block_rounded_down: u32 = min_block_height / 10_000u32 * 10_000u32;
+    let min_block_round_up: u32 = min_block_rounded_down + 10_000u32;
     // burn full amount of ale, but immediately mint the fee to the protocol. Only withdraw credits_to_claim as the difference
     ale.aleo/burn_private(ale_record, ale_burn_amount, credits_claim_amount, min_block_round_up);
     ale.aleo/mint_public(fee, AXEL);
@@ -1122,7 +1122,7 @@ program core_protocol.aleo {
     delegator3.aleo/unbond(unbond_amounts[2u8]);
     delegator4.aleo/unbond(unbond_amounts[3u8]);
     delegator5.aleo/unbond(unbond_amounts[4u8]);
-    
+
     return then finalize(unbond_amounts, total_amount, withdraw_block);
   }
 
@@ -1137,7 +1137,7 @@ program core_protocol.aleo {
     let d4_state: state = delegator_state.get(DELEGATOR_4);
     let d5_state: state = delegator_state.get(DELEGATOR_5);
     let saved_withdraw_amount: u64 = withdraw_pool.get_or_use(withdraw_block, 0u64);
-    
+
     // ********** ASSERT INPUTS AND STATE **********
     assert_eq(saved_withdraw_amount, total_amount);
 
@@ -1426,7 +1426,7 @@ program core_protocol.aleo {
     // Confirm bonding is allowed
     let curr_protocol_state: u8 = protocol_state.get(0u8);
     let bonding_allowed: bool = curr_protocol_state == 0u8 || curr_protocol_state == 3u8;
-    assert(bonding_allowed);    
+    assert(bonding_allowed);
 
     // Confirm we have the minimum amount
     let pool_balance: u64 = core_protocol_balance.get_or_use(0u8, 0u64);
