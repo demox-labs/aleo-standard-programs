@@ -271,10 +271,10 @@ program arc_0038.aleo {
     // Call will fail if there is any balance still bonded to another validator
     credits.aleo/bond_public(validator_address, amount);
 
-    return then finalize(amount);
+    return then finalize(amount, validator_address);
   }
 
-  finalize bond_deposits(amount: u64) {
+  finalize bond_deposits(amount: u64, validator_address: address) {
     let account_balance: u64 = total_balance.get(1u8); // credits.aleo/account.get(CORE_PROTOCOL);
     let pending_withdrawals: u64 = pending_withdrawal.get(1u8);
     assert(account_balance >= pending_withdrawals);
@@ -288,6 +288,7 @@ program arc_0038.aleo {
 
     let has_next_validator: bool = validator.contains(1u8);
     assert_eq(has_next_validator, false);
+    assert_eq(validator.get(0u8), validator_address);
   }
 
   transition claim_commission() {
@@ -369,8 +370,7 @@ program arc_0038.aleo {
     total_shares.set(0u8, current_shares + new_shares);
 
     // Update pending_deposits
-    let pending: u64 = pending_deposits.get(0u8);
-    pending_deposits.set(0u8, pending + microcredits);
+    pending_deposits.set(0u8, pending_deposit_pool + microcredits);
   }
 
   transition withdraw_public(public withdrawal_shares: u64, public total_withdrawal: u64) {

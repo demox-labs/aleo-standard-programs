@@ -358,19 +358,22 @@ function bond_deposits:
 finalize bond_deposits:
     input r0 as credits.aleo/bond_public.future;
     input r1 as u64.public;
+    input r2 as address.public;
     await r0;
-    get.or_use credits.aleo/account[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] 0u64 into r2;
-    get pending_withdrawal[1u8] into r3;
-    gte r2 r3 into r4;
-    assert.eq r4 true;
-    get total_balance[0u8] into r5;
-    get pending_deposits[0u8] into r6;
-    sub r6 r1 into r7;
-    set r7 into pending_deposits[0u8];
-    add r5 r1 into r8;
-    set r8 into total_balance[0u8];
-    contains validator[1u8] into r9;
-    assert.eq r9 false;
+    get.or_use credits.aleo/account[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] 0u64 into r3;
+    get pending_withdrawal[1u8] into r4;
+    gte r3 r4 into r5;
+    assert.eq r5 true;
+    get total_balance[0u8] into r6;
+    get pending_deposits[0u8] into r7;
+    sub r7 r1 into r8;
+    set r8 into pending_deposits[0u8];
+    add r6 r1 into r9;
+    set r9 into total_balance[0u8];
+    contains validator[1u8] into r10;
+    assert.eq r10 false;
+    get validator[0u8] into r11;
+    assert.eq r11 r2;
 
 
 // Distribute shares for new commission
@@ -492,9 +495,8 @@ finalize deposit_public:
     add r35 r48 into r52;
     set r52 into total_shares[0u8];
 // Update pending deposits
-    get pending_deposits[0u8] into r53;
-    add r53 r2 into r54;
-    set r54 into pending_deposits[0u8];
+    add r20 r2 into r53;
+    set r53 into pending_deposits[0u8];
 
 
 
