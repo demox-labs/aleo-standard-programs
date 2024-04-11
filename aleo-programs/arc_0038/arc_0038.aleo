@@ -266,6 +266,11 @@ finalize unbond_all:
 // Make sure all commission is claimed
     cast 0u64 0u32 into r4 as unbond_state;
     get.or_use credits.aleo/unbonding[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r4 into r5;
+    get pending_withdrawal[0u8] into r6;
+    sub r5.microcredits r6 into r7;
+    get total_balance[0u8] into r8;
+    get total_shares[0u8] into r9;
+    gt r7 r8 into r10;
     cast r7 into r11 as i64;
     cast r8 into r12 as i64;
     sub r11 r12 into r13;
@@ -352,7 +357,7 @@ function bond_deposits:
     input r1 as u64.public;
 // Call will fail if there is any balance still bonded to another validator
     call credits.aleo/bond_public r0 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r1 into r2;
-    async bond_deposits r2 r1 into r3;
+    async bond_deposits r2 r1 r0 into r3;
     output r3 as arc_0038.aleo/bond_deposits.future;
 
 finalize bond_deposits:
