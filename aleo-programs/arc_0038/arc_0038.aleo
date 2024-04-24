@@ -343,14 +343,13 @@ finalize bond_all:
     get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r5 into r6;
     get total_balance[0u8] into r7;
     get pending_deposits[0u8] into r8;
-    add r8 r7 into r9;
-    sub r9 r6.microcredits into r10;
-    set r10 into pending_deposits[0u8];
+    sub r2 r3 into r9;
+    set r9 into pending_deposits[0u8];
     set r6.microcredits into total_balance[0u8];
 // Set validator, call will fail if next validator is not set
-    get validator[1u8] into r11;
-    assert.eq r1 r11;
-    set r11 into validator[0u8];
+    get validator[1u8] into r10;
+    assert.eq r1 r10;
+    set r10 into validator[0u8];
     remove validator[1u8];
 
 
@@ -372,15 +371,14 @@ finalize bond_deposits:
     gte r3 r4 into r5;
     assert.eq r5 true;
     get total_balance[0u8] into r6;
-    get pending_deposits[0u8] into r7;
-    sub r7 r1 into r8;
-    set r8 into pending_deposits[0u8];
-    add r6 r1 into r9;
-    set r9 into total_balance[0u8];
-    contains validator[1u8] into r10;
-    assert.eq r10 false;
-    get validator[0u8] into r11;
-    assert.eq r11 r2;
+    sub r3 r4 into r7;
+    set r7 into pending_deposits[0u8];
+    add r6 r1 into r8;
+    set r8 into total_balance[0u8];
+    contains validator[1u8] into r9;
+    assert.eq r9 false;
+    get validator[0u8] into r10;
+    assert.eq r10 r2;
 
 
 // Distribute shares for new commission
