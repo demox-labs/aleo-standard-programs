@@ -530,8 +530,15 @@ program arc_0038.aleo {
     let currently_pending: u64 = pending_withdrawal.get(1u8);
     pending_withdrawal.set(1u8, currently_pending + total_withdrawal);
 
-    // Update total balance
-    total_balance.set(0u8, current_balance - total_withdrawal);
+    // Update total balance and pending deposits
+    let deposit_pool_diff: i64 = pending_deposit_pool as i64 - total_withdrawal as i64;
+    let remaining_deposits: bool = deposit_pool_diff >= 0i64;
+    let deposit_pool_diff_abs: u64 = deposit_pool_diff.abs() as u64;
+    let new_pending_deposits: u64 = remaining_deposits ? deposit_pool_diff_abs : 0u64;
+    let withdrawal_from_total: u64 = remaining_deposits ? 0u64 : deposit_pool_diff_abs;
+
+    pending_deposits.set(0u8, new_pending_deposits);
+    total_balance.set(0u8, current_balance - withdrawal_from_total);
 
     // Update total shares
     total_shares.set(0u8, current_shares - withdrawal_shares);
