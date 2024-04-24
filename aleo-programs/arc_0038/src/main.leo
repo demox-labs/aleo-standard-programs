@@ -138,7 +138,7 @@ program arc_0038.aleo {
 
   inline calculate_new_shares(bonded_balance: u128, pending_deposit_pool: u128, deposit: u128, shares: u128) -> u64 {
     let full_balance: u128 = bonded_balance + pending_deposit_pool;
-    let new_total_shares: u128 = (shares * PRECISION_UNSIGNED) * (full_balance + deposit) / (full_balance * PRECISION_UNSIGNED);
+    let new_total_shares: u128 = (shares * (full_balance + deposit)) / full_balance;
     let diff: u128 = new_total_shares - shares;
     let shares_to_mint: u64 = diff as u64;
     return shares_to_mint;
@@ -447,7 +447,7 @@ program arc_0038.aleo {
     let full_pool: u128 = current_balance as u128 + pending_deposit_pool as u128;
 
     // Calculate withdrawal amount
-    let withdrawal_calculation: u128 = (withdrawal_shares as u128 * full_pool as u128 * PRECISION_UNSIGNED) / (current_shares as u128 * PRECISION_UNSIGNED);
+    let withdrawal_calculation: u128 = (withdrawal_shares as u128 * full_pool as u128) / current_shares as u128;
 
     // If the calculated withdrawal amount is greater than total_withdrawal, the excess will stay in the pool
     assert(withdrawal_calculation >= total_withdrawal as u128);
@@ -515,7 +515,7 @@ program arc_0038.aleo {
     let pending_deposit_pool: u64 = pending_deposits.get(0u8);
     let full_pool: u128 = current_balance as u128 + pending_deposit_pool as u128;
     let current_shares: u64 = total_shares.get(0u8);
-    let withdrawal_calculation: u128 = (withdrawal_shares as u128 * full_pool * PRECISION_UNSIGNED) / (current_shares as u128 * PRECISION_UNSIGNED);
+    let withdrawal_calculation: u128 = (withdrawal_shares as u128 * full_pool) / current_shares as u128;
     let total_withdrawal: u64 = withdrawal_calculation as u64;
 
     // Update withdrawals mappings

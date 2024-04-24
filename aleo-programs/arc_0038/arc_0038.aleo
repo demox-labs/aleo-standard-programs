@@ -173,14 +173,12 @@ function calculate_new_shares_test:
     input r2 as u128.private;
     input r3 as u128.private;
     add r0 r1 into r4;
-    mul r3 1_000u128 into r5;
-    add r4 r2 into r6;
-    mul r5 r6 into r7;
-    mul r4 1_000u128 into r8;
-    div r7 r8 into r9;
-    sub r9 r3 into r10;
-    cast r10 into r11 as u64;
-    output r11 as u64.private;
+    add r4 r2 into r5;
+    mul r3 r5 into r6;
+    div r6 r4 into r7;
+    sub r7 r3 into r8;
+    cast r8 into r9 as u64;
+    output r9 as u64.private;
 
 
 function set_commission_percent:
@@ -219,20 +217,18 @@ finalize set_commission_percent:
     cast r14 into r21 as u128;
     cast r4 into r22 as u128;
     add r19 r20 into r23;
-    mul r22 1_000u128 into r24;
-    add r23 r21 into r25;
-    mul r24 r25 into r26;
-    mul r23 1_000u128 into r27;
-    div r26 r27 into r28;
-    sub r28 r22 into r29;
-    cast r29 into r30 as u64;
-    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r31;
-    add r31 r30 into r32;
-    set r32 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
-    add r4 r30 into r33;
-    set r33 into total_shares[0u8];
-    add r17 r14 into r34;
-    set r34 into total_balance[0u8];
+    add r23 r21 into r24;
+    mul r22 r24 into r25;
+    div r25 r23 into r26;
+    sub r26 r22 into r27;
+    cast r27 into r28 as u64;
+    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r29;
+    add r29 r28 into r30;
+    set r30 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
+    add r4 r28 into r31;
+    set r31 into total_shares[0u8];
+    add r17 r14 into r32;
+    set r32 into total_balance[0u8];
 // Set the new commission rate
     set r0 into commission_percent[0u8];
 
@@ -291,20 +287,18 @@ finalize unbond_all:
     cast r19 into r26 as u128;
     cast r9 into r27 as u128;
     add r24 r25 into r28;
-    mul r27 1_000u128 into r29;
-    add r28 r26 into r30;
-    mul r29 r30 into r31;
-    mul r28 1_000u128 into r32;
-    div r31 r32 into r33;
-    sub r33 r27 into r34;
-    cast r34 into r35 as u64;
-    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r36;
-    add r36 r35 into r37;
-    set r37 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
-    add r9 r35 into r38;
-    set r38 into total_shares[0u8];
-    add r22 r19 into r39;
-    set r39 into total_balance[0u8];
+    add r28 r26 into r29;
+    mul r27 r29 into r30;
+    div r30 r28 into r31;
+    sub r31 r27 into r32;
+    cast r32 into r33 as u64;
+    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r34;
+    add r34 r33 into r35;
+    set r35 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
+    add r9 r33 into r36;
+    set r36 into total_shares[0u8];
+    add r22 r19 into r37;
+    set r37 into total_balance[0u8];
 
 
 function claim_unbond:
@@ -411,20 +405,18 @@ finalize claim_commission:
     cast r13 into r20 as u128;
     cast r3 into r21 as u128;
     add r18 r19 into r22;
-    mul r21 1_000u128 into r23;
-    add r22 r20 into r24;
-    mul r23 r24 into r25;
-    mul r22 1_000u128 into r26;
-    div r25 r26 into r27;
-    sub r27 r21 into r28;
-    cast r28 into r29 as u64;
-    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r30;
-    add r30 r29 into r31;
-    set r31 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
-    add r3 r29 into r32;
-    set r32 into total_shares[0u8];
-    add r16 r13 into r33;
-    set r33 into total_balance[0u8];
+    add r22 r20 into r23;
+    mul r21 r23 into r24;
+    div r24 r22 into r25;
+    sub r25 r21 into r26;
+    cast r26 into r27 as u64;
+    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r28;
+    add r28 r27 into r29;
+    set r29 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
+    add r3 r27 into r30;
+    set r30 into total_shares[0u8];
+    add r16 r13 into r31;
+    set r31 into total_balance[0u8];
 
 
 function deposit_public:
@@ -462,46 +454,36 @@ finalize deposit_public:
     cast r16 into r23 as u128;
     cast r6 into r24 as u128;
     add r21 r22 into r25;
-    mul r24 1_000u128 into r26;
-    add r25 r23 into r27;
-    mul r26 r27 into r28;
-    mul r25 1_000u128 into r29;
-    div r28 r29 into r30;
-    sub r30 r24 into r31;
-    cast r31 into r32 as u64;
-    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r33;
-    add r33 r32 into r34;
-    set r34 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
-    add r6 r32 into r35;
-    add r19 r16 into r36;
-// Update total balance to include rewards
-    set r36 into total_balance[0u8];
-// Calculate shares to mint for deposit
-    cast r36 into r37 as u128;
-    cast r20 into r38 as u128;
-    cast r2 into r39 as u128;
-    cast r35 into r40 as u128;
-    add r37 r38 into r41;
-    mul r40 1_000u128 into r42;
-    add r41 r39 into r43;
-    mul r42 r43 into r44;
-    mul r41 1_000u128 into r45;
-    div r44 r45 into r46;
-    sub r46 r40 into r47;
-    cast r47 into r48 as u64;
-// Make sure the deposit is not too small
-    gte r48 1u64 into r49;
-    assert.eq r49 true;
-// Update delegator shares
-    get.or_use delegator_shares[r1] 0u64 into r50;
-    add r50 r48 into r51;
-    set r51 into delegator_shares[r1];
-// Update total shares
-    add r35 r48 into r52;
-    set r52 into total_shares[0u8];
-// Update pending deposits
-    add r20 r2 into r53;
-    set r53 into pending_deposits[0u8];
+    add r25 r23 into r26;
+    mul r24 r26 into r27;
+    div r27 r25 into r28;
+    sub r28 r24 into r29;
+    cast r29 into r30 as u64;
+    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r31;
+    add r31 r30 into r32;
+    set r32 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
+    add r6 r30 into r33;
+    add r19 r16 into r34;
+    set r34 into total_balance[0u8];
+    cast r34 into r35 as u128;
+    cast r20 into r36 as u128;
+    cast r2 into r37 as u128;
+    cast r33 into r38 as u128;
+    add r35 r36 into r39;
+    add r39 r37 into r40;
+    mul r38 r40 into r41;
+    div r41 r39 into r42;
+    sub r42 r38 into r43;
+    cast r43 into r44 as u64;
+    gte r44 1u64 into r45;
+    assert.eq r45 true;
+    get.or_use delegator_shares[r1] 0u64 into r46;
+    add r46 r44 into r47;
+    set r47 into delegator_shares[r1];
+    add r33 r44 into r48;
+    set r48 into total_shares[0u8];
+    add r20 r2 into r49;
+    set r49 into pending_deposits[0u8];
 
 
 
@@ -572,53 +554,49 @@ finalize withdraw_public:
     cast r37 into r43 as u128;
     cast r27 into r44 as u128;
     add r41 r42 into r45;
-    mul r44 1_000u128 into r46;
-    add r45 r43 into r47;
-    mul r46 r47 into r48;
-    mul r45 1_000u128 into r49;
-    div r48 r49 into r50;
-    sub r50 r44 into r51;
-    cast r51 into r52 as u64;
-    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r53;
-    add r53 r52 into r54;
-    set r54 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
-    add r27 r52 into r55;
-    add r40 r37 into r56;
-    cast r56 into r57 as u128;
-    cast r16 into r58 as u128;
+    add r45 r43 into r46;
+    mul r44 r46 into r47;
+    div r47 r45 into r48;
+    sub r48 r44 into r49;
+    cast r49 into r50 as u64;
+    get.or_use delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru] 0u64 into r51;
+    add r51 r50 into r52;
+    set r52 into delegator_shares[aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru];
+    add r27 r50 into r53;
+    add r40 r37 into r54;
+    cast r54 into r55 as u128;
+    cast r16 into r56 as u128;
 // Calculate full pool size
-    add r57 r58 into r59;
+    add r55 r56 into r57;
 // Calculate withdrawal amount
-    cast r1 into r60 as u128;
-    cast r59 into r61 as u128;
-    mul r60 r61 into r62;
-    mul r62 1_000u128 into r63;
-    cast r55 into r64 as u128;
-    mul r64 1_000u128 into r65;
-    div r63 r65 into r66;
-    cast r2 into r67 as u128;
+    cast r1 into r58 as u128;
+    cast r57 into r59 as u128;
+    mul r58 r59 into r60;
+    cast r53 into r61 as u128;
+    div r60 r61 into r62;
+    cast r2 into r63 as u128;
 // If the calculated withdrawal amount is greater than total_withdrawal, the excess will stay in the pool
-    gte r66 r67 into r68;
-    assert.eq r68 true;
+    gte r62 r63 into r64;
+    assert.eq r64 true;
 // Update withdrawals mappings
-    add block.height 1_000u32 into r69;
-    ternary r7 r69 r5 into r70;
-    set r70 into current_batch_height[0u8];
-    cast r2 r70 into r71 as withdrawal_state;
-    set r71 into withdrawals[r3];
+    add block.height 1_000u32 into r65;
+    ternary r7 r65 r5 into r66;
+    set r66 into current_batch_height[0u8];
+    cast r2 r66 into r67 as withdrawal_state;
+    set r67 into withdrawals[r3];
 // Update pending withdrawal
-    add r14 r2 into r72;
-    set r72 into pending_withdrawal[0u8];
+    add r14 r2 into r68;
+    set r68 into pending_withdrawal[0u8];
 // Update total balance
-    sub r56 r2 into r73;
-    set r73 into total_balance[0u8];
+    sub r54 r2 into r69;
+    set r69 into total_balance[0u8];
 // Update total shares
-    sub r55 r1 into r74;
-    set r74 into total_shares[0u8];
+    sub r53 r1 into r70;
+    set r70 into total_shares[0u8];
 // Update delegator_shares mapping
-    get delegator_shares[r3] into r75;
-    sub r75 r1 into r76;
-    set r76 into delegator_shares[r3];
+    get delegator_shares[r3] into r71;
+    sub r71 r1 into r72;
+    set r72 into delegator_shares[r3];
 
 
 function get_new_batch_height_test:
@@ -659,39 +637,37 @@ finalize create_withdraw_claim:
     get total_shares[0u8] into r14;
     cast r0 into r15 as u128;
     mul r15 r13 into r16;
-    mul r16 1_000u128 into r17;
-    cast r14 into r18 as u128;
-    mul r18 1_000u128 into r19;
-    div r17 r19 into r20;
-    cast r20 into r21 as u64;
+    cast r14 into r17 as u128;
+    div r16 r17 into r18;
+    cast r18 into r19 as u64;
 // Update withdrawals mappings
-    add block.height 1u32 into r22;
-    cast r21 r22 into r23 as withdrawal_state;
-    set r23 into withdrawals[r1];
+    add block.height 1u32 into r20;
+    cast r19 r20 into r21 as withdrawal_state;
+    set r21 into withdrawals[r1];
 // Update pending withdrawal
-    get pending_withdrawal[1u8] into r24;
-    add r24 r21 into r25;
-    set r25 into pending_withdrawal[1u8];
+    get pending_withdrawal[1u8] into r22;
+    add r22 r19 into r23;
+    set r23 into pending_withdrawal[1u8];
 // Update total balance and pending deposits
-    cast r10 into r26 as i64;
-    cast r21 into r27 as i64;
+    cast r10 into r24 as i64;
+    cast r19 into r25 as i64;
 // Attempt to subtract from pending deposits
-    sub r26 r27 into r28;
-    gte r28 0i64 into r29;
-    abs r28 into r30;
-    cast r30 into r31 as u64;
-    ternary r29 r31 0u64 into r32;
-    ternary r29 0u64 r31 into r33;
-    set r32 into pending_deposits[0u8];
+    sub r24 r25 into r26;
+    gte r26 0i64 into r27;
+    abs r26 into r28;
+    cast r28 into r29 as u64;
+    ternary r27 r29 0u64 into r30;
+    ternary r27 0u64 r29 into r31;
+    set r30 into pending_deposits[0u8];
 // Subtract any remainder from total balance
-    sub r9 r33 into r34;
-    set r34 into total_balance[0u8];
+    sub r9 r31 into r32;
+    set r32 into total_balance[0u8];
 // Update total shares
-    sub r14 r0 into r35;
-    set r35 into total_shares[0u8];
+    sub r14 r0 into r33;
+    set r33 into total_shares[0u8];
 // Update delegator_shares mapping
-    sub r7 r0 into r36;
-    set r36 into delegator_shares[r1];
+    sub r7 r0 into r34;
+    set r34 into delegator_shares[r1];
 
 
 function claim_withdrawal_public:
