@@ -76,6 +76,7 @@ program arc_0038.aleo {
     assert_eq(self.caller, ADMIN);
     assert(commission_rate < PRECISION_UNSIGNED);
     assert(commission_rate <= MAX_COMMISSION_RATE);
+    assert_neq(validator_address, CORE_PROTOCOL);
 
     return then finalize(commission_rate, validator_address);
   }
@@ -183,6 +184,7 @@ program arc_0038.aleo {
   // Update the validator address, to be applied automatically on the next bond_all call
   transition set_next_validator(public validator_address: address) {
     assert_eq(self.caller, ADMIN);
+    assert_neq(validator_address, CORE_PROTOCOL);
 
     return then finalize(validator_address);
   }

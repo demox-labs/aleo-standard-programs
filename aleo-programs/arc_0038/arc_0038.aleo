@@ -104,6 +104,7 @@ function initialize:
     assert.eq r2 true;
     lte r0 500u128 into r3;
     assert.eq r3 true;
+    assert.neq r1 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
     async initialize r0 r1 into r4;
     output r4 as arc_0038.aleo/initialize.future;
 
@@ -240,6 +241,7 @@ finalize set_commission_percent:
 function set_next_validator:
     input r0 as address.public;
     assert.eq self.caller aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru;
+    assert.neq r0 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
     async set_next_validator r0 into r1;
     output r1 as arc_0038.aleo/set_next_validator.future;
 
