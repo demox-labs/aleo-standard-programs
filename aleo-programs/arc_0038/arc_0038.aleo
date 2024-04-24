@@ -672,15 +672,26 @@ finalize create_withdraw_claim:
     get pending_withdrawal[1u8] into r24;
     add r24 r21 into r25;
     set r25 into pending_withdrawal[1u8];
-// Update total balance
-    sub r9 r21 into r26;
-    set r26 into total_balance[0u8];
+// Update total balance and pending deposits
+    cast r10 into r26 as i64;
+    cast r21 into r27 as i64;
+// Attempt to subtract from pending deposits
+    sub r26 r27 into r28;
+    gte r28 0i64 into r29;
+    abs r28 into r30;
+    cast r30 into r31 as u64;
+    ternary r29 r31 0u64 into r32;
+    ternary r29 0u64 r31 into r33;
+    set r32 into pending_deposits[0u8];
+// Subtract any remainder from total balance
+    sub r9 r33 into r34;
+    set r34 into total_balance[0u8];
 // Update total shares
-    sub r14 r0 into r27;
-    set r27 into total_shares[0u8];
+    sub r14 r0 into r35;
+    set r35 into total_shares[0u8];
 // Update delegator_shares mapping
-    sub r7 r0 into r28;
-    set r28 into delegator_shares[r1];
+    sub r7 r0 into r36;
+    set r36 into delegator_shares[r1];
 
 
 function claim_withdrawal_public:
