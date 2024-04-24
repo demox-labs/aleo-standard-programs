@@ -271,7 +271,7 @@ program arc_0038.aleo {
     let current_balance: u64 = total_balance.get(0u8);
     let pending_deposit_balance: u64 = pending_deposits.get(0u8);
 
-    pending_deposit_balance = pending_deposit_balance + current_balance - bonded;
+    pending_deposit_balance = account_balance - pending_withdrawals;
     pending_deposits.set(0u8, pending_deposit_balance);
     total_balance.set(0u8, bonded);
 
@@ -296,9 +296,7 @@ program arc_0038.aleo {
     assert(account_balance >= pending_withdrawals);
 
     let current_balance: u64 = total_balance.get(0u8);
-    let pending_deposit_balance: u64 = pending_deposits.get(0u8);
-
-    pending_deposit_balance = pending_deposit_balance - amount;
+    let pending_deposit_balance: u64 = account_balance - pending_withdrawals;
     pending_deposits.set(0u8, pending_deposit_balance);
     total_balance.set(0u8, current_balance + amount);
 
