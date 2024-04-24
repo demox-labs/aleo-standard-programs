@@ -476,9 +476,7 @@ program arc_0038.aleo {
   }
 
   inline get_new_batch_height(height: u32) -> u32 {
-    let rounded_down: u32 = (height) / 1000u32 * 1000u32;
-    let rounded_up: u32 = rounded_down + 1000u32;
-    return rounded_up;
+    return height + 1_000u32;
   }
 
   transition get_new_batch_height_test(height: u32) -> u32 {

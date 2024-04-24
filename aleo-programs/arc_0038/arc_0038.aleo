@@ -601,34 +601,30 @@ finalize withdraw_public:
     gte r66 r67 into r68;
     assert.eq r68 true;
 // Update withdrawals mappings
-    div block.height 1000u32 into r69;
-    mul r69 1000u32 into r70;
-    add r70 1000u32 into r71;
-    ternary r7 r71 r5 into r72;
-    set r72 into current_batch_height[0u8];
-    cast r2 r72 into r73 as withdrawal_state;
-    set r73 into withdrawals[r3];
+    add block.height 1_000u32 into r69;
+    ternary r7 r69 r5 into r70;
+    set r70 into current_batch_height[0u8];
+    cast r2 r70 into r71 as withdrawal_state;
+    set r71 into withdrawals[r3];
 // Update pending withdrawal
-    add r14 r2 into r74;
-    set r74 into pending_withdrawal[0u8];
+    add r14 r2 into r72;
+    set r72 into pending_withdrawal[0u8];
 // Update total balance
-    sub r56 r2 into r75;
-    set r75 into total_balance[0u8];
+    sub r56 r2 into r73;
+    set r73 into total_balance[0u8];
 // Update total shares
-    sub r55 r1 into r76;
-    set r76 into total_shares[0u8];
+    sub r55 r1 into r74;
+    set r74 into total_shares[0u8];
 // Update delegator_shares mapping
-    get delegator_shares[r3] into r77;
-    sub r77 r1 into r78;
-    set r78 into delegator_shares[r3];
+    get delegator_shares[r3] into r75;
+    sub r75 r1 into r76;
+    set r76 into delegator_shares[r3];
 
 
 function get_new_batch_height_test:
     input r0 as u32.private;
-    div r0 1000u32 into r1;
-    mul r1 1000u32 into r2;
-    add r2 1000u32 into r3;
-    output r3 as u32.private;
+    add r0 1_000u32 into r1;
+    output r1 as u32.private;
 
 
 function create_withdraw_claim:
