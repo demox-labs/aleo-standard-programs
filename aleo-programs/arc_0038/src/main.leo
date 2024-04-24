@@ -11,6 +11,23 @@ program arc_0038.aleo {
   const UNBONDING_PERIOD: u32 = 360u32;
   const MINIMUM_BOND_AMOUNT: u64 = 10_000_000_000u64;
 
+  // copied from credits.aleo, as structs are not importable
+  struct bond_state {
+    // The address of the validator.
+    validator: address,
+    // The amount of microcredits that are currently bonded to the specified validator.
+    microcredits: u64
+  }
+
+  // copied from credits.aleo, as structs are not importable
+  // The `unbond_state` struct tracks the microcredits that are currently unbonding, along with the unlock height.
+  struct unbond_state {
+    // The amount of microcredits that are currently unbonding.
+    microcredits: u64,
+    // The block height at which the unbonding will be complete, and can be claimed.
+    height: u32
+  }
+
   // 0u8 -> Whether the program has been initialized
   mapping is_initialized: u8 => bool;
 
@@ -140,12 +157,11 @@ program arc_0038.aleo {
 
   finalize set_commission_percent(new_commission_rate: u128) {
     // Make sure all commission is claimed before changing the rate
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      claim_block: 0u32,
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
       microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     let current_balance: u64 = total_balance.get(0u8);
     let current_shares: u64 = total_shares.get(0u8);
     let rewards: i64 = bonded > current_balance ? bonded as i64 - current_balance as i64 : 0i64;
@@ -185,21 +201,20 @@ program arc_0038.aleo {
     let next_validator: bool = validator.contains(1u8);
     assert(next_validator);
 
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      claim_block: 0u32,
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
       microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     // Assert that the pool was fully unbonded
     assert_eq(bonded, 0u64);
 
     // Make sure all commission is claimed before unbonding
-    let base_unbonding: withdrawal_state = withdrawal_state {
+    let base_unbonding: unbond_state = unbond_state {
       microcredits: 0u64,
-      claim_block: 0u32
+      height: 0u32
     };
-    let unbonding: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
+    let unbonding: u64 = credits.aleo/unbonding.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
     let unbonding_withdrawals: u64 = pending_withdrawal.get(0u8);
     let previously_bonded: u64 = unbonding - unbonding_withdrawals;
     let current_balance: u64 = total_balance.get(0u8);
@@ -242,16 +257,15 @@ program arc_0038.aleo {
   }
 
   finalize bond_all(validator_address: address) {
-    let account_balance: u64 = total_balance.get(1u8); // credits.aleo/account.get(CORE_PROTOCOL);
+    let account_balance: u64 = credits.aleo/account.get_or_use(CORE_PROTOCOL, 0u64);
     let pending_withdrawals: u64 = pending_withdrawal.get(1u8);
     assert(account_balance >= pending_withdrawals);
 
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      microcredits: 0u64,
-      claim_block: 0u32
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
+      microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     let current_balance: u64 = total_balance.get(0u8);
     let pending_deposit_balance: u64 = pending_deposits.get(0u8);
 
@@ -275,7 +289,7 @@ program arc_0038.aleo {
   }
 
   finalize bond_deposits(amount: u64, validator_address: address) {
-    let account_balance: u64 = total_balance.get(1u8); // credits.aleo/account.get(CORE_PROTOCOL);
+    let account_balance: u64 = credits.aleo/account.get_or_use(CORE_PROTOCOL, 0u64);
     let pending_withdrawals: u64 = pending_withdrawal.get(1u8);
     assert(account_balance >= pending_withdrawals);
 
@@ -298,12 +312,11 @@ program arc_0038.aleo {
 
   finalize claim_commission() {
     // Distribute shares for new commission
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      claim_block: 0u32,
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
       microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     let current_balance: u64 = total_balance.get(0u8);
     let current_shares: u64 = total_shares.get(0u8);
     let rewards: i64 = bonded > current_balance ? bonded as i64 - current_balance as i64 : 0i64;
@@ -333,12 +346,11 @@ program arc_0038.aleo {
     microcredits: u64
   ) {
     // Distribute shares for new commission
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      claim_block: 0u32,
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
       microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     let current_balance: u64 = total_balance.get(0u8);
     let current_shares: u64 = total_shares.get(0u8);
     let rewards: i64 = bonded > current_balance ? bonded as i64 - current_balance as i64 : 0i64;
@@ -396,23 +408,21 @@ program arc_0038.aleo {
     assert(delegator_balance >= withdrawal_shares);
 
     // Prevent a full unbond if there are pending deposits to maintain the minimum bond amount
-    // Simulate call to credits.aleo/unbonding.get_or_use(CORE_PROTOCOL).microcredits;
-    let base_unbonding: withdrawal_state = withdrawal_state {
+    let base_unbonding: unbond_state = unbond_state {
       microcredits: 0u64,
-      claim_block: 0u32
+      height: 0u32
     };
-    let unbonding: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
+    let unbonding: u64 = credits.aleo/unbonding.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
     let unbonding_withdrawals: u64 = pending_withdrawal.get(0u8);
     let newly_unbonded: u64 = unbonding - unbonding_withdrawals;
     let pending_deposit_pool: u64 = pending_deposits.get(0u8);
     let sufficient_deposits: bool = newly_unbonded - total_withdrawal + pending_deposit_pool >= MINIMUM_BOND_AMOUNT;
 
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      claim_block: 0u32,
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
       microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     // Allow the withdrawal if the pool is still bonded, or if there are not enough deposits to maintain the minimum bond amount
     assert(bonded >= MINIMUM_BOND_AMOUNT || !sufficient_deposits);
 
@@ -484,20 +494,18 @@ program arc_0038.aleo {
     let currently_withdrawing: bool = withdrawals.contains(owner);
     assert_eq(currently_withdrawing, false);
 
-    // Simulate call to credits.aleo/bonded.get_or_use(CORE_PROTOCOL).microcredits;
-    let base: withdrawal_state = withdrawal_state {
-      microcredits: 0u64,
-      claim_block: 0u32
+    let base: bond_state = bond_state {
+      validator: CORE_PROTOCOL,
+      microcredits: 0u64
     };
-    let bonded: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base).microcredits;
+    let bonded: u64 = credits.aleo/bonded.get_or_use(CORE_PROTOCOL, base).microcredits;
     assert_eq(bonded, 0u64);
 
-    // Simulate call to credits.aleo/unbonding.get_or_use(CORE_PROTOCOL).microcredits;
-    let base_unbonding: withdrawal_state = withdrawal_state {
+    let base_unbonding: unbond_state = unbond_state {
       microcredits: 0u64,
-      claim_block: 0u32
+      height: 0u32
     };
-    let unbonding: u64 = withdrawals.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
+    let unbonding: u64 = credits.aleo/unbonding.get_or_use(CORE_PROTOCOL, base_unbonding).microcredits;
     assert_eq(unbonding, 0u64);
 
     // Assert that they have enough to withdraw
