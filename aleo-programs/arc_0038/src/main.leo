@@ -72,16 +72,16 @@ program arc_0038.aleo {
   // address -> pending withdrawal for the delegator with this address
   mapping withdrawals: address => withdrawal_state;
 
-  transition initialize(public commission_rate: u128, public validator_address: address) {
+  async transition initialize(public commission_rate: u128, public validator_address: address) -> Future {
     assert_eq(self.caller, ADMIN);
     assert(commission_rate < PRECISION_UNSIGNED);
     assert(commission_rate <= MAX_COMMISSION_RATE);
     assert_neq(validator_address, CORE_PROTOCOL);
 
-    return then finalize(commission_rate, validator_address);
+    return finalize_initialize(commission_rate, validator_address);
   }
 
-  finalize initialize(commission_rate: u128, validator_address: address) {
+  async function finalize_initialize(commission_rate: u128, validator_address: address) {
     let initialized: bool = is_initialized.get_or_use(0u8, false);
     assert_eq(initialized, false);
 
@@ -96,19 +96,27 @@ program arc_0038.aleo {
     current_batch_height.set(0u8, 0u32);
   }
 
-  transition initial_deposit(
+  async transition initial_deposit(
     public microcredits: u64,
     public validator_address: address
-  ) {
+  ) -> Future {
     assert_eq(self.caller, ADMIN);
     // credits.aleo/transfer_public_as_signer(CORE_PROTOCOL, microcredits);
-    credits.aleo/transfer_public(CORE_PROTOCOL, microcredits);
-    credits.aleo/bond_public(validator_address, microcredits);
+    let f1: Future = credits.aleo/transfer_public(CORE_PROTOCOL, microcredits);
+    let f2: Future = credits.aleo/bond_public(validator_address, microcredits);
 
-    return then finalize(microcredits, validator_address);
+    return finalize_initial_deposit(f1, f2, microcredits, validator_address);
   }
 
-  finalize initial_deposit(microcredits: u64, validator_address: address) {
+  async function finalize_initial_deposit(
+    f1: Future,
+    f2: Future,
+    microcredits: u64, 
+    validator_address: address
+  ) {
+    f1.await();
+    f2.await();
+
     assert(is_initialized.get(0u8));
     assert_eq(validator.get(0u8), validator_address);
 
@@ -148,15 +156,15 @@ program arc_0038.aleo {
     return calculate_new_shares(bonded_balance, pending_deposit_pool, deposit, shares);
   }
 
-  transition set_commission_percent(public new_commission_rate: u128) {
+  async transition set_commission_percent(public new_commission_rate: u128) -> Future {
     assert_eq(self.caller, ADMIN);
     assert(new_commission_rate < PRECISION_UNSIGNED);
     assert(new_commission_rate <= MAX_COMMISSION_RATE);
 
-    return then finalize(new_commission_rate);
+    return finalize_set_commission_percent(new_commission_rate);
   }
 
-  finalize set_commission_percent(new_commission_rate: u128) {
+  async function finalize_set_commission_percent(new_commission_rate: u128) {
     // Make sure all commission is claimed before changing the rate
     let base: bond_state = bond_state {
       validator: CORE_PROTOCOL,
@@ -182,24 +190,26 @@ program arc_0038.aleo {
   }
 
   // Update the validator address, to be applied automatically on the next bond_all call
-  transition set_next_validator(public validator_address: address) {
+  async transition set_next_validator(public validator_address: address) -> Future {
     assert_eq(self.caller, ADMIN);
     assert_neq(validator_address, CORE_PROTOCOL);
 
-    return then finalize(validator_address);
+    return finalize_set_next_validator(validator_address);
   }
 
-  finalize set_next_validator(validator_address: address) {
+  async function finalize_set_next_validator(validator_address: address) {
     validator.set(1u8, validator_address);
   }
 
-  transition unbond_all(public pool_balance: u64) {
-    credits.aleo/unbond_public(pool_balance);
+  async transition unbond_all(public pool_balance: u64) -> Future {
+    let f1: Future = credits.aleo/unbond_public(pool_balance);
 
-    return then finalize();
+    return finalize_unbond_all(f1);
   }
 
-  finalize unbond_all() {
+  async function finalize_unbond_all(f1: Future) {
+    f1.await();
+
     let next_validator: bool = validator.contains(1u8);
     assert(next_validator);
 
@@ -235,13 +245,15 @@ program arc_0038.aleo {
     total_balance.set(0u8, current_balance + new_commission);
   }
 
-  transition claim_unbond() {
-    credits.aleo/claim_unbond_public();
+  async transition claim_unbond() -> Future {
+    let f1: Future = credits.aleo/claim_unbond_public();
 
-    return then finalize();
+    return finalize_claim_unbond(f1);
   }
 
-  finalize claim_unbond() {
+  async function finalize_claim_unbond(f1: Future) {
+    f1.await();
+
     current_batch_height.remove(0u8);
     let unbonding_withdrawals: u64 = pending_withdrawal.get(0u8);
     let already_claimed: u64 = pending_withdrawal.get(1u8);
@@ -251,14 +263,16 @@ program arc_0038.aleo {
     pending_withdrawal.set(1u8, already_claimed);
   }
 
-  transition bond_all(public validator_address: address, public amount: u64) {
+  async transition bond_all(public validator_address: address, public amount: u64) -> Future {
     // Call will fail if there is any balance still bonded to another validator
-    credits.aleo/bond_public(validator_address, amount);
+    let f1: Future = credits.aleo/bond_public(validator_address, amount);
 
-    return then finalize(validator_address);
+    return finalize_bond_all(f1, validator_address);
   }
 
-  finalize bond_all(validator_address: address) {
+  async function finalize_bond_all(f1: Future, validator_address: address) {
+    f1.await();
+
     let account_balance: u64 = credits.aleo/account.get_or_use(CORE_PROTOCOL, 0u64);
     let pending_withdrawals: u64 = pending_withdrawal.get(1u8);
     assert(account_balance >= pending_withdrawals);
@@ -283,14 +297,16 @@ program arc_0038.aleo {
     validator.remove(1u8);
   }
 
-  transition bond_deposits(public validator_address: address, public amount: u64) {
+  async transition bond_deposits(public validator_address: address, public amount: u64) -> Future {
     // Call will fail if there is any balance still bonded to another validator
-    credits.aleo/bond_public(validator_address, amount);
+    let f1: Future = credits.aleo/bond_public(validator_address, amount);
 
-    return then finalize(amount, validator_address);
+    return finalize_bond_deposits(f1, amount, validator_address);
   }
 
-  finalize bond_deposits(amount: u64, validator_address: address) {
+  async function finalize_bond_deposits(f1: Future, amount: u64, validator_address: address) {
+    f1.await();
+
     let account_balance: u64 = credits.aleo/account.get_or_use(CORE_PROTOCOL, 0u64);
     let pending_withdrawals: u64 = pending_withdrawal.get(1u8);
     assert(account_balance >= pending_withdrawals);
@@ -305,12 +321,12 @@ program arc_0038.aleo {
     assert_eq(validator.get(0u8), validator_address);
   }
 
-  transition claim_commission() {
+  async transition claim_commission() -> Future {
     assert_eq(self.caller, ADMIN);
-    return then finalize();
+    return finalize_claim_commission();
   }
 
-  finalize claim_commission() {
+  async function finalize_claim_commission() {
     // Distribute shares for new commission
     let base: bond_state = bond_state {
       validator: CORE_PROTOCOL,
@@ -333,18 +349,20 @@ program arc_0038.aleo {
     total_balance.set(0u8, current_balance + new_commission);
   }
 
-  transition deposit_public(
+  async transition deposit_public(
     public microcredits: u64
-  ) {
+  ) -> Future {
     // credits.aleo/transfer_public_as_signer(CORE_PROTOCOL, microcredits);
-    credits.aleo/transfer_public(CORE_PROTOCOL, microcredits);
-    return then finalize(self.caller, microcredits);
+    let f1: Future = credits.aleo/transfer_public(CORE_PROTOCOL, microcredits);
+    return finalize_deposit_public(f1, self.caller, microcredits);
   }
 
-  finalize deposit_public(
+  async function finalize_deposit_public(
+    f1: Future,
     caller: address,
     microcredits: u64
   ) {
+    f1.await();
     // Distribute shares for new commission
     let base: bond_state = bond_state {
       validator: CORE_PROTOCOL,
@@ -385,13 +403,14 @@ program arc_0038.aleo {
     pending_deposits.set(0u8, pending_deposit_pool + microcredits);
   }
 
-  transition withdraw_public(public withdrawal_shares: u64, public total_withdrawal: u64) {
-    credits.aleo/unbond_public(total_withdrawal);
+  async transition withdraw_public(public withdrawal_shares: u64, public total_withdrawal: u64) -> Future {
+    let f1: Future = credits.aleo/unbond_public(total_withdrawal);
 
-    return then finalize(withdrawal_shares, total_withdrawal, self.caller);
+    return finalize_withdraw_public(f1, withdrawal_shares, total_withdrawal, self.caller);
   }
 
-  finalize withdraw_public(withdrawal_shares: u64, total_withdrawal: u64, owner: address) {
+  async function finalize_withdraw_public(f1: Future, withdrawal_shares: u64, total_withdrawal: u64, owner: address) {
+    f1.await();
     // Assert that they don't have any pending withdrawals
     let currently_withdrawing: bool = withdrawals.contains(owner);
     assert_eq(currently_withdrawing, false);
@@ -483,11 +502,11 @@ program arc_0038.aleo {
     return get_new_batch_height(height);
   }
 
-  transition create_withdraw_claim(public withdrawal_shares: u64) {
-    return then finalize(withdrawal_shares, self.caller);
+  async transition create_withdraw_claim(public withdrawal_shares: u64) -> Future {
+    return finalize_create_withdraw_claim(withdrawal_shares, self.caller);
   }
 
-  finalize create_withdraw_claim(withdrawal_shares: u64, owner: address) {
+  async function finalize_create_withdraw_claim(withdrawal_shares: u64, owner: address) {
     // Assert that they don't have any pending withdrawals
     let currently_withdrawing: bool = withdrawals.contains(owner);
     assert_eq(currently_withdrawing, false);
@@ -547,13 +566,15 @@ program arc_0038.aleo {
     delegator_shares.set(owner, delegator_balance - withdrawal_shares);
   }
 
-  transition claim_withdrawal_public(public owner: address, public amount: u64) {
-    credits.aleo/transfer_public(owner, amount);
+  async transition claim_withdrawal_public(public owner: address, public amount: u64) -> Future {
+    let f1: Future = credits.aleo/transfer_public(owner, amount);
 
-    return then finalize(owner, amount);
+    return finalize_claim_withdrawal_public(f1, owner, amount);
   }
 
-  finalize claim_withdrawal_public(owner: address, amount: u64) {
+  async function finalize_claim_withdrawal_public(f1: Future, owner: address, amount: u64) {
+    f1.await();
+
     let withdrawal: withdrawal_state = withdrawals.get(owner);
     assert(block.height >= withdrawal.claim_block);
     assert_eq(withdrawal.microcredits, amount);
