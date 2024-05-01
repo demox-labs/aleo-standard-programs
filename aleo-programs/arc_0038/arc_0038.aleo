@@ -3,7 +3,7 @@ program arc_0038.aleo;
 
 // Constants
 // ADMIN: address = aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru - the admin address is the address of the contract creator
-// CORE_PROTOCOL: address = aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt - the address of this program
+// CORE_PROTOCOL: address = arc_0038.aleo - the address of this program
 // SHARES_TO_MICROCREDITS: u64 = 1_000u64;
 // PRECISION_UNSIGNED: u128 = 1_000u128;
 // MAX_COMMISSION_RATE: u128 = 500u128;
@@ -104,7 +104,7 @@ function initialize:
     assert.eq r2 true;
     lte r0 500u128 into r3;
     assert.eq r3 true;
-    assert.neq r1 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
+    assert.neq r1 arc_0038.aleo;
     async initialize r0 r1 into r4;
     output r4 as arc_0038.aleo/initialize.future;
 
@@ -128,8 +128,8 @@ function initial_deposit:
     input r0 as u64.public;
     input r1 as address.public;
     assert.eq self.caller aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru;
-    call credits.aleo/transfer_public_as_signer aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r0 into r2;
-    call credits.aleo/bond_public r1 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r0 into r3;
+    call credits.aleo/transfer_public_as_signer arc_0038.aleo r0 into r2;
+    call credits.aleo/bond_public r1 arc_0038.aleo r0 into r3;
     async initial_deposit r2 r3 r0 r1 into r4;
     output r4 as arc_0038.aleo/initial_deposit.future;
 
@@ -194,8 +194,8 @@ function set_commission_percent:
 finalize set_commission_percent:
     input r0 as u128.public;
 // Make sure all commission is claimed before changing the rate
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r1 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r1 into r2;
+    cast arc_0038.aleo 0u64 into r1 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r1 into r2;
     get total_balance[0u8] into r3;
     get total_shares[0u8] into r4;
     gt r2.microcredits r3 into r5;
@@ -237,7 +237,7 @@ finalize set_commission_percent:
 function set_next_validator:
     input r0 as address.public;
     assert.eq self.caller aleo1kf3dgrz9lqyklz8kqfy0hpxxyt78qfuzshuhccl02a5x43x6nqpsaapqru;
-    assert.neq r0 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
+    assert.neq r0 arc_0038.aleo;
     async set_next_validator r0 into r1;
     output r1 as arc_0038.aleo/set_next_validator.future;
 
@@ -257,13 +257,13 @@ finalize unbond_all:
     await r0;
     contains validator[1u8] into r1;
     assert.eq r1 true;
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r2 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r2 into r3;
+    cast arc_0038.aleo 0u64 into r2 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r2 into r3;
 // Assert that the pool was fully unbonded
     assert.eq r3.microcredits 0u64;
 // Make sure all commission is claimed
     cast 0u64 0u32 into r4 as unbond_state;
-    get.or_use credits.aleo/unbonding[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r4 into r5;
+    get.or_use credits.aleo/unbonding[arc_0038.aleo] r4 into r5;
     get pending_withdrawal[0u8] into r6;
     sub r5.microcredits r6 into r7;
     get total_balance[0u8] into r8;
@@ -321,7 +321,7 @@ function bond_all:
     input r0 as address.public;
     input r1 as u64.public;
 // Call will fail if there is any balance still bonded to another validator
-    call credits.aleo/bond_public r0 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r1 into r2;
+    call credits.aleo/bond_public r0 arc_0038.aleo r1 into r2;
     async bond_all r2 r0 into r3;
     output r3 as arc_0038.aleo/bond_all.future;
 
@@ -329,12 +329,12 @@ finalize bond_all:
     input r0 as credits.aleo/bond_public.future;
     input r1 as address.public;
     await r0;
-    get.or_use credits.aleo/account[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] 0u64 into r2;
+    get.or_use credits.aleo/account[arc_0038.aleo] 0u64 into r2;
     get pending_withdrawal[1u8] into r3;
     gte r2 r3 into r4;
     assert.eq r4 true;
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r5 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r5 into r6;
+    cast arc_0038.aleo 0u64 into r5 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r5 into r6;
     get total_balance[0u8] into r7;
     get pending_deposits[0u8] into r8;
     sub r2 r3 into r9;
@@ -351,7 +351,7 @@ function bond_deposits:
     input r0 as address.public;
     input r1 as u64.public;
 // Call will fail if there is any balance still bonded to another validator
-    call credits.aleo/bond_public r0 aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r1 into r2;
+    call credits.aleo/bond_public r0 arc_0038.aleo r1 into r2;
     async bond_deposits r2 r1 r0 into r3;
     output r3 as arc_0038.aleo/bond_deposits.future;
 
@@ -360,7 +360,7 @@ finalize bond_deposits:
     input r1 as u64.public;
     input r2 as address.public;
     await r0;
-    get.or_use credits.aleo/account[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] 0u64 into r3;
+    get.or_use credits.aleo/account[arc_0038.aleo] 0u64 into r3;
     get pending_withdrawal[1u8] into r4;
     gte r3 r4 into r5;
     assert.eq r5 true;
@@ -382,8 +382,8 @@ function claim_commission:
     output r0 as arc_0038.aleo/claim_commission.future;
 
 finalize claim_commission:
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r0 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r0 into r1;
+    cast arc_0038.aleo 0u64 into r0 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r0 into r1;
     get total_balance[0u8] into r2;
     get total_shares[0u8] into r3;
     gt r1.microcredits r2 into r4;
@@ -421,7 +421,7 @@ finalize claim_commission:
 
 function deposit_public:
     input r0 as u64.public;
-    call credits.aleo/transfer_public_as_signer aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt r0 into r1;
+    call credits.aleo/transfer_public_as_signer arc_0038.aleo r0 into r1;
     async deposit_public r1 self.caller r0 into r2;
     output r2 as arc_0038.aleo/deposit_public.future;
 
@@ -431,8 +431,8 @@ finalize deposit_public:
     input r2 as u64.public;
     await r0;
 // Distribute shares for new commission
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r3 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r3 into r4;
+    cast arc_0038.aleo 0u64 into r3 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r3 into r4;
     get total_balance[0u8] into r5;
     get total_shares[0u8] into r6;
     gt r4.microcredits r5 into r7;
@@ -517,15 +517,15 @@ finalize withdraw_public:
     assert.eq r11 true;
 // Prevent a full unbond if there are pending deposits to maintain the minimum bond amount
     cast 0u64 0u32 into r12 as unbond_state;
-    get.or_use credits.aleo/unbonding[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r12 into r13;
+    get.or_use credits.aleo/unbonding[arc_0038.aleo] r12 into r13;
     get pending_withdrawal[0u8] into r14;
     sub r13.microcredits r14 into r15;
     get pending_deposits[0u8] into r16;
     sub r15 r2 into r17;
     add r17 r16 into r18;
     gte r18 10_000_000_000u64 into r19;
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r20 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r20 into r21;
+    cast arc_0038.aleo 0u64 into r20 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r20 into r21;
     gte r21.microcredits 10_000_000_000u64 into r22;
 // Allow the withdrawal if the pool is still bonded, or if there are not enough deposits to maintain the minimum bond amount
     not r19 into r23;
@@ -617,12 +617,12 @@ finalize create_withdraw_claim:
     contains withdrawals[r1] into r2;
     assert.eq r2 false;
 // Assert that the pool is not bonded
-    cast aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt 0u64 into r3 as bond_state;
-    get.or_use credits.aleo/bonded[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r3 into r4;
+    cast arc_0038.aleo 0u64 into r3 as bond_state;
+    get.or_use credits.aleo/bonded[arc_0038.aleo] r3 into r4;
     assert.eq r4.microcredits 0u64;
 // Assert that the unbonded balance has been claimed
     cast 0u64 0u32 into r5 as unbond_state;
-    get.or_use credits.aleo/unbonding[aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt] r5 into r6;
+    get.or_use credits.aleo/unbonding[arc_0038.aleo] r5 into r6;
     assert.eq r6.microcredits 0u64;
 // Assert that they have enough to withdraw
     get delegator_shares[r1] into r7;
