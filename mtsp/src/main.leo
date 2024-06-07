@@ -288,27 +288,41 @@ program mtsp.aleo {
   // -------------------------
 
   transition transfer_public(token_id: field, recipient: address, amount: u128) {
-    return then finalize(token_id, recipient, amount, self.caller);
+    let preauthorized: bool = self.caller != self.signer; // calls from DeFi contracts are preauthorized
+    return then finalize(token_id, recipient, amount, self.caller, preauthorized);
   }
 
-  finalize transfer_public(token_id: field, recipient: address, amount: u128, owner: address) {
-    // Check that the owner is the caller
+  finalize transfer_public(token_id: field, recipient: address, amount: u128, owner: address, preauthorized: bool) {
     let sender_key: TokenOwner = TokenOwner {
       account: owner,
       token_id: token_id
     };
 
-    // Get the authorized balance for the owner
+    // Get stored balances for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
-    let balance: Balance = authorized_balances.get(sender_key_hash);
-    assert_eq(owner, balance.account);
+    let default_balance: Balance = Balance {
+      token_id: token_id,
+      account: owner,
+      balance: 0u128
+    };
+    let authorized_balance: Balance = authorized_balances.get_or_use(sender_key_hash, default_balance);
+    let unauthorized_balance: Balance = balances.get_or_use(sender_key_hash, default_balance);
+    // Check that the owner has enough authorized balance
+    let enough_authorized_balance: bool = authorized_balance.balance >= amount;
+    // If the owner doesn't have enough authorized balance, check that they are preauthorized and have enough unauthorized balance
+    assert(enough_authorized_balance || (preauthorized && unauthorized_balance.balance >= amount));
+    let balance: Balance = enough_authorized_balance ? authorized_balance : unauthorized_balance;
     // Update the balance, and check that the balance >= 0
     let new_balance: Balance = Balance {
       token_id: token_id,
       account: account,
       balance: balance.balance - amount
     };
-    authorized_balances.set(sender_key_hash, new_balance);
+    if (enough_authorized_balance) {
+      authorized_balances.set(sender_key_hash, new_balance);
+    } else {
+      balances.set(sender_key_hash, new_balance);
+    }
 
     // Get or create the balance for the recipient
     let recipient_key: TokenOwner = TokenOwner {
@@ -377,6 +391,8 @@ program mtsp.aleo {
     allowances.set(allowance_key, current_allowance - amount);
   }
 
+  // Note: transfer_from_public does not implement preauthorization,
+  // it is assumed that contracts will simply transfer to other contracts they want to use instead of using approve/transferFrom
   transition transfer_from_public(token_id: field, owner: address, recipient: address, amount: u128) {
     return then finalize(token_id, owner, recipient, amount, self.caller);
   }
@@ -439,6 +455,100 @@ program mtsp.aleo {
     }
   }
 
+  transition transfer_public_to_private(token_id: field, recipient: address, amount: u128, preauthorize_transfer_record: bool) -> Token {
+    let token: Token = Token {
+      owner: recipient,
+      amount: amount,
+      token_id: token_id,
+      authorized: preauthorize_transfer_record
+    };
+    let preauthorized: bool = self.caller != self.signer; // calls from DeFi contracts are preauthorized
+    return token then finalize(token_id, recipient, amount, self.caller, preauthorized, preauthorize_transfer_record);
+  }
+
+  finalize transfer_public_to_private(token_id: field, recipient: address, amount: u128, owner: address, preauthorized: bool, record_authorized: bool) {
+    // Check that the transfer record's authorization matches the token's external_authorization_required
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(token.external_authorization_required, record_authorized);
+
+    let sender_key: TokenOwner = TokenOwner {
+      account: owner,
+      token_id: token_id
+    };
+
+    // Get stored balances for the owner
+    let sender_key_hash: field = BHP256::hash_to_field(sender_key);
+    let default_balance: Balance = Balance {
+      token_id: token_id,
+      account: owner,
+      balance: 0u128
+    };
+    let authorized_balance: Balance = authorized_balances.get_or_use(sender_key_hash, default_balance);
+    let unauthorized_balance: Balance = balances.get_or_use(sender_key_hash, default_balance);
+    // Check that the owner has enough authorized balance
+    let enough_authorized_balance: bool = authorized_balance.balance >= amount;
+    // If the owner doesn't have enough authorized balance, check that they are preauthorized and have enough unauthorized balance
+    assert(enough_authorized_balance || (preauthorized && unauthorized_balance.balance >= amount));
+    let balance: Balance = enough_authorized_balance ? authorized_balance : unauthorized_balance;
+    // Update the balance
+    let new_balance: Balance = Balance {
+      token_id: token_id,
+      account: account,
+      balance: balance.balance - amount
+    };
+    if (enough_authorized_balance) {
+      authorized_balances.set(sender_key_hash, new_balance);
+    } else {
+      balances.set(sender_key_hash, new_balance);
+    }
+  }
+
+  transition transfer_from_public_to_private(token_id: field, owner: address, recipient: address, amount: u128, preauthorize_transfer_record: bool) -> Token {
+    let token: Token = Token {
+      owner: recipient,
+      amount: amount,
+      token_id: token_id,
+      authorized: preauthorize_transfer_record
+    };
+    return token then finalize(token_id, recipient, amount, self.caller, preauthorize_transfer_record);
+  }
+
+  finalize transfer_from_public_to_private(token_id: field, owner: address, recipient: address, amount: u128, spender: address, record_authorized: bool) {
+    // Check that the transfer record's authorization matches the token's external_authorization_required
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(token.external_authorization_required, record_authorized);
+
+    // Check that the spender is authorized to spend the amount
+    let allowance: Allowance = Allowance {
+      account: owner,
+      spender: spender,
+      token_id: token_id
+    };
+    let allowance_key: field = BHP256::hash_to_field(allowance);
+    let current_allowance: u128 = allowances.get(allowance_key);
+    assert(current_allowance >= amount);
+    // Update the allowance
+    allowances.set(allowance_key, current_allowance - amount);
+
+    // Check that the owner has enough authorized balance
+    let owner_key: TokenOwner = TokenOwner {
+      account: owner,
+      token_id: token_id
+    };
+    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let balance: Balance = authorized_balances.get(owner_key_hash);
+    assert_eq(owner, balance.account);
+    assert(balance.balance >= amount);
+
+    // Update the balance for the owner
+    let new_balance: Balance = Balance {
+      token_id: token_id,
+      account: account,
+      balance: balance.balance - amount
+    };
+    authorized_balances.set(owner_key_hash, new_balance);
+  }
+
   transition transfer_private(recipient: address, amount: u128, input_record: Token, preauthorize_transfer_record: bool) -> (Token, Token) {
     assert(input_record.owner == self.caller);
     assert(input_record.amount >= amount);
@@ -466,18 +576,61 @@ program mtsp.aleo {
     assert_eq(token.external_authorization_required, authorized);
   }
 
-  // transfer_public_to_private (should tokens be able to control whether they only exist privately/publicly?)
-  // transfer_private_to_public
+  transition transfer_private_to_public(recipient: address, amount: u128, input_record: Token) -> Token {
+    assert(input_record.owner == self.caller);
+    assert(input_record.amount >= amount);
+    assert(input_record.authorized);
+    let updated_record: Token = Token {
+      owner: input_record.owner,
+      amount: input_record.amount - amount,
+      token_id: input_record.token_id,
+      authorized: input_record.authorized
+    };
+
+    return token then finalize(input_record.token_id, recipient, amount);
+  }
+
+  finalize transfer_private_to_public(token_id: field, recipient: address, amount: u128) {
+    // Get or create the balance for the recipient
+    let recipient_key: TokenOwner = TokenOwner {
+      account: recipient,
+      token_id: token_id
+    };
+    let recipient_balance_key: field = BHP256::hash_to_field(recipient_key);
+    let default_balance: Balance = Balance {
+      token_id: token_id,
+      account: recipient,
+      balance: 0u128
+    };
+    // Get the locked balance if authorization is required, otherwise get the authorized balance
+    let authorization_required: bool = registered_tokens.get(token_id).external_authorization_required;
+    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let new_recipient_balance: Balance = Balance {
+      token_id: token_id,
+      account: recipient,
+      balance: recipient_balance.balance + amount
+    };
+    // Update the balance of the recipient
+    if (authorization_required) {
+      balances.set(recipient_balance_key, new_recipient_balance);
+    } else {
+      authorized_balances.set(recipient_balance_key, new_recipient_balance);
+    }
+  }
 
   // -------------------------
   // credits.aleo wrapper
   // -------------------------
 
-  transition credits_transfer_public() {
-
+  transition credits_transfer_public_as_signer(recipient: address, amount: u64) {
+    credits.aleo/transfer_public_as_signer(recipient, amount);
   }
 
-  transition credits_transfer_private() {
+  transition credits_transfer_private(input_record: credits.aleo/credits, amount: u64) -> credits.aleo/credits {
+    return credits.aleo/transfer_private(input_record, amount);
+  }
 
+  transition credits_transfer_private_to_public(input_record: credits.aleo/credits, recipient: address, amount: u64) -> credits.aleo/credits {
+    return credits.aleo/transfer_private_to_public(input_record, recipient, amount);
   }
 }
