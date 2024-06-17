@@ -2,5 +2,13 @@
     "program": "mtsp.aleo",
     "version": "0.0.0",
     "description": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": [
+        {
+          "name": "credits.aleo",
+          "location": "network",
+          "network": "testnet3",
+          "path": null
+        }
+      ]
 }
