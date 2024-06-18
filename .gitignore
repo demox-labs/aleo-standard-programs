@@ -5,3 +5,4 @@ outputs/
 *leo.lock
 .env
 .DS_Store
+.vscode

@@ -6,6 +6,7 @@ program mtsp.aleo {
     owner: address,
     amount: u128,
     token_id: field,
+    external_authorization_required: bool,
     authorized_until: u32
   }
 
@@ -180,19 +181,28 @@ program mtsp.aleo {
     token_id: field,
     recipient: address,
     amount: u128,
+    external_authorization_required: bool,
     authorized_until: u32
     ) -> (Token, Future) {
     let token: Token = Token {
       owner: recipient,
       amount: amount,
       token_id: token_id,
+      external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
 
-    return (token, finalize_mint_private(token_id, recipient, amount, authorized_until, self.caller));
+    return (token, finalize_mint_private(token_id, recipient, amount, external_authorization_required, authorized_until, self.caller));
   }
 
-  async function finalize_mint_private(token_id: field, recipient: address, amount: u128, authorized_until: u32, token_admin: address) {
+  async function finalize_mint_private(
+    token_id: field,
+    recipient: address,
+    amount: u128,
+    external_authorization_required: bool,
+    authorized_until: u32,
+    token_admin: address
+  ) {
     // Check that the token exists, and that the caller is the token admin
     // Check that the token supply + amount <= max_supply
     let token: TokenMetadata = registered_tokens.get(token_id);
@@ -201,8 +211,8 @@ program mtsp.aleo {
     assert(new_supply <= token.max_supply);
 
     // Check that whether the token is authorized or not matches the authorized parameter
-    let authorized: bool = authorized_until > self.height;
-    assert_eq(token.external_authorization_required, authorized);
+    let authorization_required: bool = token.external_authorization_required;
+    assert_eq(authorization_required, external_authorization_required);
 
     // Update the token supply
     let new_metadata: TokenMetadata = TokenMetadata {
@@ -230,27 +240,38 @@ program mtsp.aleo {
     assert_eq(token.admin, token_admin);
     let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
 
-    // Get the balance for the recipient
+    // Get the locked balance for the recipient
+    let default_balance: Balance = Balance {
+      token_id: owner.token_id,
+      account: owner.account,
+      balance: 0u128,
+      authorized_until: 0u32
+    };
     let balance_key: field = BHP256::hash_to_field(owner);
-    let balance: Balance = balances.get(balance_key);
-    // Update the balance, and check that the balance >= 0
+    let balance: Balance = balances.get_or_use(balance_key, default_balance);
+    let remaining_after_burn: i128 = balance.balance as i128 - amount as i128;
+    // Burn from locked balance
+    let new_locked_balance: u128 = remaining_after_burn >= 0 ? remaining_after_burn as u128 : 0u128;
     let new_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
-      balance: balance.balance - amount,
+      balance: new_locked_balance,
       authorized_until: balance.authorized_until
     };
     balances.set(balance_key, new_balance);
-    let remaining_burn_balance: u128 = balance.balance - amount;
+
     // Burn from authorized balance
-    let authorized_balance: Balance = authorized_balances.get(balance_key);
-    let new_authorized_balance: Balance = Balance {
-      token_id: owner.token_id,
-      account: owner.account,
-      balance: authorized_balance.balance - remaining_burn_balance,
-      authorized_until: authorized_balance.authorized_until
-    };
-    authorized_balances.set(balance_key, new_authorized_balance);
+    if (remaining_after_burn < 0) {
+      let remaining_burn_balance: u128 = amount - balance.balance;
+      let authorized_balance: Balance = authorized_balances.get(balance_key);
+      let new_authorized_balance: Balance = Balance {
+        token_id: owner.token_id,
+        account: owner.account,
+        balance: authorized_balance.balance - remaining_burn_balance,
+        authorized_until: authorized_balance.authorized_until
+      };
+      authorized_balances.set(balance_key, new_authorized_balance);
+    }
 
     // Update the token supply
     let new_metadata: TokenMetadata = TokenMetadata {
@@ -272,6 +293,7 @@ program mtsp.aleo {
         owner: input_record.owner,
         amount: input_record.amount - amount,
         token_id: input_record.token_id,
+        external_authorization_required: input_record.external_authorization_required,
         authorized_until: input_record.authorized_until
     };
     return (output_record, finalize_burn_private(input_record.token_id, amount, self.caller));
@@ -487,8 +509,6 @@ program mtsp.aleo {
     allowances.set(allowance_key, current_allowance - amount);
   }
 
-  // Note: transfer_from_public does not implement preauthorization,
-  // it is assumed that contracts will simply transfer to other contracts they want to use instead of using approve/transferFrom
   async transition transfer_from_public(
     token_id: field,
     owner: address,
@@ -570,17 +590,17 @@ program mtsp.aleo {
     token_id: field,
     recipient: address,
     amount: u128,
-    preauthorize_transfer_record: bool
+    external_authorization_required: bool
   ) -> (Token, Future) {
-    let authorized_until: u32 = preauthorize_transfer_record ? 4294967295u32 : 0u32;
+    let authorized_until: u32 = external_authorization_required ? 0u32 : 4294967295u32;
     let token: Token = Token {
       owner: recipient,
       amount: amount,
       token_id: token_id,
+      external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
-    let preauthorized: bool = self.caller != self.signer; // calls from DeFi contracts are preauthorized
-    return (token, finalize_transfer_public_to_private(token_id, recipient, amount, self.caller, preauthorized, preauthorize_transfer_record));
+    return (token, finalize_transfer_public_to_private(token_id, recipient, amount, self.caller, external_authorization_required));
   }
 
   async function finalize_transfer_public_to_private(
@@ -588,12 +608,11 @@ program mtsp.aleo {
     recipient: address,
     amount: u128,
     owner: address,
-    preauthorized: bool,
-    record_authorized: bool
+    external_authorization_required: bool
   ) {
     // Check that the transfer record's authorization matches the token's external_authorization_required
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.external_authorization_required, record_authorized);
+    assert_eq(token.external_authorization_required, external_authorization_required);
 
     let sender_key: TokenOwner = TokenOwner {
       account: owner,
@@ -602,19 +621,7 @@ program mtsp.aleo {
 
     // Get stored balances for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
-    let default_balance: Balance = Balance {
-      token_id: token_id,
-      account: owner,
-      balance: 0u128,
-      authorized_until: 0u32
-    };
-    let authorized_balance: Balance = authorized_balances.get_or_use(sender_key_hash, default_balance);
-    let unauthorized_balance: Balance = balances.get_or_use(sender_key_hash, default_balance);
-    // Check that the owner has enough authorized balance
-    let enough_authorized_balance: bool = authorized_balance.balance >= amount;
-    // If the owner doesn't have enough authorized balance, check that they are preauthorized and have enough unauthorized balance
-    assert(enough_authorized_balance || (preauthorized && unauthorized_balance.balance >= amount));
-    let balance: Balance = enough_authorized_balance ? authorized_balance : unauthorized_balance;
+    let balance: Balance = authorized_balances(sender_key_hash);
     // Update the balance
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -622,11 +629,7 @@ program mtsp.aleo {
       balance: balance.balance - amount,
       authorized_until: balance.authorized_until
     };
-    if (enough_authorized_balance) {
-      authorized_balances.set(sender_key_hash, new_balance);
-    } else {
-      balances.set(sender_key_hash, new_balance);
-    }
+    authorized_balances.set(sender_key_hash, new_balance);
   }
 
   async transition transfer_from_public_to_private(
@@ -634,16 +637,17 @@ program mtsp.aleo {
     owner: address,
     recipient: address,
     amount: u128,
-    preauthorize_transfer_record: bool
+    external_authorization_required: bool
   ) -> (Token, Future) {
-    let authorized_until: u32 = preauthorize_transfer_record ? 4294967295u32 : 0u32;
+    let authorized_until: u32 = external_authorization_required ? 0u32 : 4294967295u32;
     let token: Token = Token {
       owner: recipient,
       amount: amount,
       token_id: token_id,
+      external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
-    return (token, finalize_transfer_from_public_to_private(token_id, owner, recipient, amount, self.caller, preauthorize_transfer_record));
+    return (token, finalize_transfer_from_public_to_private(token_id, owner, recipient, amount, self.caller, external_authorization_required));
   }
 
   async function finalize_transfer_from_public_to_private(
@@ -652,11 +656,11 @@ program mtsp.aleo {
     recipient: address,
     amount: u128,
     spender: address,
-    record_authorized: bool
+    external_authorization_required: bool
   ) {
     // Check that the transfer record's authorization matches the token's external_authorization_required
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.external_authorization_required, record_authorized);
+    assert_eq(token.external_authorization_required, external_authorization_required);
 
     // Check that the spender is authorized to spend the amount
     let allowance: Allowance = Allowance {
@@ -693,39 +697,34 @@ program mtsp.aleo {
   async transition transfer_private(
     recipient: address,
     amount: u128,
-    input_record: Token,
-    preauthorize_transfer_record: bool
+    input_record: Token
   ) -> (Token, Token, Future) {
-    assert(input_record.amount >= amount);
-    assert(input_record.authorized);
     let updated_record: Token = Token {
       owner: input_record.owner,
       amount: input_record.amount - amount,
       token_id: input_record.token_id,
+      external_authorization_required: input_record.external_authorization_required,
       authorized_until: input_record.authorized_until
     };
 
-    let authorized_until: u32 = preauthorize_transfer_record ? 4294967295u32 : 0u32;
+    let external_authorization_required: bool = input_record.external_authorization_required;
+    let authorized_until: u32 = external_authorization_required ? 0u32 : 4294967295u32;
     let transfer_record: Token = Token {
       owner: recipient,
       amount: amount,
       token_id: input_record.token_id,
+      external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
 
-    return (updated_record, transfer_record, finalize_transfer_private(input_record.token_id, preauthorize_transfer_record, input_record.authorized_until));
+    return (updated_record, transfer_record, finalize_transfer_private(external_authorization_required, input_record.authorized_until));
   }
 
   async function finalize_transfer_private(
-    token_id: field,
-    token_preauthorized: bool,
+    external_authorization_required: bool,
     input_token_authorized_until: u32
   ) {
-    // Check that the authorization matches the token's external_authorization_required
-    let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(!token.external_authorization_required, token_preauthorized);
-
-    assert(block.height <= input_token_authorized_until);
+    assert(block.height <= input_token_authorized_until || !external_authorization_required);
   }
 
   async transition transfer_private_to_public(
@@ -733,12 +732,11 @@ program mtsp.aleo {
     amount: u128,
     input_record: Token
   ) -> (Token, Future) {
-    assert(input_record.amount >= amount);
-    assert(input_record.authorized);
     let updated_record: Token = Token {
       owner: input_record.owner,
       amount: input_record.amount - amount,
       token_id: input_record.token_id,
+      external_authorization_required: input_record.external_authorization_required,
       authorized_until: input_record.authorized_until
     };
 
