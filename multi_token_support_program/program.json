@@ -1,5 +1,5 @@
 {
-    "program": "mtsp.aleo",
+    "program": "multi_token_support_program.aleo",
     "version": "0.0.0",
     "description": "",
     "license": "MIT",
@@ -7,7 +7,7 @@
         {
           "name": "credits.aleo",
           "location": "network",
-          "network": "testnet3",
+          "network": "testnet",
           "path": null
         }
       ]
