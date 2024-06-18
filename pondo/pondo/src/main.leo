@@ -105,6 +105,7 @@ program pondo.aleo {
     let total_ale_minted: u64 = ale.aleo/totals.get(0u8);
     let total_ale_burned: u64 = ale.aleo/totals.get(1u8);
     let ale_pool: u64 = total_ale_minted - total_ale_burned;
+    // TODO: get ale total from MTSP
 
     // Confirm ale mint amoount
     let aleo_pool: u128 = total_aleo as u128;
