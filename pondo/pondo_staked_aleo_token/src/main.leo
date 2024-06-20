@@ -1,7 +1,7 @@
 // TODO: replace with ARC-20 standard, plus burn/mint
 import credits.aleo;
 
-program ale.aleo {
+program pondo_staked_aleo_token.aleo {
     const CORE_PROTOCOL: address = aleo1v7zqs7fls3ryy8dvtl77ytszk4p9af9mxx2kclq529jd3et7hc8qqlhsq0;
     mapping account: address => u64;
 
@@ -164,7 +164,7 @@ program ale.aleo {
 
     transition mint_public(public amount: u64, public receiver: address) {
         // assert self.caller == address of core_protocol.aleo;
-        
+
         return then finalize (amount, receiver);
     }
 

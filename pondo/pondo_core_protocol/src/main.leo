@@ -1,5 +1,6 @@
-// The 'pondo' program.
-program pondo.aleo {
+import credits.aleo;
+
+program pondo_core_protocol.aleo {
   const PRECISION: i128 = 1000i128;
   const PRECISION_UNSIGNED: u128 = 1000u128;
   const PORTION_1: u128 = 400u128;

@@ -1,5 +1,4 @@
-// TODO: replace with ARC-20 standard, plus burn/mint
-program axel.aleo {
+program pondo_token.aleo {
     mapping account: address => u64;
 
     // 0u8 -- total minted
@@ -139,7 +138,7 @@ program axel.aleo {
 
     transition mint_public(public amount: u64, public receiver: address) {
         // assert self.caller == address of core_protocol.aleo;
-        
+
         return then finalize (amount, receiver);
 
     }

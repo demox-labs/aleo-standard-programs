@@ -1,0 +1,53 @@
+{
+    "program": "pondo_core_protocol.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "credits.aleo",
+            "location": "network",
+            "network": "testnet"
+        },
+        {
+            "name": "oracle.aleo",
+            "location": "local",
+            "path": "../oracle"
+        },
+        {
+            "name": "pondo_staked_aleo_token.aleo",
+            "location": "local",
+            "path": "../pondo_staked_aleo_token"
+        },
+        {
+            "name": "pondo_token.aleo",
+            "location": "local",
+            "path": "../pondo_token"
+        },
+        {
+            "name": "delegator1.aleo",
+            "location": "local",
+            "path": "../delegators/delegator1"
+        },
+        {
+            "name": "delegator2.aleo",
+            "location": "local",
+            "path": "../delegators/delegator2"
+        },
+        {
+            "name": "delegator3.aleo",
+            "location": "local",
+            "path": "../delegators/delegator3"
+        },
+        {
+            "name": "delegator4.aleo",
+            "location": "local",
+            "path": "../delegators/delegator4"
+        },
+        {
+            "name": "delegator5.aleo",
+            "location": "local",
+            "path": "../delegators/delegator5"
+        }
+    ]
+}
