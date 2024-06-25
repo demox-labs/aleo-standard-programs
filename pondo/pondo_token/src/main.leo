@@ -1,21 +1,32 @@
 program pondo_token.aleo {
-    mapping account: address => u64;
+    // The Pondo token is only minted once and the total supply is fixed.
+    async transition initialize_token() -> Future {
+        assert_eq(self.caller, pondo_core_protocol.aleo);
+        let f0: Future = multi_token_support_program.aleo/register_token();
+        let f1: Future = multi_token_support_program.aleo/mint_public();
 
-    // 0u8 -- total minted
-    // 1u8 -- total burned
-    mapping totals: u8 => u64;
-
-    record token {
-        owner: address,
-        amount: u64
+        return finalize_initialize_token(f0, f1);
     }
 
-    struct approval {
-        approver: address,
-        spender: address
+    async function finalize_initialize_token(
+        f0: Future,
+        f1: Future
+    ) {
+        f0.await();
+        f1.await();
     }
 
-    mapping approvals: field => u64;
+    transition burn_private(private input_record: multi_token_support_program.aleo/Token) {
+        return multi_token_support_program.aleo/Token = multi_token_support_program.aleo/burn_private(input_record, burn_amount);
+    }
+
+    async transition burn_public(public burner: address, public amount: u64) {
+        return multi_token_support_program.aleo/burn_public();
+    }
+
+    // -----------------------------------------------------------
+    // ARC-21 functions
+    // -----------------------------------------------------------
 
     transition approve_public(public spender: address, public amount: u64) {
         let approve: approval = approval {
@@ -89,7 +100,6 @@ program pondo_token.aleo {
         Mapping::set(account, receiver, new_receiver_balance);
     }
 
-
     transition transfer_private(private input_record: token, private receiver: address, private amount: u64) -> (private token, private token) {
         let new_input_record: token = token {
             owner: input_record.owner,
@@ -103,7 +113,6 @@ program pondo_token.aleo {
 
         return (new_input_record, receiver_record);
     }
-
 
     transition transfer_private_to_public(private input_record: token, public receiver: address, public amount: u64) -> (private token) {
         let output_record: token = token {
@@ -134,51 +143,5 @@ program pondo_token.aleo {
         let sender_balance: u64 = Mapping::get_or_use(account, sender, 0u64);
         let new_sender_balance: u64 = sender_balance.sub(amount);
         Mapping::set(account, sender, new_sender_balance);
-    }
-
-    transition mint_public(public amount: u64, public receiver: address) {
-        // assert self.caller == address of core_protocol.aleo;
-
-        return then finalize (amount, receiver);
-
-    }
-
-    finalize mint_public(public amount: u64, public receiver: address) {
-        let total_minted: u64 = totals.get_or_use(0u8, 0u64);
-        // one time mint
-        assert_eq(total_minted, 0u64);
-        let new_total_minted: u64 = total_minted.add(amount);
-        totals.set(0u8, new_total_minted);
-
-        let receiver_balance: u64 = account.get_or_use(receiver, 0u64);
-        let new_receiver_balance: u64 = receiver_balance.add(amount);
-        account.set(receiver, new_receiver_balance);
-    }
-
-    transition burn_private(private input_record: token) {
-        // assert self.caller == address of core_protocol.aleo;
-        return then finalize(input_record.amount);
-    }
-
-    finalize burn_private(public amount: u64) {
-        let total_burned: u64 = totals.get_or_use(1u8, 0u64);
-        let new_total_burned: u64 = total_burned.add(amount);
-        totals.set(1u8, new_total_burned);
-    }
-
-    transition burn_public(public burner: address, public amount: u64) {
-        // assert self.caller == address of core_protocol.aleo;
-        return then finalize(burner, amount);
-    }
-
-    finalize burn_public(public burner: address, public amount: u64) {
-        let burner_balance: u64 = account.get_or_use(burner, 0u64);
-        // TODO: Check, should be protected by underflow
-        let new_burner_balance: u64 = burner_balance.sub(amount);
-        account.set(burner, new_burner_balance);
-
-        let total_burned: u64 = totals.get_or_use(1u8, 0u64);
-        let new_total_burned: u64 = total_burned.add(amount);
-        totals.set(1u8, new_total_burned);
     }
 }

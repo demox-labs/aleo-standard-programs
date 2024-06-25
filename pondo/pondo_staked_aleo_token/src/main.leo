@@ -1,31 +1,60 @@
-// TODO: replace with ARC-20 standard, plus burn/mint
-import credits.aleo;
+import multi_token_support_program.aleo;
 
+// -----------------------------------------------------------
+// pALEO Token Program
+// -----------------------------------------------------------
 program pondo_staked_aleo_token.aleo {
-    const CORE_PROTOCOL: address = aleo1v7zqs7fls3ryy8dvtl77ytszk4p9af9mxx2kclq529jd3et7hc8qqlhsq0;
-    mapping account: address => u64;
-
-    // 0u8 -- total minted
-    // 1u8 -- total burned
-    mapping totals: u8 => u64;
-
-    record token {
-        owner: address,
-        amount: u64
-    }
-
     record claim {
         owner: address,
         amount: u64,
         min_claim_height: u32
     }
 
-    struct approval {
-        approver: address,
-        spender: address
+    async transition mint_public(
+        public amount: u64,
+        public receiver: address
+    ) -> Future {
+        assert_eq(self.caller, pondo_core_protocol.aleo);
+
+        return multi_token_support_program.aleo/mint_public();
     }
 
-    mapping approvals: field => u64;
+    async transition burn_public(public amount: u64) -> Future {
+        assert_eq(self.caller, pondo_core_protocol.aleo);
+
+        return multi_token_support_program.aleo/burn_public();
+    }
+
+    transition mint_private(
+        public amount: u64,
+        private receiver: address
+    ) -> multi_token_support_program.aleo/Token {
+        assert_eq(self.caller, pondo_core_protocol.aleo);
+
+        return multi_token_support_program.aleo/mint_private();
+    }
+
+    transition burn_private(
+        private input_record: multi_token_support_program.aleo/Token,
+        private burn_amount: u64,
+        private credits_claim_amount: u64,
+        private min_block_height: u32
+    ) -> (multi_token_support_program.aleo/Token, claim) {
+        assert_eq(self.caller, pondo_core_protocol.aleo);
+
+        let output_token: multi_token_support_program.aleo/Token = multi_token_support_program.aleo/burn_private(input_record, burn_amount);
+        let output_claim: claim = claim {
+            owner: input_record.owner,
+            amount: credits_claim_amount,
+            min_claim_height: min_block_height
+        };
+
+        return (output_token, output_claim);
+    }
+
+    // -----------------------------------------------------------
+    // ARC-21 functions
+    // -----------------------------------------------------------
 
     transition approve_public(public spender: address, public amount: u64) {
         let approve: approval = approval {
@@ -99,7 +128,6 @@ program pondo_staked_aleo_token.aleo {
         Mapping::set(account, receiver, new_receiver_balance);
     }
 
-
     transition transfer_private(private input_record: token, private receiver: address, private amount: u64) -> (private token, private token) {
         let new_input_record: token = token {
             owner: input_record.owner,
@@ -113,7 +141,6 @@ program pondo_staked_aleo_token.aleo {
 
         return (new_input_record, receiver_record);
     }
-
 
     transition transfer_private_to_public(private input_record: token, public receiver: address, public amount: u64) -> (private token) {
         let output_record: token = token {
@@ -130,7 +157,6 @@ program pondo_staked_aleo_token.aleo {
         Mapping::set(account, receiver, new_receiver_balance);
     }
 
-
     transition transfer_public_to_private(public receiver: address, public amount: u64) -> (private token) {
         let output_record: token = token {
             owner: receiver,
@@ -144,92 +170,5 @@ program pondo_staked_aleo_token.aleo {
         let sender_balance: u64 = Mapping::get_or_use(account, sender, 0u64);
         let new_sender_balance: u64 = sender_balance - amount;
         Mapping::set(account, sender, new_sender_balance);
-    }
-
-    transition mint_private(public amount: u64, private receiver: address) -> (private token) {
-        // assert self.caller == address of core_protocol.aleo;
-        let output_record: token = token {
-            owner: receiver,
-            amount: amount
-        };
-
-        return output_record then finalize (amount);
-    }
-
-    finalize mint_private(public amount: u64) {
-        let total_minted: u64 = totals.get_or_use(0u8, 0u64);
-        let new_total_minted: u64 = total_minted.add(amount);
-        totals.set(0u8, new_total_minted);
-    }
-
-    transition mint_public(public amount: u64, public receiver: address) {
-        // assert self.caller == address of core_protocol.aleo;
-
-        return then finalize (amount, receiver);
-    }
-
-    finalize mint_public(public amount: u64, public receiver: address) {
-        let total_minted: u64 = totals.get_or_use(0u8, 0u64);
-        let new_total_minted: u64 = total_minted + amount;
-        totals.set(0u8, new_total_minted);
-
-        let receiver_balance: u64 = account.get_or_use(receiver, 0u64);
-        let new_receiver_balance: u64 = receiver_balance + amount;
-        account.set(receiver, new_receiver_balance);
-    }
-
-    transition burn_private(
-        private input_record: token,
-        private ale_burn_amount: u64,
-        private credits_claim_amount: u64,
-        private min_block_height: u32
-        ) -> (token, claim) {
-        assert_eq(self.caller, CORE_PROTOCOL);
-        let output_token: token = token {
-            owner: input_record.owner,
-            amount: input_record.amount - ale_burn_amount
-        };
-        let output_claim: claim = claim {
-            owner: input_record.owner,
-            amount: credits_claim_amount,
-            min_claim_height: min_block_height
-        };
-
-        return (output_token, output_claim) then finalize(ale_burn_amount);
-    }
-
-    finalize burn_private(public amount: u64) {
-        let total_burned: u64 = totals.get_or_use(1u8, 0u64);
-        let new_total_burned: u64 = total_burned + amount;
-        totals.set(1u8, new_total_burned);
-    }
-
-    transition claim_credits(
-        private claim_record: claim
-    ) -> credits.aleo/credits {
-        assert_eq(self.caller, claim_record.owner);
-
-        let credits_record: credits.aleo/credits = credits.aleo/transfer_public_to_private(claim_record.owner, claim_record.amount);
-
-        return (credits_record) then finalize(claim_record.amount, claim_record.min_claim_height);
-    }
-
-    finalize claim_credits(
-        public amount: u64,
-        public min_claim_height: u32
-        ) {
-        assert(block.height >= min_claim_height);
-    }
-
-    transition assert_totals(public total_minted: u64, public total_burned: u64) {
-        return then finalize(total_minted, total_burned);
-    }
-
-    finalize assert_totals(public total_minted: u64, public total_burned: u64) {
-        let minted: u64 = totals.get_or_use(0u8, 0u64);
-        let burned: u64 = totals.get_or_use(1u8, 0u64);
-
-        assert_eq(minted, total_minted);
-        assert_eq(burned, total_burned);
     }
 }
