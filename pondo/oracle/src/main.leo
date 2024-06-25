@@ -1,5 +1,8 @@
 import credits.aleo;
 
+// The program to permissionless calculate the yield of reference delegators to validators
+// Note: Many reference delegators for the same validator are supported
+// This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
   const DELEGATOR_APPROVER_ADDRESS: address = aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039;
@@ -35,6 +38,8 @@ program pondo_oracle.aleo {
   // ie this is a list of delegators but the validators are guaranteed to be unique or the 0 group address
   mapping top_valdiators: u8 => [address; 10];
 
+  // Called by the reference delegator program to establish that the reference delegator has been created
+  // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
   async transition propose_reference_delegator(
     public validator: address
   ) -> Future {
@@ -93,6 +98,127 @@ program pondo_oracle.aleo {
       microcredits_yield_per_epoch: 0u128
     };
     Mapping::set(validator_data, delegator, initial_validator_datum);
+  }
+
+  // Update the data for the given reference delegator
+  // It's permissionless ie callable by anyone
+  async transition update_validator_data(
+    public delegator: address
+  ) -> Future {
+    return update_data(delegator);
+  }
+
+  async function update_data(
+    public delegator: address
+  ) {
+    // Get the existing data, fails if the reference delegator isn't there
+    let existing_validator_datum: validator_datum = Mapping::get(validator_data, delegator);
+
+    // Check if update is in the allowed update period
+    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
+    let is_update_period: bool = epoch_blocks >= UPDATE_BLOCKS_DISALLOWED;
+    assert(is_update_period);
+
+    // Ensure an update hasn't been performed in the same epoch yet
+    let block_range: u32 = block.height - existing_validator_datum.block_height;
+    assert(block_range > UPDATE_BLOCKS_DISALLOWED);
+
+    // Get the bonded state of the delegator
+    let bonded: bond_state = credits.aleo/bonded.get(delegator);
+
+    // Note: We calculate return per epoch
+    // For example, given an annualized return of 10%, after a week we expected 10_000_000_000 microcredits (10K credits) to become 10_018_345_688 microcredits
+    // Because we use u128, we cannot calculate a percentage yield as it would always be 0 so we normalize the return
+    // to the amount of microcredits earned as if the delegator had 10K credits staked.
+    // So the microcredits_yield_per_epoch would be 18_345_688
+    let microcredits_earned: u128 = bonded.microcredits as u128 - existing_validator_datum.bonded_microcredits as u128;
+    let normalized_microcredits_earned: u128 = microcredits_earned * PRECISION / existing_validator_datum.bonded_microcredits as u128;
+    let yield_per_epoch: u128 = normalized_microcredits_earned * BLOCKS_PER_EPOCH as u128 / block_range as u128;
+
+    // Ensure the last update was in the previous epoch, otherwise set the yield to zero
+    // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
+    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
+    let previous_update_epoch: u32 = existing_validator_datum.block_height / BLOCKS_PER_EPOCH;
+    let did_update_last_epoch: bool = (previous_update_epoch + 1u32) == current_epoch;
+    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
+
+    // Construct and save the new validator_datum for the delegator
+    let new_validator_datum: validator_datum = validator_datum {
+      delegator: delegator,
+      validator: existing_validator_datum.validator,
+      block_height: block.height,
+      bonded_microcredits: bonded.microcredits,
+      microcredits_yield_per_epoch: new_microcredits_yield_per_epoch
+    };
+    Mapping::set(validator_data, delegator, new_validator_datum);
+
+    // Get the array of top validators
+    let top_validators_addresses: [address; 10] = Mapping::get_or_use(
+      top_valdiators,
+      0u8,
+      [
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+      ]
+    );
+    let default_validator_datum: validator_datum = validator_datum {
+      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      block_height: 0u32,
+      bonded_microcredits: 0u64,
+      microcredits_yield_per_epoch: 0u128
+    };
+
+    // Fetch all of the data for each validator
+    let datum_0: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[0u8], default_validator_datum);
+    let datum_1: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[1u8], default_validator_datum);
+    let datum_2: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[2u8], default_validator_datum);
+    let datum_3: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[3u8], default_validator_datum);
+    let datum_4: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[4u8], default_validator_datum);
+    let datum_5: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[5u8], default_validator_datum);
+    let datum_6: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[6u8], default_validator_datum);
+    let datum_7: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[7u8], default_validator_datum);
+    let datum_8: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[8u8], default_validator_datum);
+    let datum_9: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[9u8], default_validator_datum);
+
+    // Calculate the epoch start block
+    let epoch_start_height: u32 = current_epoch * BLOCKS_PER_EPOCH;
+
+    // Perform swaps and drop the last element
+    // The order of the swap_validator_data is subtle but very important.
+    let swap_result_0: (validator_datum, validator_datum, bool) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, false);
+    let swap_result_1: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, swap_result_0.2);
+    let swap_result_2: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, swap_result_1.2);
+    let swap_result_3: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, swap_result_2.2);
+    let swap_result_4: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, swap_result_3.2);
+    let swap_result_5: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, swap_result_4.2);
+    let swap_result_6: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, swap_result_5.2);
+    let swap_result_7: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, swap_result_6.2);
+    let swap_result_8: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, swap_result_7.2);
+    let swap_result_9: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, swap_result_8.2);
+    let new_top_10: [address; 10] = [
+      swap_result_0.0.delegator,
+      swap_result_1.0.delegator,
+      swap_result_2.0.delegator,
+      swap_result_3.0.delegator,
+      swap_result_4.0.delegator,
+      swap_result_5.0.delegator,
+      swap_result_6.0.delegator,
+      swap_result_7.0.delegator,
+      swap_result_8.0.delegator,
+      swap_result_9.0.delegator
+    ];
+
+    // Set the new top 10
+    Mapping::set(top_valdiators, 0u8, new_top_10);
   }
 
   // Remove the reference delegator
@@ -161,121 +287,6 @@ program pondo_oracle.aleo {
     Mapping::set(top_valdiators, 0u8, new_top_validators_addresses);
   }
 
-  // Update the data for the given reference delegator
-  // It's permissionless ie callable by anyone
-  async transition update_validator_data(
-    public delegator: address
-  ) -> Future {
-    return update_data(delegator);
-  }
-
-  async function update_data(
-    public delegator: address
-  ) {
-    // Get the existing data, fails if the reference delegator isn't there
-    let existing_validator_datum: validator_datum = Mapping::get(validator_data, delegator);
-
-    // Check if update is in the allowed update period
-    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
-    let is_update_period: bool = epoch_blocks >= UPDATE_BLOCKS_DISALLOWED;
-    assert(is_update_period);
-
-    // Ensure an update hasn't been performed in the same epoch yet
-    let block_range: u32 = block.height - existing_validator_datum.block_height;
-    assert(block_range > UPDATE_BLOCKS_DISALLOWED);
-
-    // Get the bonded state of the delegator
-    let bonded: bond_state = credits.aleo/bonded.get(delegator);
-
-    // Note: We calculate return per epoch
-    // For example, given an annualized return of 10%, after a week we expected 10_000_000_000 microcredits (10K credits) to become 10_018_345_688 microcredits
-    // Because we use u128, we cannot calculate a percentage yield as it would always be 0 so we normalize the return
-    // to the amount of microcredits earned as if the delegator had 10K credits staked.
-    // So the microcredits_yield_per_epoch would be 18_345_688
-    let microcredits_earned: u128 = bonded.microcredits as u128 - existing_validator_datum.bonded_microcredits as u128;
-    let normalized_microcredits_earned: u128 = microcredits_earned * PRECISION / bonded.microcredits as u128;
-    let yield_per_epoch: u128 = normalized_microcredits_earned * BLOCKS_PER_EPOCH as u128 / block_range as u128;
-
-    // Ensure the last update was in the previous epoch, otherwise set the yield to zero
-    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
-    let previous_update_epoch: u32 = existing_validator_datum.block_height / BLOCKS_PER_EPOCH;
-    let did_update_last_epoch: bool = (previous_update_epoch + 1u32) == current_epoch;
-    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
-
-    // Construct and save the new validator_datum for the delegator
-    let new_validator_datum: validator_datum = validator_datum {
-      delegator: delegator,
-      validator: existing_validator_datum.validator,
-      block_height: block.height,
-      bonded_microcredits: bonded.microcredits,
-      microcredits_yield_per_epoch: new_microcredits_yield_per_epoch
-    };
-    Mapping::set(validator_data, delegator, new_validator_datum);
-
-    // Get the array of top validators
-    let top_validators_addresses: [address; 10] = Mapping::get(top_valdiators, 0u8);
-    let default_validator_datum: validator_datum = validator_datum {
-      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      block_height: 0u32,
-      bonded_microcredits: 0u64,
-      microcredits_yield_per_epoch: 0u128
-    };
-
-    // Fetch all of the data for each validator
-    let datum_0: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[0u8], default_validator_datum);
-    let datum_1: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[1u8], default_validator_datum);
-    let datum_2: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[2u8], default_validator_datum);
-    let datum_3: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[3u8], default_validator_datum);
-    let datum_4: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[4u8], default_validator_datum);
-    let datum_5: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[5u8], default_validator_datum);
-    let datum_6: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[6u8], default_validator_datum);
-    let datum_7: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[7u8], default_validator_datum);
-    let datum_8: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[8u8], default_validator_datum);
-    let datum_9: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[9u8], default_validator_datum);
-
-    // Calculate the epoch start block
-    let epoch_start_height: u32 = current_epoch * BLOCKS_PER_EPOCH;
-
-    // Perform swaps and drop the last element
-    let swap_result_0: (validator_datum, validator_datum, bool) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, false);
-    let swap_result_1: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, swap_result_0.2);
-    let swap_result_2: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, swap_result_1.2);
-    let swap_result_3: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, swap_result_2.2);
-    let swap_result_4: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, swap_result_3.2);
-    let swap_result_5: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, swap_result_4.2);
-    let swap_result_6: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, swap_result_5.2);
-    let swap_result_7: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, swap_result_6.2);
-    let swap_result_8: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, swap_result_7.2);
-    let swap_result_9: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, swap_result_8.2);
-    let new_top_10: [address; 10] = [
-      swap_result_0.0.delegator,
-      swap_result_1.0.delegator,
-      swap_result_2.0.delegator,
-      swap_result_3.0.delegator,
-      swap_result_4.0.delegator,
-      swap_result_5.0.delegator,
-      swap_result_6.0.delegator,
-      swap_result_7.0.delegator,
-      swap_result_8.0.delegator,
-      swap_result_9.0.delegator
-    ];
-
-    // Set the new top 10
-    Mapping::set(top_valdiators, 0u8, new_top_10);
-  }
-
-  inline swap_zero_group_address(
-    address_0: address,
-    address_1: address
-  ) -> (address, address) {
-      if (address_0 == aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) {
-        return (address_1, address_0);
-      } else {
-        return (address_0, address_1);
-      }
-  }
-
   // Swap the positions of each datum given:
   // 1. If auto swap bit is on, always swap
   // 2. If one is outdated (if both are outdated, preference no swap)
@@ -292,6 +303,7 @@ program pondo_oracle.aleo {
     }
 
     // If the delegator are the same, don't swap and turn auto_swap on afterwards
+    // This keeps the new delegator and forces out the old one
     if (datum_0.delegator == datum_1.delegator) {
       return (datum_0, datum_1, true);
     }
@@ -303,18 +315,18 @@ program pondo_oracle.aleo {
     // The default validator datum used for 0group addresses uses 0u32 for the block_height
     // So we will catch any 0group addresses here
     if (datum_1.block_height < epoch_start_block) {
-      return (datum_0, datum_1, true);
+      return (datum_0, datum_1, new_auto_swap);
     }
     if (datum_0.block_height < epoch_start_block) {
-      return (datum_1, datum_0, true);
+      return (datum_1, datum_0, new_auto_swap);
     }
 
     // Handle the edge case of one of the yields being 0 as 0 is automatically used when the validator wasn't updated last epoch
     if (datum_1.microcredits_yield_per_epoch == 0u128) {
-      return (datum_0, datum_1, true);
+      return (datum_0, datum_1, new_auto_swap);
     }
     if (datum_0.microcredits_yield_per_epoch == 0u128) {
-      return (datum_1, datum_0, true);
+      return (datum_1, datum_0, new_auto_swap);
     }
 
     // Choose the datum with the higher yield in the normal case
@@ -328,5 +340,16 @@ program pondo_oracle.aleo {
     let should_swap: bool = new_auto_swap ? datum_0.microcredits_yield_per_epoch > datum_1.microcredits_yield_per_epoch : datum_0.microcredits_yield_per_epoch < datum_1.microcredits_yield_per_epoch;
 
     return should_swap ? (datum_1, datum_0, new_auto_swap) : (datum_0, datum_1, new_auto_swap);
+  }
+
+  inline swap_zero_group_address(
+    address_0: address,
+    address_1: address
+  ) -> (address, address) {
+      if (address_0 == aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) {
+        return (address_1, address_0);
+      } else {
+        return (address_0, address_1);
+      }
   }
 }
