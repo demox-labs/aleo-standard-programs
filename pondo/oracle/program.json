@@ -1,6 +1,13 @@
 {
-    "program": "oracle.aleo",
+    "program": "pondo_oracle.aleo",
     "version": "0.0.0",
     "description": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "credits.aleo",
+            "location": "network",
+            "network": "testnet"
+        }
+    ]
 }
