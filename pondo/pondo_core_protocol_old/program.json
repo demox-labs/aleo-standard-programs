@@ -10,7 +10,7 @@
             "network": "testnet3"
         },
         {
-            "name": "oracle.aleo",
+            "name": "pondo_oracle.aleo",
             "location": "local",
             "path": "../oracle"
         },

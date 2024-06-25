@@ -23,7 +23,7 @@ program core_protocol.aleo {
   const PORTION_4: u128 = 110u128;
   const PORTION_5: u128 = 80u128;
   const MINIMUM_BOND_POOL: u64 = 125_000_000u64; // microcredits
-  const PROFITABILITY_TIMEFRAME: u32 = 40_000u32; // 1 week of blocks
+  const PROFITABILITY_TIMEFRAME: u32 = 120_960u32; // 1 week of blocks
 
   const MINIMUM_BOOST: u64 = 5_000_000u64;
 
