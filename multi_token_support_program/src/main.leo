@@ -939,47 +939,6 @@ program multi_token_support_program.aleo {
     authorized_balances.set(balance_key_hash, new_balance);
   }
 
-  async transition deposit_credits_private(
-    input_record: credits.aleo/credits,
-    amount: u64
-  ) -> (credits.aleo/credits, Token, Future) {
-    let updated_record: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, multi_token_support_program.aleo, amount);
-    let token: Token = Token {
-      owner: input_record.owner,
-      amount: amount as u128,
-      token_id: CREDITS_RESERVED_TOKEN_ID,
-      external_authorization_required: false,
-      authorized_until: 4294967295u32
-    };
-
-    return (updated_record.0, token, finalize_deposit_credits_private());
-  }
-
-  async function finalize_deposit_credits_private() {
-    return;
-  }
-
-  async transition withdraw_credits_private(
-    token_record: Token,
-    amount: u64
-  ) -> (Token, credits.aleo/credits, Future) {
-    assert(token_record.token_id == CREDITS_RESERVED_TOKEN_ID);
-    let credits_record: (credits.aleo/credits, Future) = credits.aleo/transfer_public_to_private(token_record.owner, amount);
-    let updated_record: Token = Token {
-      owner: token_record.owner,
-      amount: token_record.amount - amount as u128,
-      token_id: token_record.token_id,
-      external_authorization_required: token_record.external_authorization_required,
-      authorized_until: token_record.authorized_until
-    };
-
-    return (updated_record, credits_record.0, finalize_withdraw_credits_private());
-  }
-
-  async function finalize_withdraw_credits_private() {
-    return;
-  }
-
   // async transition struct_mint_public(
   //   token_id: field,
   //   recipient: address,

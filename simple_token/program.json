@@ -1,0 +1,18 @@
+{
+  "program": "cat_no_hat.aleo",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "multi_token_support_program.aleo",
+      "location": "local",
+      "path": "../multi_token_support_program"
+    }
+  ]
+}
