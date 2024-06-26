@@ -146,7 +146,7 @@ program pondo_core_protocol.aleo {
     return then finalize(f0, f1, credits_deposit, expected_paleo_mint, referrer);
   }
 
-  async finalize_deposit_public(
+  async function finalize_deposit_public(
     public f0: Future,
     public f1: Future,
     public credits_deposit: u64,
@@ -217,7 +217,7 @@ program pondo_core_protocol.aleo {
     return finalize_bond_pool(futures, validators, transfer_amounts);
   }
 
-  async finalize_bond_pool(
+  async function finalize_bond_pool(
     futures: [Future; 10],
     validators: [address; 5],
     transfer_amounts: [u64; 5]
@@ -265,32 +265,19 @@ program pondo_core_protocol.aleo {
     withdraw_block: u32,
     credits_withdraw: u64
   ) {
-    assert(block.height <= current_height);
-    let total_withdraw_amount: u64 = withdraw_batches.get_or_use(withdraw_block, 0u64);
-    total_withdraw_amount = total_withdraw_amount + credits_withdraw;
-    withdraw_batches.set(withdraw_block, total_withdraw_amount);
 
-    let d1_state: state = delegator_state.get(DELEGATOR_1);
-    let d2_state: state = delegator_state.get(DELEGATOR_2);
-    let d3_state: state = delegator_state.get(DELEGATOR_3);
-    let d4_state: state = delegator_state.get(DELEGATOR_4);
-    let d5_state: state = delegator_state.get(DELEGATOR_5);
+  }
 
-    // ********** CONFIRM RATIO OF ALEO AND ALE POOLS **********
-    // TODO: get total aleo by checking each delegator's bonded balance
-    let pool_balance: u64 = balances.get_or_use(0u8, 0u64);
-    let total_aleo_before: u64 = pool_balance;
-    let total_aleo_after: u64 = total_aleo_before - credits_withdraw;
+  async transition claim_withdrawal_public(
+    public credits_claim_amount: u64
+  ) -> Future {
+    let f0: Future = multi_token_support_program.aleo/dep
+  }
 
-    let total_ale_before: u64 = total_ale_pool;
-    let total_ale_after: u64 = total_ale_before - net_ale_burn_amount;
+  async function finalize_claim_withdrawal_public(
 
-    // aleo_before / aleo_after should equal ale_before / ale_after
-    // aleo_before * ale_after = aleo_after * ale_before
+  ) {
 
-    let product_1: u128 = total_aleo_before as u128 * total_ale_after as u128;
-    let product_2: u128 = total_aleo_after as u128 * total_ale_before as u128;
-    assert_eq(product_1, product_2);
   }
 
   // -------------------
