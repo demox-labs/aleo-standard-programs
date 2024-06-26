@@ -26,9 +26,10 @@ program pondo_core_protocol.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
   const CREDITS_TOKEN_ID: field = 3443843282313283355522573239085696902919850365217539366784739393210722344986field;
 
-  const ALEO_POOL_BALANCE: u8 = 0u8;
+  const BONDED_POOL_BALANCE: u8 = 0u8;
   const PENDING_DEPOSIT_BALANCE: u8 = 1u8;
   const PENDING_WITHDRAW_BALANCE: u8 = 2u8;
+  const OWED_COMMISSION: u8 = 3u8;
 
 
   // copied from credits.aleo, as structs are not importable
@@ -43,9 +44,10 @@ program pondo_core_protocol.aleo {
     height: u32
   }
 
-  // 0u8 -> total amount of publicly held aleo in the protocol
+  // 0u8 -> the last tracked balance of aleo bonded via the protocol
   // 1u8 -> total amount of aleo pending deposit
   // 2u8 -> total amount of aleo pending withdrawal
+  // 3u8 -> total amount of pALEO owed to the protocol, yet to be minted
   mapping balances: u8 => u64;
 
   mapping withdraw_batches: u32 => u64;
@@ -63,7 +65,7 @@ program pondo_core_protocol.aleo {
     // Transfer ALEO to pool
     f0: Future = credits.aleo/transfer_public_as_signer(pondo_core_protocol.aleo, credits_deposit);
     // Mint pALEO to depositor
-    f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
+    f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.signer);
 
     return finalize_deposit_public_as_signer(f0, f1, credits_deposit, expected_paleo_mint, referrer);
   }
@@ -77,12 +79,6 @@ program pondo_core_protocol.aleo {
   ) {
     f0.await();
     f1.await();
-    // Confirm pALEO mint amount
-    let aleo_pool: u128 = total_aleo as u128;
-    let ale_mint_amount: u64 = get_paleo_mint_amount(aleo_pool, credits_deposit as u128, ale_pool as u128);
-
-    assert(paleo_mint_amount >= 1u64);
-    assert(paleo_mint_amount >= expected_paleo_mint);
 
     let base_bond_state: bond_state = bond_state {
       validator: pondo_core_protocol.aleo,
@@ -94,126 +90,149 @@ program pondo_core_protocol.aleo {
     let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, base_bond_state).microcredits;
     let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, base_bond_state).microcredits;
 
-    let bonded_balance: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
-    let pool_balance: u64 = core_protocol.aleo/balances.get_or_use(0u8, 0u64);
-    let total_aleo: u64 = pool_balance + bonded_balance;
-    let total_paleo_minted: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply;
-    // Mint rewards to PONDO fee pool
-    // let current_balance: u64 = total_balance.get(0u8);
-    // let current_shares: u64 = total_shares.get(0u8);
-    // let rewards: i64 = bonded > current_balance ? bonded as i64 - current_balance as i64 : 0i64;
-    // let commission_rate: u128 = commission_percent.get(0u8);
-    // let new_commission: u64 = get_commission(rewards as u128, commission_rate);
-    // current_balance += rewards as u64 - new_commission;
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
+    let current_owed_commission: u64 = balances.get_or_use(OWED_COMMISSION, 0u64);
+    let total_paleo_minted: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
 
-    // let pending_deposit_pool: u64 = pending_deposits.get(0u8);
-    // let new_commission_shares: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, new_commission as u128, current_shares as u128);
-    // let current_commission: u64 = delegator_shares.get_or_use(ADMIN, 0u64);
-    // delegator_shares.set(ADMIN, current_commission + new_commission_shares);
+    let rewards: i64 = total_bonded > current_balance ? total_bonded as i64 - current_balance as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    current_balance += rewards as u64 - new_commission;
 
-    // current_shares += new_commission_shares;
-    // current_balance += new_commission;
-    // // Update total balance
-    // total_balance.set(0u8, current_balance);
+    let pending_deposit_pool: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    let new_commission_paleo: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    balances.set(OWED_COMMISSION, current_owed_commission + new_commission_paleo);
 
-    // // Calculate mint for deposit
-    // let new_shares: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, microcredits as u128, current_shares as u128);
+    total_paleo_minted += new_commission_paleo as u128;
+    current_balance += new_commission;
+    // Update bonded pool balance with latest rewards
+    balances.set(BONDED_POOL_BALANCE, current_balance);
+
+    // Calculate mint for deposit
+    let paleo_for_deposit: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, credits_deposit as u128, total_paleo_minted);
+    assert(paleo_for_deposit >= 1u64);
+    assert(paleo_for_deposit >= expected_paleo_mint);
 
     // Handle referrer
+  }
+
+  inline get_commission(
+    rewards: u128,
+    commission_rate: u128,
+  ) -> u64 {
+    let commission: u128 = rewards * commission_rate / PRECISION_UNSIGNED;
+    let commission_64: u64 = commission as u64;
+    return commission_64;
+  }
+
+  inline calculate_new_shares(bonded_balance: u128, pending_deposit_pool: u128, deposit: u128, shares: u128) -> u64 {
+    let full_balance: u128 = bonded_balance + pending_deposit_pool;
+    let new_total_shares: u128 = (shares * (full_balance + deposit)) / full_balance;
+    let diff: u128 = new_total_shares - shares;
+    let shares_to_mint: u64 = diff as u64;
+    return shares_to_mint;
   }
 
   // Note: requires the caller to create an allowance for the contract first
-  transition deposit_public(
+  async transition deposit_public(
     public credits_deposit: u64,
     public referrer: address
-  ) {
+  ) -> Future {
     // Transfer ALEO to pool
-    multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, credits_deposit as u128);
+    f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, credits_deposit as u128);
     // Mint pALEO to depositor
-    pondo_staked_aleo_token.aleo/mint_for_deposit(credits_deposit, self.caller);
+    f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
 
-    return then finalize(credits_deposit, referrer);
+    return then finalize(f0, f1, credits_deposit, expected_paleo_mint, referrer);
   }
 
-  finalize deposit_public(
+  async finalize_deposit_public(
+    public f0: Future,
+    public f1: Future,
     public credits_deposit: u64,
+    public expected_paleo_mint: u64,
     public referrer: address
   ) {
-    // Confirm pALEO mint amount
-    let aleo_pool: u128 = total_aleo as u128;
-    let ale_mint_amount: u64 = get_paleo_mint_amount(aleo_pool, credits_deposit as u128, ale_pool as u128);
-    assert(ale_mint_amount >= 1u64);
-    assert(ale_mint_amount >= expected_paleo_mint);
+    f0.await();
+    f1.await();
+    let base_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_1, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_2, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_3, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, base_bond_state).microcredits;
 
-    // Update deposit pool
-    balances.set(0u8, pool_balance);
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
+    let current_owed_commission: u64 = balances.get_or_use(OWED_COMMISSION, 0u64);
+    let total_paleo_minted: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+
+    let rewards: i64 = total_bonded > current_balance ? total_bonded as i64 - current_balance as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    current_balance += rewards as u64 - new_commission;
+
+    let pending_deposit_pool: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    let new_commission_paleo: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    balances.set(OWED_COMMISSION, current_owed_commission + new_commission_paleo);
+
+    total_paleo_minted += new_commission_paleo as u128;
+    current_balance += new_commission;
+    // Update bonded pool balance with latest rewards
+    balances.set(BONDED_POOL_BALANCE, current_balance);
+
+    // Calculate mint for deposit
+    let paleo_for_deposit: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, credits_deposit as u128, total_paleo_minted);
+    assert(paleo_for_deposit >= 1u64);
+    assert(paleo_for_deposit >= expected_paleo_mint);
 
     // Handle referrer
   }
 
-  transition bond_deposit_pool(
+  async transition bond_pool(
     validators: [address; 5],
     transfer_amounts: [u64; 5]
-  ) {
-    // Transfer to each validator
+  ) -> Future {
+    // Transfer to each delegator and bond
     // Will fail if each delegator doesn't reach the minimum bond amount
-    credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
-    delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
+    f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
+    f1: Future = delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
 
-    credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
-    delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
+    f2: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
+    f3: Future = delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
 
-    credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
-    delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
+    f4: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
+    f5: Future = delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
 
-    credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
-    delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
+    f6: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
+    f7: Future = delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
 
-    credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
-    delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
+    f8: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
+    f9: Future = delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
 
-    return then finalize(validators, transfer_amounts);
+    let futures: [Future; 10] = [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9];
+
+    return finalize_bond_pool(futures, validators, transfer_amounts);
   }
 
-  finalize bond_deposit_pool(
+  async finalize_bond_pool(
+    futures: [Future; 10],
     validators: [address; 5],
     transfer_amounts: [u64; 5]
   ) {
-    // ********** ASSERT INPUTS AND STATE **********
-    // Confirm bonding is allowed TODO: bonding should be allowed during withdrawals
-    let curr_protocol_state: u8 = protocol_state.get(0u8);
-    let bonding_allowed: bool = curr_protocol_state == 0u8 || curr_protocol_state == 3u8;
-    assert(bonding_allowed);
+    // TODO: await all futures
+    // ********** ASSERT INPUTS **********
+    // Confirm that each delegator has the correct proportion of the pool
+    // TODO: check bonded balances of each delegator
 
-    // Confirm transfer amounts are correct, update balances
-    let total_transfer: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
-    let d1_state: state = delegator_state.get(DELEGATOR_1);
-    let d2_state: state = delegator_state.get(DELEGATOR_2);
-    let d3_state: state = delegator_state.get(DELEGATOR_3);
-    let d4_state: state = delegator_state.get(DELEGATOR_4);
-    let d5_state: state = delegator_state.get(DELEGATOR_5);
-
-    let d1_transfer: u128 = d1_state.ideal_portion * total_transfer as u128 / PRECISION_UNSIGNED;
-    let d2_transfer: u128 = d2_state.ideal_portion * total_transfer as u128 / PRECISION_UNSIGNED;
-    let d3_transfer: u128 = d3_state.ideal_portion * total_transfer as u128 / PRECISION_UNSIGNED;
-    let d4_transfer: u128 = d4_state.ideal_portion * total_transfer as u128 / PRECISION_UNSIGNED;
-    let d5_transfer: u128 = d5_state.ideal_portion * total_transfer as u128 / PRECISION_UNSIGNED;
-
-    assert_eq(transfer_amounts[0u8], d1_transfer as u64);
-    assert_eq(transfer_amounts[1u8], d2_transfer as u64);
-    assert_eq(transfer_amounts[2u8], d3_transfer as u64);
-    assert_eq(transfer_amounts[3u8], d4_transfer as u64);
-    assert_eq(transfer_amounts[4u8], d5_transfer as u64);
-
-    assert_eq(validators[0u8], d1_state.validator);
-    assert_eq(validators[1u8], d2_state.validator);
-    assert_eq(validators[2u8], d3_state.validator);
-    assert_eq(validators[3u8], d4_state.validator);
-    assert_eq(validators[4u8], d5_state.validator);
 
     // Subtract transfer amounts from pool
-    pool_balance -= total_transfer;
-    balances.set(0u8, pool_balance);
+    let total_transfer: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
+    let deposit_pool_balance: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    deposit_pool_balance -= total_transfer;
+    balances.set(PENDING_DEPOSIT_BALANCE, deposit_pool_balance);
   }
 
   inline get_batch_height(height: u32) -> u32 {
@@ -223,15 +242,15 @@ program pondo_core_protocol.aleo {
     return min_block_round_up;
   }
 
-  transition create_withdraw_claim(
+  async transition withdraw_public(
     public current_height: u32,
-    // total amount of ale to burn, including fee
-    public ale_burn_amount: u64
-  ) {
+    // total amount of pALEO to burn, including fee
+    public paleo_burn_amount: u64
+  ) -> Future {
     let withdraw_block: u32 = get_batch_height(current_height);
-    pondo_staked_aleo.aleo/burn_public(ale_burn_amount);
-    // Mint fee to protocol in ale
-    let fee_calc: u128 = ale_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
+    pondo_staked_aleo.aleo/burn_public(paleo_burn_amount, self.caller);
+    // Mint fee to protocol in pALEO
+    let fee_calc: u128 = paleo_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
     let fee: u64 = fee_calc as u64;
     pondo_staked_aleo.aleo/mint_public(fee, pondo_token.aleo);
 
@@ -240,7 +259,7 @@ program pondo_core_protocol.aleo {
     return then finalize(current_height, net_ale_burn_amount, withdraw_block, credits_claim_amount);
   }
 
-  finalize create_withdraw_claim(
+  async function finalize_withdraw_public(
     current_height: u32,
     net_ale_burn_amount: u64,
     withdraw_block: u32,
@@ -274,78 +293,80 @@ program pondo_core_protocol.aleo {
     assert_eq(product_1, product_2);
   }
 
-  transition withdraw_unbond(
+  // -------------------
+  // REBALANCING FUNCTIONS
+  // -------------------
+
+  async transition rebalance_unbond(
     public unbond_amounts: [u64; 5],
-    public total_amount: u64,
-    public withdraw_block: u32
-    ) {
-    assert_eq(total_amount, unbond_amounts[0u8] + unbond_amounts[1u8] + unbond_amounts[2u8] + unbond_amounts[3u8] + unbond_amounts[4u8]);
-    delegator1.aleo/unbond(unbond_amounts[0u8]);
-    delegator2.aleo/unbond(unbond_amounts[1u8]);
-    delegator3.aleo/unbond(unbond_amounts[2u8]);
-    delegator4.aleo/unbond(unbond_amounts[3u8]);
-    delegator5.aleo/unbond(unbond_amounts[4u8]);
+    public commission_mint: u64
+  ) -> Future {
+    f0: Future = delegator1.aleo/unbond(unbond_amounts[0u8]);
+    f1: Future = delegator2.aleo/unbond(unbond_amounts[1u8]);
+    f2: Future = delegator3.aleo/unbond(unbond_amounts[2u8]);
+    f3: Future = delegator4.aleo/unbond(unbond_amounts[3u8]);
+    f4: Future = delegator5.aleo/unbond(unbond_amounts[4u8]);
+    f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
 
-    return then finalize(unbond_amounts, total_amount, withdraw_block);
+    return finalize_rebalance_unbond(f0, f1, f2, f3, f4, unbond_amounts, commission_mint);
   }
 
-  finalize withdraw_unbond(
+  async function finalize_rebalance_unbond(
+    public f0: Future,
+    public f1: Future,
+    public f2: Future,
+    public f3: Future,
+    public f4: Future,
     public unbond_amounts: [u64; 5],
-    public total_amount: u64,
-    public withdraw_block: u32
-    ) {
-    let saved_withdraw_amount: u64 = withdraw_batches.get_or_use(withdraw_block, 0u64);
-    // TODO: issue commission to protocol
+    public commission_mint: u64
+  ) {
+    f0.await();
+    f1.await();
+    f2.await();
+    f3.await();
+    f4.await();
 
-    // ********** ASSERT INPUTS AND STATE **********
-    assert_eq(saved_withdraw_amount, total_amount);
+    // Confirm that each delegator was fully unbonded
+    let default_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_1, default_bond_state);
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_2, default_bond_state);
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_3, default_bond_state);
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, default_bond_state);
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, default_bond_state);
+    assert_eq(delegator1_bonded, default_bond_state);
+    assert_eq(delegator2_bonded, default_bond_state);
+    assert_eq(delegator3_bonded, default_bond_state);
+    assert_eq(delegator4_bonded, default_bond_state);
+    assert_eq(delegator5_bonded, default_bond_state);
 
-    // ********** ASSERT THAT DELEGATOR PROPORTIONS DO NOT CHANGE **********
-    // check bonded balance for each delegator
-    // calculate proportion for each delegator
-
-
-    // TODO: margin for error?
-    // assert_eq(curr_d1_ratio, new_d1_ratio);
-    // assert_eq(curr_d2_ratio, new_d2_ratio);
-    // assert_eq(curr_d3_ratio, new_d3_ratio);
-    // assert_eq(curr_d4_ratio, new_d4_ratio);
-    // assert_eq(curr_d5_ratio, new_d5_ratio);
-
-    // *********** UPDATE PROTOCOL STATE **********
-    assert_eq(protocol_state.get(0u8), 0u8);
-    protocol_state.set(0u8, 10u8);
+    // TODO: Update owed commission
   }
 
-  transition withdraw_claim_unbond(
-    public unbond_amounts: [u64; 5]
-  ) {
-    // Claim unbonded credits and withdraw them to this contract
-    credits.aleo/claim_unbond_public(delegator1.aleo);
-    credits.aleo/claim_unbond_public(delegator2.aleo);
-    credits.aleo/claim_unbond_public(delegator3.aleo);
-    credits.aleo/claim_unbond_public(delegator4.aleo);
-    credits.aleo/claim_unbond_public(delegator5.aleo);
+  async transition claim_unbond(
+  ) -> Future {
+    f0: Future = credits.aleo/claim_unbond_public(delegator1.aleo);
+    f1: Future = credits.aleo/claim_unbond_public(delegator2.aleo);
+    f2: Future = credits.aleo/claim_unbond_public(delegator3.aleo);
+    f3: Future = credits.aleo/claim_unbond_public(delegator4.aleo);
+    f4: Future = credits.aleo/claim_unbond_public(delegator5.aleo);
 
-    return then finalize(unbond_amounts);
+    return finalize_claim_unbond(f0, f1, f2, f3, f4);
   }
 
-  finalize withdraw_claim_unbond(
-    public unbond_amounts: [u64; 5]
+  async function finalize_claim_unbond(
+    public f0: Future,
+    public f1: Future,
+    public f2: Future,
+    public f3: Future,
+    public f4: Future
   ) {
-    // ********** ASSERT INPUTS AND STATE **********
-    // TODO: assert the delegator account balances are empty
-    // if the balance isn't empty that means the delegator was
-    // forcibly unbonded and the fix_orphaned_delegator transition
-    // must be called
-    // also, if claim_unbond fails, the fix_orphaned_delegator transition
-    // needs to be called too
-
-    // update pending withdrawal
-
-    // *********** CHECK & UPDATE PROTOCOL STATE **********
-    assert_eq(protocol_state.get(0u8), 10u8);
-    // withdraw claim finished, set protocol back to normal
-    protocol_state.set(0u8, 0u8);
+    f0.await();
+    f1.await();
+    f2.await();
+    f3.await();
+    f4.await();
   }
 }
