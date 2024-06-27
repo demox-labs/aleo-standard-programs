@@ -1,1 +1,1 @@
-# aleo-staking
+# aleo-standard-programs
