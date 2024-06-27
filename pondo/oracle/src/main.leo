@@ -1,5 +1,9 @@
 import credits.aleo;
 
+// TODO: 
+// 1. Add a way for validators to ban themselves
+
+
 // The program to permissionless calculate the yield of reference delegators to validators
 // Note: Many reference delegators for the same validator are supported
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators

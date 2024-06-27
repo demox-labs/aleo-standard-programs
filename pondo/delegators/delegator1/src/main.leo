@@ -17,6 +17,7 @@ program delegator1.aleo {
     // 1 -> 3 done in edge case by forcible unbond by validator
     mapping state_mapping: u8 => u8;
     mapping validator_mapping: u8 => address;
+    mapping banned_validators: address => bool;
 
     async transition set_state(
       public new_state: u8
@@ -82,7 +83,7 @@ program delegator1.aleo {
       assert_eq(balance, 0u64);
 
       let current_state: u8 = state_mapping.get(0u8);
-      assert_eq(current_state, 0u8);
+      assert(current_state == 0u8 || current_state == 1u8);
 
       state_mapping.set(0u8, 1u8);
     }
@@ -121,6 +122,11 @@ program delegator1.aleo {
 
       let current_state: u8 = state_mapping.get(0u8);
       assert(current_state != 0u8);
+
+      if (current_state == 1u8) {
+        let validator = validator_mapping.get(0u8);
+        banned_validators.set(validator, true);
+      }
 
       state_mapping.set(0u8, 4u8);
     }
@@ -164,5 +170,6 @@ program delegator1.aleo {
       assert(current_state == 0u8);
 
       state_mapping.set(0u8, 4u8);
+      banned_validators.set(validator, true);
     }
 }
