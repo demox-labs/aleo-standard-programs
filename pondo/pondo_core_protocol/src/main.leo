@@ -9,7 +9,9 @@ program pondo_core_protocol.aleo {
   const PORTION_4: u128 = 110u128;
   const PORTION_5: u128 = 80u128;
   const MINIMUM_BOND_POOL: u64 = 125_000_000u64; // microcredits
-  const PROFITABILITY_TIMEFRAME: u32 = 40_000u32; // 1 week of blocks
+    // The number of blocks in an epoch
+  const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
+  const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
   const PROTOCOL_FEE: u128 = 100u128; // out of 1000, 10% fee
 
   const WITHDRAW_WAIT_MINIMUM: u32 = 15_000u32; // aproximately 2.5 days' of blocks
@@ -45,17 +47,29 @@ program pondo_core_protocol.aleo {
   }
 
   // 0u8 -> the last tracked balance of aleo bonded via the protocol
-  // 1u8 -> total amount of aleo pending deposit
-  // 2u8 -> total amount of aleo pending withdrawal
+  // 1u8 -> total amount of aleo held in the program that is waiting to be bonded
+  // 2u8 -> total amount of aleo held in the program that is reserved for withdrawals
   // 3u8 -> total amount of pALEO owed to the protocol, yet to be minted
   mapping balances: u8 => u64;
-
-  mapping withdraw_batches: u32 => u64;
 
   mapping boost_pool: address => u64;
 
   mapping portion_delegator: u128 => address;
   mapping delegator_performance: address => u64;
+
+  struct withdrawal_state {
+    microcredits: u64,
+    claim_block: u32
+  }
+
+  // address -> pending withdrawal for the delegator with this address
+  mapping withdrawals: address => withdrawal_state;
+  // u32 -> batch height -> total amount of aleo reserved for withdrawals in this batch
+  mapping withdrawal_batches: u32 => u64;
+
+  // -------------------
+  // DEPOSIT FUNCTIONS
+  // -------------------
 
   async transition deposit_public_as_signer(
     public credits_deposit: u64,
@@ -191,7 +205,128 @@ program pondo_core_protocol.aleo {
     // Handle referrer
   }
 
-  async transition bond_pool(
+  // -------------------
+  // WITHDRAW FUNCTIONS
+  // -------------------
+
+  async transition withdraw_public(
+    // total amount of pALEO to burn, including fee
+    public paleo_burn_amount: u64
+  ) -> Future {
+    // Burn pALEO for withdrawal
+    let f0: Future = pondo_staked_aleo.aleo/burn_public(paleo_burn_amount, self.caller);
+    // Mint withdrawal fee to pALEO pool for pondo token
+    let fee_calc: u128 = paleo_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
+    let fee: u64 = fee_calc as u64;
+    let f1: Future = pondo_staked_aleo.aleo/mint_public(fee, pondo_token.aleo);
+
+    let net_burn_amount: u64 = paleo_burn_amount - fee;
+    return finalize_withdraw_public(f0, f1, net_burn_amount, self.caller);
+  }
+
+  async function finalize_withdraw_public(
+    public f0: Future,
+    public f1: Future,
+    public net_burn_amount: u64,
+    public caller: address
+  ) {
+    f0.await();
+    f1.await();
+
+    // Assert that the caller does not have a pending withdrawal
+    let has_withdrawal: bool = withdrawals.contains(caller);
+    assert(!has_withdrawal);
+
+    // Calculate commission owed
+    let base_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_1, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_2, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_3, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, base_bond_state).microcredits;
+
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
+    let current_owed_commission: u64 = balances.get_or_use(OWED_COMMISSION, 0u64);
+    let paleo_minted_post_burn: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let total_paleo_minted: u128 = paleo_minted_post_burn + net_burn_amount as u128;
+
+    let rewards: i64 = total_bonded > current_balance ? total_bonded as i64 - current_balance as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    current_balance += rewards as u64 - new_commission;
+
+    let pending_deposit_pool: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    // Update owed commission balance
+    let new_commission_paleo: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    balances.set(OWED_COMMISSION, current_owed_commission + new_commission_paleo);
+    total_paleo_minted += new_commission_paleo as u128;
+    // Update total balance
+    balances.set(BONDED_POOL_BALANCE, current_balance + new_commission);
+
+    // Calculate full pool size
+    let full_pool: u128 = current_balance as u128 + pending_deposit_pool as u128;
+
+    // Calculate credits value of burned pALEO
+    let withdrawal_calculation: u128 = (net_burn_amount as u128 * full_pool as u128) / total_paleo_minted as u128;
+    let withdrawal: u64 = withdrawal_calculation as u64;
+
+    // Create withdrawal for caller in next batch
+    let batch_height: u32 = get_batch_height(block.height);
+    let withdrawal: withdrawal_state = withdrawal_state {
+      microcredits: withdrawal,
+      claim_block: batch_height
+    };
+    withdrawals.set(caller, withdrawal);
+    // Update total for batch
+    let batch_total: u64 = withdrawal_batches.get_or_use(batch_height, 0u64);
+    withdrawal_batches.set(batch_height, batch_total + withdrawal);
+  }
+
+  inline get_batch_height(height: u32) -> u32 {
+    // TODO: update for new epoch timing
+    let min_block_height: u32 = height + WITHDRAW_WAIT_MINIMUM;
+    let min_block_rounded_down: u32 = min_block_height / 10_000u32 * 10_000u32;
+    let min_block_round_up: u32 = min_block_rounded_down + 10_000u32;
+    return min_block_round_up;
+  }
+
+  // make permissionless?
+  async transition claim_withdrawal_public(
+    public credits_claim_amount: u64
+  ) -> Future {
+    let f0: Future = mtsp_credits_wrapper.aleo/deposit_credit_public(credits_claim_amount, self.caller);
+    let f1: Future = multi_token_support_program.aleo/transfer_public(CREDITS_TOKEN_ID, self.caller, credits_claim_amount as u128);
+
+    return finalize_claim_withdrawal_public(f0, f1, self.caller, credits_claim_amount);
+  }
+
+  async function finalize_claim_withdrawal_public(
+    public f0: Future,
+    public f1: Future,
+    public caller: address,
+    public credits_claim_amount: u64
+  ) {
+    f0.await();
+    f1.await();
+
+    // Confirm that the withdrawal amount is correct and that the withdrawal is ready
+    let withdrawal: withdrawal_state = withdrawals.get(caller);
+    assert(withdrawal.claim_block <= block.height);
+    assert(withdrawal.microcredits == credits_claim_amount);
+
+    // Remove withdrawal
+    withdrawals.remove(caller);
+
+    // Update pending withdrawal pool
+    let pending_withdrawal_pool: u64 = balances.get(PENDING_WITHDRAW_BALANCE);
+    pending_withdrawal_pool -= credits_claim_amount;
+    balances.set(PENDING_WITHDRAW_BALANCE, pending_withdrawal_pool);
+  }
+
+    async transition bond_pool(
     validators: [address; 5],
     transfer_amounts: [u64; 5]
   ) -> Future {
@@ -235,51 +370,6 @@ program pondo_core_protocol.aleo {
     balances.set(PENDING_DEPOSIT_BALANCE, deposit_pool_balance);
   }
 
-  inline get_batch_height(height: u32) -> u32 {
-    let min_block_height: u32 = height + WITHDRAW_WAIT_MINIMUM;
-    let min_block_rounded_down: u32 = min_block_height / 10_000u32 * 10_000u32;
-    let min_block_round_up: u32 = min_block_rounded_down + 10_000u32;
-    return min_block_round_up;
-  }
-
-  async transition withdraw_public(
-    public current_height: u32,
-    // total amount of pALEO to burn, including fee
-    public paleo_burn_amount: u64
-  ) -> Future {
-    let withdraw_block: u32 = get_batch_height(current_height);
-    pondo_staked_aleo.aleo/burn_public(paleo_burn_amount, self.caller);
-    // Mint fee to protocol in pALEO
-    let fee_calc: u128 = paleo_burn_amount as u128 * WITHDRAW_FEE / PRECISION_UNSIGNED;
-    let fee: u64 = fee_calc as u64;
-    pondo_staked_aleo.aleo/mint_public(fee, pondo_token.aleo);
-
-    // Withdraw ale less fee
-    let net_ale_burn_amount: u64 = ale_burn_amount - fee;
-    return then finalize(current_height, net_ale_burn_amount, withdraw_block, credits_claim_amount);
-  }
-
-  async function finalize_withdraw_public(
-    current_height: u32,
-    net_ale_burn_amount: u64,
-    withdraw_block: u32,
-    credits_withdraw: u64
-  ) {
-
-  }
-
-  async transition claim_withdrawal_public(
-    public credits_claim_amount: u64
-  ) -> Future {
-    let f0: Future = multi_token_support_program.aleo/dep
-  }
-
-  async function finalize_claim_withdrawal_public(
-
-  ) {
-
-  }
-
   // -------------------
   // REBALANCING FUNCTIONS
   // -------------------
@@ -295,7 +385,7 @@ program pondo_core_protocol.aleo {
     f4: Future = delegator5.aleo/unbond(unbond_amounts[4u8]);
     f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
 
-    return finalize_rebalance_unbond(f0, f1, f2, f3, f4, unbond_amounts, commission_mint);
+    return finalize_rebalance_unbond(f0, f1, f2, f3, f4, f5, unbond_amounts, commission_mint);
   }
 
   async function finalize_rebalance_unbond(
@@ -304,6 +394,7 @@ program pondo_core_protocol.aleo {
     public f2: Future,
     public f3: Future,
     public f4: Future,
+    public f5: Future,
     public unbond_amounts: [u64; 5],
     public commission_mint: u64
   ) {
@@ -312,6 +403,12 @@ program pondo_core_protocol.aleo {
     f2.await();
     f3.await();
     f4.await();
+    f5.await();
+
+    // TODO: confirm that rebalancing is allowed
+    // Rebalance is allowed during the first day of a new epoch
+    let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
+    assert(blocks_into_epoch < REBALANCE_PERIOD);
 
     // Confirm that each delegator was fully unbonded
     let default_bond_state: bond_state = bond_state {
@@ -329,10 +426,36 @@ program pondo_core_protocol.aleo {
     assert_eq(delegator4_bonded, default_bond_state);
     assert_eq(delegator5_bonded, default_bond_state);
 
-    // TODO: Update owed commission
+    // Update total balance and commission
+    let base_unbond_state: unbond_state = unbond_state {
+      microcredits: 0u64
+      height: 0u32
+    };
+    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_1, base_unbond_state).microcredits;
+    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_2, base_unbond_state).microcredits;
+    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_3, base_unbond_state).microcredits;
+    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_4, base_unbond_state).microcredits;
+    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_5, base_unbond_state).microcredits;
+
+    let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
+    let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
+    let current_owed_commission: u64 = balances.get_or_use(OWED_COMMISSION, 0u64);
+    // Total pALEO minted, including owed commission, minus the commission minted in the transition
+    let total_paleo_minted: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - commission_mint as u128;
+
+    let rewards: i64 = total_unbonding > current_balance ? total_unbonding as i64 - current_balance as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    current_balance += rewards as u64 - new_commission;
+
+    let pending_deposit_pool: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    let new_commission_paleo: u64 = calculate_new_shares(current_balance as u128, pending_deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    // New owed commission is whatever commission is left after the new commission mint, plus what we may have earned between calling the function and now
+    balances.set(OWED_COMMISSION, current_owed_commission + new_commission_paleo - commission_mint);
+    // Update total balance
+    balances.set(BONDED_POOL_BALANCE, current_balance + new_commission);
   }
 
-  async transition claim_unbond(
+  async transition rebalance_claim_unbond(
   ) -> Future {
     f0: Future = credits.aleo/claim_unbond_public(delegator1.aleo);
     f1: Future = credits.aleo/claim_unbond_public(delegator2.aleo);
@@ -343,7 +466,7 @@ program pondo_core_protocol.aleo {
     return finalize_claim_unbond(f0, f1, f2, f3, f4);
   }
 
-  async function finalize_claim_unbond(
+  async function finalize_rebalance_claim_unbond(
     public f0: Future,
     public f1: Future,
     public f2: Future,
@@ -355,5 +478,42 @@ program pondo_core_protocol.aleo {
     f2.await();
     f3.await();
     f4.await();
+  }
+
+  async transition rebalance_rebond(
+    public validators: [address; 5],
+    public transfer_amounts: [u64; 5]
+  ) -> Future {
+    // Transfer to each delegator and bond
+    // Will fail if each delegator doesn't reach the minimum bond amount
+    f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
+    f1: Future = delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
+
+    f2: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
+    f3: Future = delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
+
+    f4: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
+    f5: Future = delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
+
+    f6: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
+    f7: Future = delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
+
+    f8: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
+    f9: Future = delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
+
+    let futures: [Future; 10] = [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9];
+
+    return finalize_rebalance_rebond(f0, f1, f2, f3, f4, transfer_amounts);
+  }
+
+  async function finalize_rebalance_rebond(
+    public f0: Future,
+    public f1: Future,
+    public f2: Future,
+    public f3: Future,
+    public f4: Future,
+    public transfer_amounts: [u64; 5]
+  ) {
+
   }
 }
