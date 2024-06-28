@@ -10,6 +10,8 @@ program pondo_staked_aleo_token.aleo {
         min_claim_height: u32
     }
 
+    // TODO: Needs to have a register token that is permissioned
+
     async transition mint_public(
         public amount: u64,
         public receiver: address

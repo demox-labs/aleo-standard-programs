@@ -50,7 +50,7 @@ program delegator1.aleo {
       assert(new_state == UNBOND_NOT_ALLOWED);
     }
 
-    if (current_state == UNBOND_NOT_ALLOWED) {
+    if (current_state == TERMINAL) {
       assert(new_state == BOND_ALLOWED);
     }
 
@@ -183,7 +183,26 @@ program delegator1.aleo {
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state == BOND_ALLOWED);
 
-    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
+    state_mapping.set(0u8, TERMINAL);
     banned_validators.set(validator, true);
+  }
+
+  async transition insufficient_balance() -> Future {
+    return finalize_insufficient_balance();
+  }
+
+  async function finalize_insufficient_balance() {
+    let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
+    assert_eq(bonded, false);
+    let is_unbonding = credits.aleo/unbonding.contains(delegator1.aleo);
+    assert_eq(is_unbonding, false);
+
+    let balance: u64 = credits.aleo/account.get(delegator1.aleo);
+    assert(balance < 10_000_000_000u64);
+
+    let current_state: u8 = state_mapping.get(0u8);
+    assert(current_state == BOND_ALLOWED);
+
+    state_mapping.set(0u8, TERMINAL);
   }
 }
