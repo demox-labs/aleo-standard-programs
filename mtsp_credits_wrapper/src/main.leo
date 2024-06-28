@@ -1,8 +1,7 @@
 // The 'mtsp_credits_wrapper' program.
 program mtsp_credits_wrapper.aleo {
-    async transition deposit_credits_public(
-    amount: u64,
-    token_id: field
+  async transition deposit_credits_public(
+    public amount: u64
   ) -> Future {
     let f0: Future = credits.aleo/transfer_public_as_signer(multi_token_support_program.aleo, amount);
     return finalize_deposit_credits_public(f0, amount as u128, self.caller);
