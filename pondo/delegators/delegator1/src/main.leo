@@ -18,8 +18,9 @@ program delegator1.aleo {
   // 0 -> 1 done permissionless through bond
   // 1 -> 2 done by core protocol
   // 2 -> 3 done permissionless through unbond
-  // 3 -> 0 done by core protocol
-  // 1 -> 3 done in edge case by forcible unbond by validator
+  // 3 -> 4 done permissionless through record_claim
+  // 4 -> 0 done by core protocol
+  // 1 -> 4 done in edge case by forcible unbond by validator
   mapping state_mapping: u8 => u8;
   mapping validator_mapping: u8 => address;
   mapping banned_validators: address => bool;
@@ -37,7 +38,7 @@ program delegator1.aleo {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
     // Assert that the state is only of the valid options
-    assert(new_state == BOND_ALLOWED || new_state == UNBOND_NOT_ALLOWED);
+    assert(new_state == BOND_ALLOWED || new_state == UNBOND_ALLOWED);
 
     return finalize_set_state(new_state);
   }
@@ -47,15 +48,12 @@ program delegator1.aleo {
   ) {
     let current_state: u8 = state_mapping.get(0u8);
     if (current_state == UNBOND_NOT_ALLOWED) {
-      assert(new_state == UNBOND_NOT_ALLOWED);
+      assert(new_state == UNBOND_ALLOWED);
     }
 
     if (current_state == TERMINAL) {
       assert(new_state == BOND_ALLOWED);
     }
-
-    assert(new_state != UNBOND_NOT_ALLOWED);
-    assert(new_state != UNBOND_NOT_ALLOWED);
 
     state_mapping.set(0u8, new_state);
   }
@@ -73,6 +71,9 @@ program delegator1.aleo {
     new_validator: address
   ) {
     validator_mapping.set(0u8, new_validator);
+
+    let current_state: u8 = state_mapping.get(0u8);
+    assert(current_state == BOND_ALLOWED);
   }
 
   async transition bond(
@@ -118,9 +119,9 @@ program delegator1.aleo {
     assert_eq(bonded, false);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, UNBOND_NOT_ALLOWED);
+    assert_eq(current_state, UNBONDING);
 
-    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
+    state_mapping.set(0u8, UNBONDING);
   }
 
   // Assume someone called claim_unbond_public
@@ -142,7 +143,7 @@ program delegator1.aleo {
       banned_validators.set(validator, true);
     }
 
-    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
+    state_mapping.set(0u8, TERMINAL);
   }
 
   async transition transfer_to_core_protocol(public amount: u64) -> Future {
@@ -163,7 +164,7 @@ program delegator1.aleo {
     assert_eq(balance, 0u64);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, UNBOND_NOT_ALLOWED);
+    assert_eq(current_state, TERMINAL);
   }
 
   async transition bond_failed() -> Future {

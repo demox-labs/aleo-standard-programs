@@ -9,6 +9,7 @@ program pondo_core_protocol.aleo {
   const PORTION_4: u128 = 110u128;
   const PORTION_5: u128 = 80u128;
   const MINIMUM_BOND_POOL: u64 = 125_000_000u64; // microcredits
+
     // The number of blocks in an epoch
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
   const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
@@ -33,6 +34,13 @@ program pondo_core_protocol.aleo {
   const PENDING_WITHDRAW_BALANCE: u8 = 2u8;
   const OWED_COMMISSION: u8 = 3u8;
 
+  // DELEGATOR STATES
+  const BOND_ALLOWED: u8 = 0u8;
+  const UNBOND_NOT_ALLOWED: u8 = 1u8;
+  const UNBOND_ALLOWED: u8 = 2u8;
+  const UNBONDING: u8 = 3u8;
+  const TERMINAL: u8 = 4u8;
+
 
   // copied from credits.aleo, as structs are not importable
   struct bond_state {
@@ -54,18 +62,42 @@ program pondo_core_protocol.aleo {
 
   mapping boost_pool: address => u64;
 
-  mapping portion_delegator: u128 => address;
-  mapping delegator_performance: address => u64;
+  // 0u8 -> current epoch number, zero-indexed (block.height / BLOCKS_PER_EPOCH)
+  // Updated after rebalancing at the start of each epoch
+  mapping current_epoch: u8 => u32;
+
+  // 0u8 -> the amount of microcredits that have been withdrawn in the current epoch
+  //
+  mapping withdrawn_this_epoch: u8 => u64;
 
   struct withdrawal_state {
     microcredits: u64,
     claim_block: u32
   }
 
-  // address -> pending withdrawal for the delegator with this address
+  // address -> pending withdrawal for this address
   mapping withdrawals: address => withdrawal_state;
-  // u32 -> batch height -> total amount of aleo reserved for withdrawals in this batch
+  // u32 -> batch number (batch height / BLOCKS_PER_EPOCH) -> total amount of aleo reserved for withdrawals in this batch
   mapping withdrawal_batches: u32 => u64;
+
+  async transition initialize() -> Future {
+    let f0: Future = pondo_staked_aleo_token.aleo/register();
+    let f1: Future = pondo_token.aleo/initialize_token();
+  }
+
+  async function finalize_initialize(
+    public f0: Future,
+    public f1: Future
+  ) {
+    f0.await();
+    f1.await();
+
+    balances.set(BONDED_POOL_BALANCE, 0u64);
+    balances.set(PENDING_DEPOSIT_BALANCE, 0u64);
+    balances.set(PENDING_WITHDRAW_BALANCE, 0u64);
+    balances.set(OWED_COMMISSION, 0u64);
+    current_epoch.set(0u8, 0u32);
+  }
 
   // -------------------
   // DEPOSIT FUNCTIONS
@@ -104,12 +136,21 @@ program pondo_core_protocol.aleo {
     let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, base_bond_state).microcredits;
     let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, base_bond_state).microcredits;
 
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(DELEGATOR_1, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(DELEGATOR_2, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(DELEGATOR_3, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(DELEGATOR_4, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(DELEGATOR_5, 0u64);
+
     let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
+    let full_balance: u64 = total_bonded + total_account;
+
     let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
     let current_owed_commission: u64 = balances.get_or_use(OWED_COMMISSION, 0u64);
     let total_paleo_minted: u128 = multi_token_support_program/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
 
-    let rewards: i64 = total_bonded > current_balance ? total_bonded as i64 - current_balance as i64 : 0i64;
+    let rewards: i64 = full_balance > current_balance ? full_balance as i64 - current_balance as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
     current_balance += rewards as u64 - new_commission;
 
@@ -205,6 +246,49 @@ program pondo_core_protocol.aleo {
     // Handle referrer
   }
 
+  async transition distribute_deposits(
+    validators: [address; 5],
+    transfer_amounts: [u64; 5] // should be safe to transfer 0?
+  ) -> Future {
+    // Transfer to each delegator
+    let f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
+    let f1: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
+    let f2: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
+    let f3: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
+    let f4: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
+
+    return finalize_distribute_deposits(f0, validators, transfer_amounts);
+  }
+
+  async function finalize_distribute_deposits(
+    f0: Future,
+    f1: Future,
+    f2: Future,
+    f3: Future,
+    f4: Future,
+    transfer_amounts: [u64; 5]
+  ) {
+    f0.await();
+    f1.await();
+    f2.await();
+    f3.await();
+    f4.await();
+
+    // Subtract transfer amounts from pool
+    let total_transfer: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
+    let deposit_pool_balance: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
+    deposit_pool_balance -= total_transfer; // TODO: handle underflow
+    balances.set(PENDING_DEPOSIT_BALANCE, deposit_pool_balance);
+
+    // Confirm each delegator is already bonded and in the correct state
+    let delegator1_state: u8 = delegator1.aleo/state_mapping.get(0u8);
+    let delegator2_state: u8 = delegator2.aleo/state_mapping.get(0u8);
+    let delegator3_state: u8 = delegator3.aleo/state_mapping.get(0u8);
+    let delegator4_state: u8 = delegator4.aleo/state_mapping.get(0u8);
+    let delegator5_state: u8 = delegator5.aleo/state_mapping.get(0u8);
+    assert(delegator1_state == UNBOND_NOT_ALLOWED && delegator2_state == UNBOND_NOT_ALLOWED && delegator3_state == UNBOND_NOT_ALLOWED && delegator4_state == UNBOND_NOT_ALLOWED && delegator5_state == UNBOND_NOT_ALLOWED);
+  }
+
   // -------------------
   // WITHDRAW FUNCTIONS
   // -------------------
@@ -293,55 +377,9 @@ program pondo_core_protocol.aleo {
     return min_block_round_up;
   }
 
-  async transition bond_pool(
-    validators: [address; 5],
-    transfer_amounts: [u64; 5] // should be safe to transfer 0?
-  ) -> Future {
-    // Transfer to each delegator
-    let f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
-    let f1: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
-    let f2: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
-    let f3: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
-    let f4: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
-
-    return finalize_bond_pool(f0, validators, transfer_amounts);
-  }
-
-  async function finalize_bond_pool(
-    f0: Future,
-    f1: Future,
-    f2: Future,
-    f3: Future,
-    f4: Future,
-    transfer_amounts: [u64; 5]
-  ) {
-    f0.await();
-    f1.await();
-    f2.await();
-    f3.await();
-    f4.await();
-
-    // Subtract transfer amounts from pool
-    let total_transfer: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
-    let deposit_pool_balance: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
-    deposit_pool_balance -= total_transfer;
-    balances.set(PENDING_DEPOSIT_BALANCE, deposit_pool_balance);
-
-    // update total balance and owed commission?
-
-    // each delegator should be in state 1
-  }
-
   // -------------------
   // REBALANCING FUNCTIONS
   // -------------------
-
-  // DELEGATOR STATES
-  const BOND_ALLOWED: u8 = 0u8;
-  const UNBOND_NOT_ALLOWED: u8 = 1u8;
-  const UNBOND_ALLOWED: u8 = 2u8;
-  const UNBONDING: u8 = 3u8;
-  const TERMINAL: u8 = 4u8;
 
   async transition prep_rebalance() -> Future {
     let f0: Future = delegator1.aleo/set_state(UNBOND_ALLOWED);
