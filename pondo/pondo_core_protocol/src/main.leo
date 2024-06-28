@@ -293,109 +293,109 @@ program pondo_core_protocol.aleo {
     return min_block_round_up;
   }
 
-  // make permissionless?
-  async transition claim_withdrawal_public(
-    public credits_claim_amount: u64
-  ) -> Future {
-    let f0: Future = mtsp_credits_wrapper.aleo/deposit_credit_public(credits_claim_amount, self.caller);
-    let f1: Future = multi_token_support_program.aleo/transfer_public(CREDITS_TOKEN_ID, self.caller, credits_claim_amount as u128);
-
-    return finalize_claim_withdrawal_public(f0, f1, self.caller, credits_claim_amount);
-  }
-
-  async function finalize_claim_withdrawal_public(
-    public f0: Future,
-    public f1: Future,
-    public caller: address,
-    public credits_claim_amount: u64
-  ) {
-    f0.await();
-    f1.await();
-
-    // Confirm that the withdrawal amount is correct and that the withdrawal is ready
-    let withdrawal: withdrawal_state = withdrawals.get(caller);
-    assert(withdrawal.claim_block <= block.height);
-    assert(withdrawal.microcredits == credits_claim_amount);
-
-    // Remove withdrawal
-    withdrawals.remove(caller);
-
-    // Update pending withdrawal pool
-    let pending_withdrawal_pool: u64 = balances.get(PENDING_WITHDRAW_BALANCE);
-    pending_withdrawal_pool -= credits_claim_amount;
-    balances.set(PENDING_WITHDRAW_BALANCE, pending_withdrawal_pool);
-  }
-
-    async transition bond_pool(
+  async transition bond_pool(
     validators: [address; 5],
-    transfer_amounts: [u64; 5]
+    transfer_amounts: [u64; 5] // should be safe to transfer 0?
   ) -> Future {
-    // Transfer to each delegator and bond
-    // Will fail if each delegator doesn't reach the minimum bond amount
-    f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
-    f1: Future = delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
+    // Transfer to each delegator
+    let f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
+    let f1: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
+    let f2: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
+    let f3: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
+    let f4: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
 
-    f2: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
-    f3: Future = delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
-
-    f4: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
-    f5: Future = delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
-
-    f6: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
-    f7: Future = delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
-
-    f8: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
-    f9: Future = delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
-
-    let futures: [Future; 10] = [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9];
-
-    return finalize_bond_pool(futures, validators, transfer_amounts);
+    return finalize_bond_pool(f0, validators, transfer_amounts);
   }
 
   async function finalize_bond_pool(
-    futures: [Future; 10],
-    validators: [address; 5],
+    f0: Future,
+    f1: Future,
+    f2: Future,
+    f3: Future,
+    f4: Future,
     transfer_amounts: [u64; 5]
   ) {
-    // TODO: await all futures
-    // ********** ASSERT INPUTS **********
-    // Confirm that each delegator has the correct proportion of the pool
-    // TODO: check bonded balances of each delegator
-
+    f0.await();
+    f1.await();
+    f2.await();
+    f3.await();
+    f4.await();
 
     // Subtract transfer amounts from pool
     let total_transfer: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let deposit_pool_balance: u64 = balances.get_or_use(PENDING_DEPOSIT_BALANCE, 0u64);
     deposit_pool_balance -= total_transfer;
     balances.set(PENDING_DEPOSIT_BALANCE, deposit_pool_balance);
+
+    // update total balance and owed commission?
+
+    // each delegator should be in state 1
   }
 
   // -------------------
   // REBALANCING FUNCTIONS
   // -------------------
 
-  async transition rebalance_unbond(
-    public unbond_amounts: [u64; 5],
-    public commission_mint: u64
-  ) -> Future {
-    f0: Future = delegator1.aleo/unbond(unbond_amounts[0u8]);
-    f1: Future = delegator2.aleo/unbond(unbond_amounts[1u8]);
-    f2: Future = delegator3.aleo/unbond(unbond_amounts[2u8]);
-    f3: Future = delegator4.aleo/unbond(unbond_amounts[3u8]);
-    f4: Future = delegator5.aleo/unbond(unbond_amounts[4u8]);
-    f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
+  // DELEGATOR STATES
+  const BOND_ALLOWED: u8 = 0u8;
+  const UNBOND_NOT_ALLOWED: u8 = 1u8;
+  const UNBOND_ALLOWED: u8 = 2u8;
+  const UNBONDING: u8 = 3u8;
+  const TERMINAL: u8 = 4u8;
 
-    return finalize_rebalance_unbond(f0, f1, f2, f3, f4, f5, unbond_amounts, commission_mint);
+  async transition prep_rebalance() -> Future {
+    let f0: Future = delegator1.aleo/set_state(UNBOND_ALLOWED);
+    let f1: Future = delegator2.aleo/set_state(UNBOND_ALLOWED);
+    let f2: Future = delegator3.aleo/set_state(UNBOND_ALLOWED);
+    let f3: Future = delegator4.aleo/set_state(UNBOND_ALLOWED);
+    let f4: Future = delegator5.aleo/set_state(UNBOND_ALLOWED);
+    return finalize_prep_rebalance();
   }
 
-  async function finalize_rebalance_unbond(
+  async function finalize_prep_rebalance(
+    public f0: Future,
+    public f1: Future,
+    public f2: Future,
+    public f3: Future,
+    public f4: Future
+  ) {
+    f0.await();
+    f1.await();
+    f2.await();
+    f3.await();
+    f4.await();
+
+    // Confirm that rebalancing is allowed
+    // Rebalance is allowed during the first day of a new epoch
+    let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
+    assert(blocks_into_epoch < REBALANCE_PERIOD);
+    // TODO: save last rebalance block height
+
+    // read from boost pool and oracle to determine new validator set
+  }
+
+  async transition rebalance_retrieve_credits(
+    public transfer_amounts: [u64; 5],
+    public commission_mint: u64
+  ) -> Future {
+    let f0: Future = delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
+    let f1: Future = delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
+    let f2: Future = delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
+    let f3: Future = delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
+    let f4: Future = delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
+    let f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
+
+    return finalize_rebalance_retrieve_credits(f0, f1, f2, f3, f4, f5, transfer_amounts, commission_mint);
+  }
+
+  async function finalize_rebalance_retrieve_credits(
     public f0: Future,
     public f1: Future,
     public f2: Future,
     public f3: Future,
     public f4: Future,
     public f5: Future,
-    public unbond_amounts: [u64; 5],
+    public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) {
     f0.await();
@@ -405,37 +405,8 @@ program pondo_core_protocol.aleo {
     f4.await();
     f5.await();
 
-    // TODO: confirm that rebalancing is allowed
-    // Rebalance is allowed during the first day of a new epoch
-    let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
-    assert(blocks_into_epoch < REBALANCE_PERIOD);
-
-    // Confirm that each delegator was fully unbonded
-    let default_bond_state: bond_state = bond_state {
-      validator: pondo_core_protocol.aleo,
-      microcredits: 0u64
-    };
-    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_1, default_bond_state);
-    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_2, default_bond_state);
-    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_3, default_bond_state);
-    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_4, default_bond_state);
-    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(DELEGATOR_5, default_bond_state);
-    assert_eq(delegator1_bonded, default_bond_state);
-    assert_eq(delegator2_bonded, default_bond_state);
-    assert_eq(delegator3_bonded, default_bond_state);
-    assert_eq(delegator4_bonded, default_bond_state);
-    assert_eq(delegator5_bonded, default_bond_state);
-
     // Update total balance and commission
-    let base_unbond_state: unbond_state = unbond_state {
-      microcredits: 0u64
-      height: 0u32
-    };
-    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_1, base_unbond_state).microcredits;
-    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_2, base_unbond_state).microcredits;
-    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_3, base_unbond_state).microcredits;
-    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_4, base_unbond_state).microcredits;
-    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(DELEGATOR_5, base_unbond_state).microcredits;
+    let total: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
 
     let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
     let current_balance: u64 = balances.get_or_use(BONDED_POOL_BALANCE, 0u64);
@@ -453,67 +424,53 @@ program pondo_core_protocol.aleo {
     balances.set(OWED_COMMISSION, current_owed_commission + new_commission_paleo - commission_mint);
     // Update total balance
     balances.set(BONDED_POOL_BALANCE, current_balance + new_commission);
+
+    // Handle withdrawal batch
   }
 
-  async transition rebalance_claim_unbond(
+  async transition rebalance_redistribute(
+    public validators: [address; 5],
+    public transfer_amounts: [u64; 5]
   ) -> Future {
-    f0: Future = credits.aleo/claim_unbond_public(delegator1.aleo);
-    f1: Future = credits.aleo/claim_unbond_public(delegator2.aleo);
-    f2: Future = credits.aleo/claim_unbond_public(delegator3.aleo);
-    f3: Future = credits.aleo/claim_unbond_public(delegator4.aleo);
-    f4: Future = credits.aleo/claim_unbond_public(delegator5.aleo);
+    // Transfer to each delegator and set state to 0
+    let f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
+    let f1: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
+    let f2: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
+    let f3: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
+    let f4: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
 
-    return finalize_claim_unbond(f0, f1, f2, f3, f4);
+    let f5: Future = delegator1.aleo/set_state(BOND_ALLOWED);
+    let f6: Future = delegator2.aleo/set_state(BOND_ALLOWED);
+    let f7: Future = delegator3.aleo/set_state(BOND_ALLOWED);
+    let f8: Future = delegator4.aleo/set_state(BOND_ALLOWED);
+    let f9: Future = delegator5.aleo/set_state(BOND_ALLOWED);
+
+    return finalize_rebalance_redistribute(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9);
   }
 
-  async function finalize_rebalance_claim_unbond(
+  async function finalize_rebalance_redistribute(
     public f0: Future,
     public f1: Future,
     public f2: Future,
     public f3: Future,
-    public f4: Future
+    public f4: Future,
+    public f5: Future,
+    public f6: Future,
+    public f7: Future,
+    public f8: Future,
+    public f9: Future
   ) {
     f0.await();
     f1.await();
     f2.await();
     f3.await();
     f4.await();
-  }
-
-  async transition rebalance_rebond(
-    public validators: [address; 5],
-    public transfer_amounts: [u64; 5]
-  ) -> Future {
-    // Transfer to each delegator and bond
-    // Will fail if each delegator doesn't reach the minimum bond amount
-    f0: Future = credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
-    f1: Future = delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
-
-    f2: Future = credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
-    f3: Future = delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
-
-    f4: Future = credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
-    f5: Future = delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
-
-    f6: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
-    f7: Future = delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
-
-    f8: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
-    f9: Future = delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
-
-    let futures: [Future; 10] = [f0, f1, f2, f3, f4, f5, f6, f7, f8, f9];
-
-    return finalize_rebalance_rebond(f0, f1, f2, f3, f4, transfer_amounts);
-  }
-
-  async function finalize_rebalance_rebond(
-    public f0: Future,
-    public f1: Future,
-    public f2: Future,
-    public f3: Future,
-    public f4: Future,
-    public transfer_amounts: [u64; 5]
-  ) {
-
+    f5.await();
+    f6.await();
+    f7.await();
+    f8.await();
+    f9.await();
+    // check that there's still enough account balance left for pending withdrawals
+    // update pending deposits
   }
 }

@@ -8,6 +8,11 @@ program delegator1.aleo {
   // 3. 2u8 => Is allowed to unbond
   // 4. 3u8 => Is unbonding
   // 5. 4u8 => Delegator only has balance in credits.aleo/account and is not allowed to bond
+  const BOND_ALLOWED: u8 = 0u8;
+  const UNBOND_NOT_ALLOWED: u8 = 1u8;
+  const UNBOND_ALLOWED: u8 = 2u8;
+  const UNBONDING: u8 = 3u8;
+  const TERMINAL: u8 = 4u8;
 
   // Transitions:
   // 0 -> 1 done permissionless through bond
@@ -32,7 +37,7 @@ program delegator1.aleo {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
     // Assert that the state is only of the valid options
-    assert(new_state == 0u8 || new_state == 2u8);
+    assert(new_state == BOND_ALLOWED || new_state == UNBOND_NOT_ALLOWED);
 
     return finalize_set_state(new_state);
   }
@@ -41,16 +46,16 @@ program delegator1.aleo {
     new_state: u8
   ) {
     let current_state: u8 = state_mapping.get(0u8);
-    if (current_state == 1u8) {
-      assert(new_state == 2u8);
+    if (current_state == UNBOND_NOT_ALLOWED) {
+      assert(new_state == UNBOND_NOT_ALLOWED);
     }
 
-    if (current_state == 3u8) {
-      assert(new_state == 0u8);
+    if (current_state == UNBOND_NOT_ALLOWED) {
+      assert(new_state == BOND_ALLOWED);
     }
 
-    assert(new_state != 1u8);
-    assert(new_state != 3u8);
+    assert(new_state != UNBOND_NOT_ALLOWED);
+    assert(new_state != UNBOND_NOT_ALLOWED);
 
     state_mapping.set(0u8, new_state);
   }
@@ -92,9 +97,9 @@ program delegator1.aleo {
     assert_eq(balance, 0u64);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == 0u8 || current_state == 1u8);
+    assert(current_state == BOND_ALLOWED || current_state == UNBOND_NOT_ALLOWED);
 
-    state_mapping.set(0u8, 1u8);
+    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
   }
 
   async transition unbond(public amount: u64) -> Future {
@@ -113,9 +118,9 @@ program delegator1.aleo {
     assert_eq(bonded, false);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, 2u8);
+    assert_eq(current_state, UNBOND_NOT_ALLOWED);
 
-    state_mapping.set(0u8, 3u8);
+    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
   }
 
   // Assume someone called claim_unbond_public
@@ -130,26 +135,26 @@ program delegator1.aleo {
     assert_eq(is_unbonding, false);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state != 0u8);
+    assert(current_state != BOND_ALLOWED);
 
-    if (current_state == 1u8) {
+    if (current_state == UNBOND_NOT_ALLOWED) {
       let validator: address = validator_mapping.get(0u8);
       banned_validators.set(validator, true);
     }
 
-    state_mapping.set(0u8, 4u8);
+    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
   }
 
-  async transition transfer_pondo(public amount: u64) -> Future {
+  async transition transfer_to_core_protocol(public amount: u64) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
     let f0: Future = credits.aleo/transfer_public(pondo_core_protocol.aleo, amount);
 
-    return finalize_transfer_pondo(f0);
+    return finalize_transfer_to_core_protocol(f0);
   }
 
-  async function finalize_transfer_pondo(
+  async function finalize_transfer_to_core_protocol(
     f0: Future
   ) {
     f0.await();
@@ -158,7 +163,7 @@ program delegator1.aleo {
     assert_eq(balance, 0u64);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, 4u8);
+    assert_eq(current_state, UNBOND_NOT_ALLOWED);
   }
 
   async transition bond_failed() -> Future {
@@ -176,9 +181,9 @@ program delegator1.aleo {
     assert(validator_committee_state.is_open == false);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == 0u8);
+    assert(current_state == BOND_ALLOWED);
 
-    state_mapping.set(0u8, 4u8);
+    state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
     banned_validators.set(validator, true);
   }
 }
