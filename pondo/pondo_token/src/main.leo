@@ -28,19 +28,14 @@ program pondo_token.aleo {
     f1.await();
   }
 
-  // async transition burn_public(public burner: address, public amount: u64) -> Future {
-  //   let token_owner: multi_token_support_program_v1.aleo/TokenOwner = multi_token_support_program_v1.aleo/TokenOwner {
-  //   token_id: PONDO_TOKEN_ID,
-  //   owner: owner,
-  //   };
+  async transition burn_public(public burner: address, public amount: u64) -> Future {
+    let f0: Future = multi_token_support_program_v1.aleo/burn_public(PONDO_TOKEN_ID, burner, amount as u128);
+    return finalize_burn_public(f0);
+  }
 
-  //   let f0: Future = multi_token_support_program_v1.aleo/burn_public(token_owner, amount as u128);
-  //   return finalize_burn_public(f0);
-  // }
-
-  // async function finalize_burn_public(f0: Future) {
-  //   f0.await();
-  // }
+  async function finalize_burn_public(f0: Future) {
+    f0.await();
+  }
 
   async transition burn_private(
     private input_record: multi_token_support_program_v1.aleo/Token,

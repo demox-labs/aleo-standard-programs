@@ -21,6 +21,21 @@ struct TokenOwner:
 
 
 
+function burn_public:
+    input r0 as address.public;
+    input r1 as u64.public;
+    cast r1 into r2 as u128;
+    call multi_token_support_program_v1.aleo/burn_public 0field r0 r2 into r3;
+    async burn_public r3 into r4;
+    output r4 as pondo_token.aleo/burn_public.future;
+
+finalize burn_public:
+    input r0 as multi_token_support_program_v1.aleo/burn_public.future;
+    await r0;
+
+
+
+
 function burn_private:
     input r0 as multi_token_support_program_v1.aleo/Token.record;
     input r1 as u128.private;
