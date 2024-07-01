@@ -76,13 +76,13 @@ program multi_token_support_program.aleo {
   }
 
   async transition register_token(
-    token_id: field,
-    name: u128,
-    symbol: u128,
-    decimals: u8,
-    max_supply: u128,
-    external_authorization_required: bool,
-    external_authorization_party: address
+    public token_id: field,
+    public name: u128,
+    public symbol: u128,
+    public decimals: u8,
+    public max_supply: u128,
+    public external_authorization_required: bool,
+    public external_authorization_party: address
     ) -> Future {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
     let token: TokenMetadata = TokenMetadata {
@@ -109,9 +109,9 @@ program multi_token_support_program.aleo {
   }
 
   async transition update_token_management(
-    token_id: field,
-    admin: address,
-    external_authorization_party: address
+    public token_id: field,
+    public admin: address,
+    public external_authorization_party: address
   ) -> Future {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
     return finalize_update_token_management(token_id, admin, external_authorization_party, self.caller);
@@ -140,10 +140,10 @@ program multi_token_support_program.aleo {
   }
 
   async transition mint_public(
-    token_id: field,
-    recipient: address,
-    amount: u128,
-    authorized_until: u32
+    public token_id: field,
+    public recipient: address,
+    public amount: u128,
+    public authorized_until: u32
   ) -> Future {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
     return finalize_mint_public(token_id, recipient, amount, authorized_until, self.caller);
@@ -207,11 +207,11 @@ program multi_token_support_program.aleo {
   }
 
   async transition mint_private(
-    token_id: field,
-    recipient: address,
-    amount: u128,
-    external_authorization_required: bool,
-    authorized_until: u32
+    public token_id: field,
+    public recipient: address,
+    public amount: u128,
+    public external_authorization_required: bool,
+    public authorized_until: u32
     ) -> (Token, Future) {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
     let token: Token = Token {
@@ -259,7 +259,7 @@ program multi_token_support_program.aleo {
     registered_tokens.set(token_id, new_metadata);
   }
 
-  async transition burn_public(owner: TokenOwner, amount: u128) -> Future {
+  async transition burn_public(public owner: TokenOwner, public amount: u128) -> Future {
     assert(owner.token_id != CREDITS_RESERVED_TOKEN_ID);
     return finalize_burn_public(owner, amount, self.caller);
   }
@@ -319,7 +319,7 @@ program multi_token_support_program.aleo {
     registered_tokens.set(owner.token_id, new_metadata);
   }
 
-  async transition burn_private(input_record: Token, amount: u128) -> (Token, Future) {
+  async transition burn_private(input_record: Token, public amount: u128) -> (Token, Future) {
     assert(input_record.token_id != CREDITS_RESERVED_TOKEN_ID);
     let output_record: Token = Token {
         owner: input_record.owner,
@@ -354,9 +354,9 @@ program multi_token_support_program.aleo {
   }
 
   async transition prehook_public(
-    owner: TokenOwner,
-    amount: u128,
-    authorized_until: u32
+    public owner: TokenOwner,
+    public amount: u128,
+    public authorized_until: u32
   ) -> Future {
     return finalize_prehook_public(owner, amount, authorized_until, self.caller);
   }
@@ -369,9 +369,8 @@ program multi_token_support_program.aleo {
   ) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    let token_admin: address = token.admin;
     let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == token_admin || caller == external_authorization_party);
+    assert(caller == external_authorization_party);
 
     // Get the balance for the recipient
     let balance_key: field = BHP256::hash_to_field(owner);
@@ -423,16 +422,19 @@ program multi_token_support_program.aleo {
   async function finalize_prehook_private(token_id: field, caller: address) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(token_id);
-    let token_admin: address = token.admin;
     let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == token_admin || caller == external_authorization_party);
+    assert(caller == external_authorization_party);
   }
 
   // -------------------------
   // Called by token owners/DeFi contracts
   // -------------------------
 
-  async transition transfer_public(token_id: field, recipient: address, amount: u128) -> Future {
+  async transition transfer_public(
+    public token_id: field,
+    public recipient: address,
+    public amount: u128
+  ) -> Future {
     return finalize_transfer_public(token_id, recipient, amount, self.caller);
   }
 
@@ -491,7 +493,11 @@ program multi_token_support_program.aleo {
     }
   }
 
-  async transition transfer_public_as_signer(token_id: field, recipient: address, amount: u128) -> Future {
+  async transition transfer_public_as_signer(
+    public token_id: field,
+    public recipient: address,
+    public amount: u128
+  ) -> Future {
     return finalize_transfer_public_as_signer(token_id, recipient, amount, self.signer);
   }
 
@@ -550,7 +556,11 @@ program multi_token_support_program.aleo {
     }
   }
 
-  async transition approve_public(token_id: field, spender: address, amount: u128) -> Future {
+  async transition approve_public(
+    public token_id: field,
+    public spender: address,
+    public amount: u128
+  ) -> Future {
     return finalize_approve_public(token_id, spender, amount, self.caller);
   }
 
@@ -577,9 +587,9 @@ program multi_token_support_program.aleo {
   }
 
   async transition unapprove_public(
-    token_id: field,
-    spender: address,
-    amount: u128
+    public token_id: field,
+    public spender: address,
+    public amount: u128
   ) -> Future {
     return finalize_unapprove_public(token_id, spender, amount, self.caller);
   }
@@ -603,10 +613,10 @@ program multi_token_support_program.aleo {
   }
 
   async transition transfer_from_public(
-    token_id: field,
-    owner: address,
-    recipient: address,
-    amount: u128
+    public token_id: field,
+    public owner: address,
+    public recipient: address,
+    public amount: u128
   ) -> Future {
     return finalize_transfer_from_public(token_id, owner, recipient, amount, self.caller);
   }
@@ -680,10 +690,10 @@ program multi_token_support_program.aleo {
   }
 
   async transition transfer_public_to_private(
-    token_id: field,
+    public token_id: field,
     recipient: address,
-    amount: u128,
-    external_authorization_required: bool
+    public amount: u128,
+    public external_authorization_required: bool
   ) -> (Token, Future) {
     let authorized_until: u32 = external_authorization_required ? 0u32 : 4294967295u32;
     let token: Token = Token {
@@ -693,12 +703,11 @@ program multi_token_support_program.aleo {
       external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
-    return (token, finalize_transfer_public_to_private(token_id, recipient, amount, self.caller, external_authorization_required));
+    return (token, finalize_transfer_public_to_private(token_id, amount, self.caller, external_authorization_required));
   }
 
   async function finalize_transfer_public_to_private(
     token_id: field,
-    recipient: address,
     amount: u128,
     owner: address,
     external_authorization_required: bool
@@ -726,11 +735,11 @@ program multi_token_support_program.aleo {
   }
 
   async transition transfer_from_public_to_private(
-    token_id: field,
-    owner: address,
+    public token_id: field,
+    public owner: address,
     recipient: address,
-    amount: u128,
-    external_authorization_required: bool
+    public amount: u128,
+    public external_authorization_required: bool
   ) -> (Token, Future) {
     let authorized_until: u32 = external_authorization_required ? 0u32 : 4294967295u32;
     let token: Token = Token {
@@ -740,13 +749,12 @@ program multi_token_support_program.aleo {
       external_authorization_required: external_authorization_required,
       authorized_until: authorized_until
     };
-    return (token, finalize_transfer_from_public_to_private(token_id, owner, recipient, amount, self.caller, external_authorization_required));
+    return (token, finalize_transfer_from_public_to_private(token_id, owner, amount, self.caller, external_authorization_required));
   }
 
   async function finalize_transfer_from_public_to_private(
     token_id: field,
     owner: address,
-    recipient: address,
     amount: u128,
     spender: address,
     external_authorization_required: bool
@@ -821,8 +829,8 @@ program multi_token_support_program.aleo {
   }
 
   async transition transfer_private_to_public(
-    recipient: address,
-    amount: u128,
+    public recipient: address,
+    public amount: u128,
     input_record: Token
   ) -> (Token, Future) {
     let updated_record: Token = Token {
@@ -865,60 +873,5 @@ program multi_token_support_program.aleo {
     } else {
       authorized_balances.set(recipient_balance_key, new_recipient_balance);
     }
-  }
-
-  // -------------------------
-  // credits.aleo wrapper
-  // -------------------------
-
-  async transition withdraw_credits_public(
-    amount: u64
-  ) -> Future {
-    let f0: Future = credits.aleo/transfer_public(self.caller, amount);
-    return finalize_withdraw_credits_public(f0, amount as u128, self.caller);
-  }
-
-  async function finalize_withdraw_credits_public(
-    f0: Future,
-    amount: u128,
-    caller: address
-  ) {
-    f0.await();
-    // Get the credits balance for the caller
-    let balance_key: TokenOwner = TokenOwner {
-      account: caller,
-      token_id: CREDITS_RESERVED_TOKEN_ID
-    };
-    let balance_key_hash: field = BHP256::hash_to_field(balance_key);
-    let balance: Balance = authorized_balances.get(balance_key_hash);
-    // Decrement the balance by the amount withdrawn, underflow will be caught by the VM
-    let new_balance: Balance = Balance {
-      token_id: CREDITS_RESERVED_TOKEN_ID,
-      account: caller,
-      balance: balance.balance - amount,
-      authorized_until: balance.authorized_until
-    };
-    authorized_balances.set(balance_key_hash, new_balance);
-  }
-
-  async transition withdraw_credits_private(
-    token_record: Token,
-    amount: u64
-  ) -> (Token, credits.aleo/credits, Future) {
-    assert(token_record.token_id == CREDITS_RESERVED_TOKEN_ID);
-    let credits_record: (credits.aleo/credits, Future) = credits.aleo/transfer_public_to_private(token_record.owner, amount);
-    let updated_record: Token = Token {
-      owner: token_record.owner,
-      amount: token_record.amount - amount as u128,
-      token_id: token_record.token_id,
-      external_authorization_required: token_record.external_authorization_required,
-      authorized_until: token_record.authorized_until
-    };
-
-    return (updated_record, credits_record.0, finalize_withdraw_credits_private());
-  }
-
-  async function finalize_withdraw_credits_private() {
-    return;
   }
 }
