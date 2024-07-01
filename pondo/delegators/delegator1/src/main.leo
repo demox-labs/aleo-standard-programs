@@ -174,7 +174,7 @@ program delegator1.aleo {
   async function finalize_bond_failed() {
     let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
     assert_eq(bonded, false);
-    let is_unbonding = credits.aleo/unbonding.contains(delegator1.aleo);
+    let is_unbonding: bool = credits.aleo/unbonding.contains(delegator1.aleo);
     assert_eq(is_unbonding, false);
 
     let validator: address = validator_mapping.get(0u8);
@@ -195,7 +195,7 @@ program delegator1.aleo {
   async function finalize_insufficient_balance() {
     let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
     assert_eq(bonded, false);
-    let is_unbonding = credits.aleo/unbonding.contains(delegator1.aleo);
+    let is_unbonding: bool = credits.aleo/unbonding.contains(delegator1.aleo);
     assert_eq(is_unbonding, false);
 
     let balance: u64 = credits.aleo/account.get(delegator1.aleo);

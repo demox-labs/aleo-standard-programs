@@ -2,8 +2,8 @@ program pondo_token.aleo {
     // The Pondo token is only minted once and the total supply is fixed.
     async transition initialize_token() -> Future {
         assert_eq(self.caller, pondo_core_protocol.aleo);
-        let f0: Future = multi_token_support_program.aleo/register_token();
-        let f1: Future = multi_token_support_program.aleo/mint_public();
+        let f0: Future = multi_token_support_program_v1.aleo/register_token();
+        let f1: Future = multi_token_support_program_v1.aleo/mint_public();
 
         return finalize_initialize_token(f0, f1);
     }
@@ -16,12 +16,12 @@ program pondo_token.aleo {
         f1.await();
     }
 
-    transition burn_private(private input_record: multi_token_support_program.aleo/Token) {
-        return multi_token_support_program.aleo/Token = multi_token_support_program.aleo/burn_private(input_record, burn_amount);
+    transition burn_private(private input_record: multi_token_support_program_v1.aleo/Token) {
+        return multi_token_support_program_v1.aleo/Token = multi_token_support_program_v1.aleo/burn_private(input_record, burn_amount);
     }
 
     async transition burn_public(public burner: address, public amount: u64) {
-        return multi_token_support_program.aleo/burn_public();
+        return multi_token_support_program_v1.aleo/burn_public();
     }
 
     // -----------------------------------------------------------

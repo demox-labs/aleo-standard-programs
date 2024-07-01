@@ -1,4 +1,4 @@
-import multi_token_support_program.aleo;
+import multi_token_support_program_v1.aleo;
 
 // -----------------------------------------------------------
 // pALEO Token Program
@@ -18,33 +18,33 @@ program pondo_staked_aleo_token.aleo {
     ) -> Future {
         assert_eq(self.caller, pondo_core_protocol.aleo);
 
-        return multi_token_support_program.aleo/mint_public();
+        return multi_token_support_program_v1.aleo/mint_public();
     }
 
     async transition burn_public(public amount: u64) -> Future {
         assert_eq(self.caller, pondo_core_protocol.aleo);
 
-        return multi_token_support_program.aleo/burn_public();
+        return multi_token_support_program_v1.aleo/burn_public();
     }
 
     transition mint_private(
         public amount: u64,
         private receiver: address
-    ) -> multi_token_support_program.aleo/Token {
+    ) -> multi_token_support_program_v1.aleo/Token {
         assert_eq(self.caller, pondo_core_protocol.aleo);
 
-        return multi_token_support_program.aleo/mint_private();
+        return multi_token_support_program_v1.aleo/mint_private();
     }
 
     transition burn_private(
-        private input_record: multi_token_support_program.aleo/Token,
+        private input_record: multi_token_support_program_v1.aleo/Token,
         private burn_amount: u64,
         private credits_claim_amount: u64,
         private min_block_height: u32
-    ) -> (multi_token_support_program.aleo/Token, claim) {
+    ) -> (multi_token_support_program_v1.aleo/Token, claim) {
         assert_eq(self.caller, pondo_core_protocol.aleo);
 
-        let output_token: multi_token_support_program.aleo/Token = multi_token_support_program.aleo/burn_private(input_record, burn_amount);
+        let output_token: multi_token_support_program_v1.aleo/Token = multi_token_support_program_v1.aleo/burn_private(input_record, burn_amount);
         let output_claim: claim = claim {
             owner: input_record.owner,
             amount: credits_claim_amount,

@@ -1,9 +1,13 @@
+import multi_token_support_program_v1.aleo;
+
 // The 'mtsp_credits_wrapper' program.
 program mtsp_credits_wrapper.aleo {
   async transition deposit_credits_public(
     public amount: u64
   ) -> Future {
-    let f0: Future = credits.aleo/transfer_public_as_signer(multi_token_support_program.aleo, amount);
+    let f0: Future = credits.aleo/transfer_public_as_signer(multi_token_support_program_v1.aleo, amount);
+    let f1: Future = multi_token_support_program_v1.aleo/mint_public(CREDITS_RESERVED_TOKEN_ID, self.caller, );
+
     return finalize_deposit_credits_public(f0, amount as u128, self.caller);
   }
 
@@ -41,7 +45,7 @@ program mtsp_credits_wrapper.aleo {
     input_record: credits.aleo/credits,
     amount: u64
   ) -> (credits.aleo/credits, Token, Future) {
-    let updated_record: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, multi_token_support_program.aleo, amount);
+    let updated_record: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, multi_token_support_program_v1.aleo, amount);
     let token: Token = Token {
       owner: input_record.owner,
       amount: amount as u128,
@@ -50,10 +54,10 @@ program mtsp_credits_wrapper.aleo {
       authorized_until: 4294967295u32
     };
 
-    return (updated_record.0, token, finalize_deposit_credits_private());
+    return (updated_record.0, token, finalize_deposit_credits_private(updated_record.1));
   }
 
-  async function finalize_deposit_credits_private() {
-    return;
+  async function finalize_deposit_credits_private(f0: Future) {
+    f0.await();
   }
 }

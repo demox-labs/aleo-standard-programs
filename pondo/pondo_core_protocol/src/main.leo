@@ -207,7 +207,7 @@ program pondo_core_protocol.aleo {
     public referrer: address
   ) -> Future {
     // Transfer ALEO to pool
-    f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, credits_deposit as u128);
+    f0: Future = multi_token_support_program_v1.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, credits_deposit as u128);
     // Mint pALEO to depositor
     f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
 
@@ -381,7 +381,7 @@ program pondo_core_protocol.aleo {
   ) -> Future {
     // Transfer to the owner
     let f0: Future = mtsp_credits_wrapper.aleo/deposit_credits_public(amount);
-    let f1: Future = multi_token_support_program.aleo/transfer_public(CREDITS_TOKEN_ID, owner, amount as u128);
+    let f1: Future = multi_token_support_program_v1.aleo/transfer_public(CREDITS_TOKEN_ID, owner, amount as u128);
 
     return finalize_claim_withdrawal_public(f0, f1, owner, amount);
   }
@@ -454,8 +454,8 @@ program pondo_core_protocol.aleo {
     public amount: u64,
     public validator: address
   ) -> Future {
-    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, amount as u128);
-    let f1: Future = multi_token_support_program.aleo/withdraw_credits_public(amount);
+    let f0: Future = multi_token_support_program_v1.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, pondo_core_protocol.aleo, amount as u128);
+    let f1: Future = multi_token_support_program_v1.aleo/withdraw_credits_public(amount);
 
     return finalize_boost_public(f0, f1, amount, validator);
   }
