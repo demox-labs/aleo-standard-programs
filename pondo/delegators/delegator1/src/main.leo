@@ -59,7 +59,7 @@ program delegator1.aleo {
   }
 
   async transition set_validator(
-    public new_validator: u8
+    public new_validator: address
   ) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
@@ -73,7 +73,9 @@ program delegator1.aleo {
     validator_mapping.set(0u8, new_validator);
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == BOND_ALLOWED);
+    assert(current_state == TERMINAL);
+
+    state_mapping.set(0u8, BOND_ALLOWED);
   }
 
   async transition bond(

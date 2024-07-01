@@ -2,5 +2,12 @@
     "program": "pondo_token.aleo",
     "version": "0.0.0",
     "description": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "multi_token_support_program_v1.aleo",
+            "location": "local",
+            "path": "../../multi_token_support_program"
+        }
+    ]
 }

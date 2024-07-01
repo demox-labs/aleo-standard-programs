@@ -259,12 +259,26 @@ program multi_token_support_program_v1.aleo {
     registered_tokens.set(token_id, new_metadata);
   }
 
-  async transition burn_public(public owner: TokenOwner, public amount: u128) -> Future {
-    assert(owner.token_id != CREDITS_RESERVED_TOKEN_ID);
-    return finalize_burn_public(owner, amount, self.caller);
+  async transition burn_public(
+    public token_id: field,
+    public owner: address,
+    public amount: u128
+  ) -> Future {
+    assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+
+    let token_owner: TokenOwner = TokenOwner {
+      account: owner,
+      token_id: token_id
+    };
+
+    return finalize_burn_public(token_owner, amount, self.caller);
   }
 
-  async function finalize_burn_public(owner: TokenOwner, amount: u128, token_admin: address) {
+  async function finalize_burn_public(
+    owner: TokenOwner,
+    amount: u128,
+    token_admin: address
+  ) {
     // Check that the token exists, and that the caller is the token admin
     // Check that the token supply - amount >= 0
     let token: TokenMetadata = registered_tokens.get(owner.token_id);

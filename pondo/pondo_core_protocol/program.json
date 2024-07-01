@@ -10,7 +10,12 @@
             "network": "testnet"
         },
         {
-            "name": "oracle.aleo",
+            "name": "multi_token_support_program_v1.aleo",
+            "location": "local",
+            "path": "../../multi_token_support_program"
+        },
+        {
+            "name": "pondo_oracle.aleo",
             "location": "local",
             "path": "../oracle"
         },

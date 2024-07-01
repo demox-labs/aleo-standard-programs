@@ -10,7 +10,7 @@
             "network": "testnet"
         },
         {
-            "name": "pondo_oracle.aleo",
+            "name": "oracle.aleo",
             "location": "local",
             "path": "../oracle"
         },
@@ -33,21 +33,6 @@
             "name": "delegator2.aleo",
             "location": "local",
             "path": "../delegators/delegator2"
-        },
-        {
-            "name": "delegator3.aleo",
-            "location": "local",
-            "path": "../delegators/delegator3"
-        },
-        {
-            "name": "delegator4.aleo",
-            "location": "local",
-            "path": "../delegators/delegator4"
-        },
-        {
-            "name": "delegator5.aleo",
-            "location": "local",
-            "path": "../delegators/delegator5"
         }
     ]
 }

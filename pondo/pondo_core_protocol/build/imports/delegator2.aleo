@@ -1,5 +1,5 @@
 import credits.aleo;
-program delegator1.aleo;
+program delegator2.aleo;
 
 struct committee_state:
     is_open as boolean;
@@ -30,7 +30,7 @@ function set_state:
     or r1 r2 into r3;
     assert.eq r3 true;
     async set_state r0 into r4;
-    output r4 as delegator1.aleo/set_state.future;
+    output r4 as delegator2.aleo/set_state.future;
 
 finalize set_state:
     input r0 as u8.public;
@@ -58,15 +58,14 @@ function set_validator:
     input r0 as address.public;
     assert.eq self.caller pondo_core_protocol.aleo;
     async set_validator r0 into r1;
-    output r1 as delegator1.aleo/set_validator.future;
+    output r1 as delegator2.aleo/set_validator.future;
 
 finalize set_validator:
     input r0 as address.public;
     set r0 into validator_mapping[0u8];
     get state_mapping[0u8] into r1;
-    is.eq r1 4u8 into r2;
+    is.eq r1 0u8 into r2;
     assert.eq r2 true;
-    set 0u8 into state_mapping[0u8];
 
 
 
@@ -74,9 +73,9 @@ finalize set_validator:
 function bond:
     input r0 as address.public;
     input r1 as u64.public;
-    call credits.aleo/bond_public r0 delegator1.aleo r1 into r2;
+    call credits.aleo/bond_public r0 delegator2.aleo r1 into r2;
     async bond r0 r2 into r3;
-    output r3 as delegator1.aleo/bond.future;
+    output r3 as delegator2.aleo/bond.future;
 
 finalize bond:
     input r0 as address.public;
@@ -84,7 +83,7 @@ finalize bond:
     await r1;
     get validator_mapping[0u8] into r2;
     assert.eq r0 r2;
-    get credits.aleo/account[delegator1.aleo] into r3;
+    get credits.aleo/account[delegator2.aleo] into r3;
     assert.eq r3 0u64;
     get state_mapping[0u8] into r4;
     is.eq r4 0u8 into r5;
@@ -98,14 +97,14 @@ finalize bond:
 
 function unbond:
     input r0 as u64.public;
-    call credits.aleo/unbond_public delegator1.aleo r0 into r1;
+    call credits.aleo/unbond_public delegator2.aleo r0 into r1;
     async unbond r1 into r2;
-    output r2 as delegator1.aleo/unbond.future;
+    output r2 as delegator2.aleo/unbond.future;
 
 finalize unbond:
     input r0 as credits.aleo/unbond_public.future;
     await r0;
-    contains credits.aleo/bonded[delegator1.aleo] into r1;
+    contains credits.aleo/bonded[delegator2.aleo] into r1;
     assert.eq r1 false;
     get state_mapping[0u8] into r2;
     assert.eq r2 3u8;
@@ -116,12 +115,12 @@ finalize unbond:
 
 function terminal_state:
     async terminal_state into r0;
-    output r0 as delegator1.aleo/terminal_state.future;
+    output r0 as delegator2.aleo/terminal_state.future;
 
 finalize terminal_state:
-    contains credits.aleo/bonded[delegator1.aleo] into r0;
+    contains credits.aleo/bonded[delegator2.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[delegator1.aleo] into r1;
+    contains credits.aleo/unbonding[delegator2.aleo] into r1;
     assert.eq r1 false;
     get state_mapping[0u8] into r2;
     is.neq r2 0u8 into r3;
@@ -143,12 +142,12 @@ function transfer_to_core_protocol:
     assert.eq self.caller pondo_core_protocol.aleo;
     call credits.aleo/transfer_public pondo_core_protocol.aleo r0 into r1;
     async transfer_to_core_protocol r1 into r2;
-    output r2 as delegator1.aleo/transfer_to_core_protocol.future;
+    output r2 as delegator2.aleo/transfer_to_core_protocol.future;
 
 finalize transfer_to_core_protocol:
     input r0 as credits.aleo/transfer_public.future;
     await r0;
-    get credits.aleo/account[delegator1.aleo] into r1;
+    get credits.aleo/account[delegator2.aleo] into r1;
     assert.eq r1 0u64;
     get state_mapping[0u8] into r2;
     assert.eq r2 4u8;
@@ -158,12 +157,12 @@ finalize transfer_to_core_protocol:
 
 function bond_failed:
     async bond_failed into r0;
-    output r0 as delegator1.aleo/bond_failed.future;
+    output r0 as delegator2.aleo/bond_failed.future;
 
 finalize bond_failed:
-    contains credits.aleo/bonded[delegator1.aleo] into r0;
+    contains credits.aleo/bonded[delegator2.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[delegator1.aleo] into r1;
+    contains credits.aleo/unbonding[delegator2.aleo] into r1;
     assert.eq r1 false;
     get validator_mapping[0u8] into r2;
     get credits.aleo/committee[r2] into r3;
@@ -180,14 +179,14 @@ finalize bond_failed:
 
 function insufficient_balance:
     async insufficient_balance into r0;
-    output r0 as delegator1.aleo/insufficient_balance.future;
+    output r0 as delegator2.aleo/insufficient_balance.future;
 
 finalize insufficient_balance:
-    contains credits.aleo/bonded[delegator1.aleo] into r0;
+    contains credits.aleo/bonded[delegator2.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[delegator1.aleo] into r1;
+    contains credits.aleo/unbonding[delegator2.aleo] into r1;
     assert.eq r1 false;
-    get credits.aleo/account[delegator1.aleo] into r2;
+    get credits.aleo/account[delegator2.aleo] into r2;
     lt r2 10_000_000_000u64 into r3;
     assert.eq r3 true;
     get state_mapping[0u8] into r4;
