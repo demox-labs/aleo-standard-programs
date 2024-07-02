@@ -26,7 +26,7 @@ export class delegator5Program {
 // should be deployed with paramaters like the validator address
 // this delegator should be bonded to
     
-  //program delegator5.aleo {// 0u8 -> 0u8 = unbonding unavailable, 1u8 = unbonding available
+  //program pondo_delegator5.aleo {// 0u8 -> 0u8 = unbonding unavailable, 1u8 = unbonding available
 // 0u8 -> address = validator address
     
   set_validator(
@@ -46,7 +46,7 @@ export class delegator5Program {
     amount: bigint,
   ) {
     assert(this.caller === this.CORE_PROTOCOL);
-    this.credits.caller = "delegator5.aleo";
+    this.credits.caller = "pondo_delegator5.aleo";
     this.credits.transfer_public(this.CORE_PROTOCOL, amount);
     }
     
@@ -54,7 +54,7 @@ export class delegator5Program {
     amount: bigint,
   ) {
     assert(this.caller === this.CORE_PROTOCOL);
-    this.credits.caller = "delegator5.aleo";
+    this.credits.caller = "pondo_delegator5.aleo";
     this.credits.transfer_public(this.ALE, amount);
     }
     
@@ -66,7 +66,7 @@ export class delegator5Program {
     amount: bigint,
   ) {
     assert(this.caller === this.CORE_PROTOCOL);
-    this.credits.caller = "delegator5.aleo";
+    this.credits.caller = "pondo_delegator5.aleo";
     this.credits.bond_public(validator, amount);
     
     return this.finalize_bond(validator);
@@ -85,7 +85,7 @@ export class delegator5Program {
     amount: bigint,
   ) {
     assert(this.caller === this.CORE_PROTOCOL);
-    this.credits.caller = "delegator5.aleo";
+    this.credits.caller = "pondo_delegator5.aleo";
     this.credits.unbond_public(amount);
     
     return this.finalize_unbond(amount);
@@ -102,7 +102,7 @@ export class delegator5Program {
   claim_unbond(
   ) {
     assert(this.caller === this.CORE_PROTOCOL);
-    this.credits.caller = "delegator5.aleo";
+    this.credits.caller = "pondo_delegator5.aleo";
     this.credits.claim_unbond_public();
     
     return this.finalize_claim_unbond();

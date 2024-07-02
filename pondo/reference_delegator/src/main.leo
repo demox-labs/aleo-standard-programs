@@ -23,12 +23,12 @@ program reference_delegator.aleo {
     let f1: Future = credits.aleo/bond_public(VALIDATOR, reference_delegator.aleo, MIN_DELEGATION);
 
     // Register the reference delegation with the pondo oracle
-    let f2: Future = pondo_oracle.aleo/propose_reference_delegator(VALIDATOR);
+    let f2: Future = pondo_oracle.aleo/propose_delegator(VALIDATOR);
 
-    return initialize_delegator(f0, f1, f2);
+    return finalize_initialize(f0, f1, f2);
   }
 
-  async function initialize_delegator(
+  async function finalize_initialize(
     f0: Future,
     f1: Future,
     f2: Future
@@ -39,11 +39,11 @@ program reference_delegator.aleo {
     f2.await(); // propose_reference_delegator
 
     // Ensure this program can only be initialized one time
-    let is_initialized: bool = Mapping::contains(initialized, 0u8);
+    let is_initialized: bool = initialized.contains(0u8);
     assert_eq(is_initialized, false);
 
     // Set to 8 as 8 is lucky
-    Mapping::set(initialized, 0u8, 8u8);
+    initialized.set(0u8, 8u8);
   }
 
   // In order to successfully call remove, the amount input must be enough to fully unbond the delegator
@@ -55,17 +55,15 @@ program reference_delegator.aleo {
     assert_eq(self.caller, ADMIN);
 
     // Unbond_public
-    // TODO Fix to ARC-41 as soon as that update is pushed to leo
-    // let f0: Future = credits.aleo/unbond_public(reference_delegator.aleo, amount);
-    let f0: Future = credits.aleo/unbond_public(amount);
+    let f0: Future = credits.aleo/unbond_public(reference_delegator.aleo, amount);
 
     // Remove the reference delegator
-    let f1: Future = pondo_oracle.aleo/remove_reference_delegator();
+    let f1: Future = pondo_oracle.aleo/remove_delegator();
 
-    return remove_delegator(f0, f1);
+    return finalize_remove(f0, f1);
   }
 
-  async function remove_delegator(
+  async function finalize_remove(
     f0: Future,
     f1: Future
   ) {

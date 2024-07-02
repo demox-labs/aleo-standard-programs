@@ -2,11 +2,11 @@ import credits.aleo;
 import multi_token_support_program_v1.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
-import delegator1.aleo;
-import delegator2.aleo;
-import delegator3.aleo;
-import delegator4.aleo;
-import delegator5.aleo;
+import pondo_delegator1.aleo;
+import pondo_delegator2.aleo;
+import pondo_delegator3.aleo;
+import pondo_delegator4.aleo;
+import pondo_delegator5.aleo;
 
 program pondo_core_protocol.aleo {
   const PRECISION: i128 = 1000i128;
@@ -146,17 +146,17 @@ program pondo_core_protocol.aleo {
       validator: pondo_core_protocol.aleo,
       microcredits: 0u64
     };
-    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(delegator1.aleo, base_bond_state).microcredits;
-    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(delegator2.aleo, base_bond_state).microcredits;
-    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(delegator3.aleo, base_bond_state).microcredits;
-    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(delegator4.aleo, base_bond_state).microcredits;
-    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(delegator5.aleo, base_bond_state).microcredits;
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
 
-    let delegator1_account: u64 = credits.aleo/account.get_or_use(delegator1.aleo, 0u64);
-    let delegator2_account: u64 = credits.aleo/account.get_or_use(delegator2.aleo, 0u64);
-    let delegator3_account: u64 = credits.aleo/account.get_or_use(delegator3.aleo, 0u64);
-    let delegator4_account: u64 = credits.aleo/account.get_or_use(delegator4.aleo, 0u64);
-    let delegator5_account: u64 = credits.aleo/account.get_or_use(delegator5.aleo, 0u64);
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
 
     let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
     let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
@@ -236,17 +236,17 @@ program pondo_core_protocol.aleo {
       validator: pondo_core_protocol.aleo,
       microcredits: 0u64
     };
-    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(delegator1.aleo, base_bond_state).microcredits;
-    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(delegator2.aleo, base_bond_state).microcredits;
-    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(delegator3.aleo, base_bond_state).microcredits;
-    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(delegator4.aleo, base_bond_state).microcredits;
-    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(delegator5.aleo, base_bond_state).microcredits;
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
 
-    let delegator1_account: u64 = credits.aleo/account.get_or_use(delegator1.aleo, 0u64);
-    let delegator2_account: u64 = credits.aleo/account.get_or_use(delegator2.aleo, 0u64);
-    let delegator3_account: u64 = credits.aleo/account.get_or_use(delegator3.aleo, 0u64);
-    let delegator4_account: u64 = credits.aleo/account.get_or_use(delegator4.aleo, 0u64);
-    let delegator5_account: u64 = credits.aleo/account.get_or_use(delegator5.aleo, 0u64);
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
 
     let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
     let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
@@ -286,11 +286,11 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5] // should be safe to transfer 0?
   ) -> Future {
     // Transfer to each delegator
-    let f0: Future = credits.aleo/transfer_public(delegator1.aleo, transfer_amounts[0u8]);
-    let f1: Future = credits.aleo/transfer_public(delegator2.aleo, transfer_amounts[1u8]);
-    let f2: Future = credits.aleo/transfer_public(delegator3.aleo, transfer_amounts[2u8]);
-    let f3: Future = credits.aleo/transfer_public(delegator4.aleo, transfer_amounts[3u8]);
-    let f4: Future = credits.aleo/transfer_public(delegator5.aleo, transfer_amounts[4u8]);
+    let f0: Future = credits.aleo/transfer_public(pondo_delegator1.aleo, transfer_amounts[0u8]);
+    let f1: Future = credits.aleo/transfer_public(pondo_delegator2.aleo, transfer_amounts[1u8]);
+    let f2: Future = credits.aleo/transfer_public(pondo_delegator3.aleo, transfer_amounts[2u8]);
+    let f3: Future = credits.aleo/transfer_public(pondo_delegator4.aleo, transfer_amounts[3u8]);
+    let f4: Future = credits.aleo/transfer_public(pondo_delegator5.aleo, transfer_amounts[4u8]);
 
     return finalize_distribute_deposits(f0, f1, f2, f3, f4, validators, transfer_amounts);
   }
@@ -317,11 +317,11 @@ program pondo_core_protocol.aleo {
     assert(account_balance >= boost_pool_balance + pending_withdrawal_balance);
 
     // Confirm each delegator is already bonded and in the correct state
-    let delegator1_state: u8 = delegator1.aleo/state_mapping.get(0u8);
-    let delegator2_state: u8 = delegator2.aleo/state_mapping.get(0u8);
-    let delegator3_state: u8 = delegator3.aleo/state_mapping.get(0u8);
-    let delegator4_state: u8 = delegator4.aleo/state_mapping.get(0u8);
-    let delegator5_state: u8 = delegator5.aleo/state_mapping.get(0u8);
+    let delegator1_state: u8 = pondo_delegator1.aleo/state_mapping.get(0u8);
+    let delegator2_state: u8 = pondo_delegator2.aleo/state_mapping.get(0u8);
+    let delegator3_state: u8 = pondo_delegator3.aleo/state_mapping.get(0u8);
+    let delegator4_state: u8 = pondo_delegator4.aleo/state_mapping.get(0u8);
+    let delegator5_state: u8 = pondo_delegator5.aleo/state_mapping.get(0u8);
     assert(delegator1_state == UNBOND_NOT_ALLOWED && delegator2_state == UNBOND_NOT_ALLOWED && delegator3_state == UNBOND_NOT_ALLOWED && delegator4_state == UNBOND_NOT_ALLOWED && delegator5_state == UNBOND_NOT_ALLOWED);
 
     // Check delegator proportions (note: the margin for error is +/- 1% of the total amount of aleo held in the protocol)
@@ -329,17 +329,17 @@ program pondo_core_protocol.aleo {
       validator: pondo_core_protocol.aleo,
       microcredits: 0u64
     };
-    let delegator1_bonded: u128 = credits.aleo/bonded.get_or_use(delegator1.aleo, base_bond_state).microcredits as u128;
-    let delegator2_bonded: u128 = credits.aleo/bonded.get_or_use(delegator2.aleo, base_bond_state).microcredits as u128;
-    let delegator3_bonded: u128 = credits.aleo/bonded.get_or_use(delegator3.aleo, base_bond_state).microcredits as u128;
-    let delegator4_bonded: u128 = credits.aleo/bonded.get_or_use(delegator4.aleo, base_bond_state).microcredits as u128;
-    let delegator5_bonded: u128 = credits.aleo/bonded.get_or_use(delegator5.aleo, base_bond_state).microcredits as u128;
+    let delegator1_bonded: u128 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits as u128;
+    let delegator2_bonded: u128 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits as u128;
+    let delegator3_bonded: u128 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits as u128;
+    let delegator4_bonded: u128 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits as u128;
+    let delegator5_bonded: u128 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits as u128;
 
-    let delegator1_account: u128 = credits.aleo/account.get_or_use(delegator1.aleo, 0u64) as u128;
-    let delegator2_account: u128 = credits.aleo/account.get_or_use(delegator2.aleo, 0u64) as u128;
-    let delegator3_account: u128 = credits.aleo/account.get_or_use(delegator3.aleo, 0u64) as u128;
-    let delegator4_account: u128 = credits.aleo/account.get_or_use(delegator4.aleo, 0u64) as u128;
-    let delegator5_account: u128 = credits.aleo/account.get_or_use(delegator5.aleo, 0u64) as u128;
+    let delegator1_account: u128 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64) as u128;
+    let delegator2_account: u128 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64) as u128;
+    let delegator3_account: u128 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64) as u128;
+    let delegator4_account: u128 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64) as u128;
+    let delegator5_account: u128 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64) as u128;
 
     let delegator1_total: u128 = delegator1_bonded + delegator1_account;
     let delegator2_total: u128 = delegator2_bonded + delegator2_account;
@@ -398,17 +398,17 @@ program pondo_core_protocol.aleo {
       validator: pondo_core_protocol.aleo,
       microcredits: 0u64
     };
-    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(delegator1.aleo, base_bond_state).microcredits;
-    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(delegator2.aleo, base_bond_state).microcredits;
-    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(delegator3.aleo, base_bond_state).microcredits;
-    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(delegator4.aleo, base_bond_state).microcredits;
-    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(delegator5.aleo, base_bond_state).microcredits;
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
 
-    let delegator1_account: u64 = credits.aleo/account.get_or_use(delegator1.aleo, 0u64);
-    let delegator2_account: u64 = credits.aleo/account.get_or_use(delegator2.aleo, 0u64);
-    let delegator3_account: u64 = credits.aleo/account.get_or_use(delegator3.aleo, 0u64);
-    let delegator4_account: u64 = credits.aleo/account.get_or_use(delegator4.aleo, 0u64);
-    let delegator5_account: u64 = credits.aleo/account.get_or_use(delegator5.aleo, 0u64);
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
 
     let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
     let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
@@ -572,11 +572,11 @@ program pondo_core_protocol.aleo {
   }
 
   async transition prep_rebalance() -> Future {
-    let f0: Future = delegator1.aleo/set_state(UNBOND_ALLOWED);
-    let f1: Future = delegator2.aleo/set_state(UNBOND_ALLOWED);
-    let f2: Future = delegator3.aleo/set_state(UNBOND_ALLOWED);
-    let f3: Future = delegator4.aleo/set_state(UNBOND_ALLOWED);
-    let f4: Future = delegator5.aleo/set_state(UNBOND_ALLOWED);
+    let f0: Future = pondo_delegator1.aleo/set_state(UNBOND_ALLOWED);
+    let f1: Future = pondo_delegator2.aleo/set_state(UNBOND_ALLOWED);
+    let f2: Future = pondo_delegator3.aleo/set_state(UNBOND_ALLOWED);
+    let f3: Future = pondo_delegator4.aleo/set_state(UNBOND_ALLOWED);
+    let f4: Future = pondo_delegator5.aleo/set_state(UNBOND_ALLOWED);
 
     return finalize_prep_rebalance(f0, f1, f2, f3, f4);
   }
@@ -619,11 +619,11 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) -> Future {
-    let f0: Future = delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
-    let f1: Future = delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
-    let f2: Future = delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
-    let f3: Future = delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
-    let f4: Future = delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
+    let f0: Future = pondo_delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
+    let f1: Future = pondo_delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
+    let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
+    let f3: Future = pondo_delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
+    let f4: Future = pondo_delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
     let f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
 
     return finalize_rebalance_retrieve_credits(f0, f1, f2, f3, f4, f5, commission_mint);
@@ -684,17 +684,17 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5]
   ) -> Future {
     // Transfer to each delegator and set validator
-    let f0: Future = credits.aleo/transfer_public(delegator1.aleo, transfer_amounts[0u8]);
-    let f1: Future = credits.aleo/transfer_public(delegator2.aleo, transfer_amounts[1u8]);
-    let f2: Future = credits.aleo/transfer_public(delegator3.aleo, transfer_amounts[2u8]);
-    let f3: Future = credits.aleo/transfer_public(delegator4.aleo, transfer_amounts[3u8]);
-    let f4: Future = credits.aleo/transfer_public(delegator5.aleo, transfer_amounts[4u8]);
+    let f0: Future = credits.aleo/transfer_public(pondo_delegator1.aleo, transfer_amounts[0u8]);
+    let f1: Future = credits.aleo/transfer_public(pondo_delegator2.aleo, transfer_amounts[1u8]);
+    let f2: Future = credits.aleo/transfer_public(pondo_delegator3.aleo, transfer_amounts[2u8]);
+    let f3: Future = credits.aleo/transfer_public(pondo_delegator4.aleo, transfer_amounts[3u8]);
+    let f4: Future = credits.aleo/transfer_public(pondo_delegator5.aleo, transfer_amounts[4u8]);
 
-    let f5: Future = delegator1.aleo/set_validator(validators[0u8]);
-    let f6: Future = delegator2.aleo/set_validator(validators[1u8]);
-    let f7: Future = delegator3.aleo/set_validator(validators[2u8]);
-    let f8: Future = delegator4.aleo/set_validator(validators[3u8]);
-    let f9: Future = delegator5.aleo/set_validator(validators[4u8]);
+    let f5: Future = pondo_delegator1.aleo/set_validator(validators[0u8]);
+    let f6: Future = pondo_delegator2.aleo/set_validator(validators[1u8]);
+    let f7: Future = pondo_delegator3.aleo/set_validator(validators[2u8]);
+    let f8: Future = pondo_delegator4.aleo/set_validator(validators[3u8]);
+    let f9: Future = pondo_delegator5.aleo/set_validator(validators[4u8]);
 
     return finalize_rebalance_redistribute(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, validators, transfer_amounts);
   }

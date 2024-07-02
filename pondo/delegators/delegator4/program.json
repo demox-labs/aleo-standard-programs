@@ -1,5 +1,5 @@
 {
-    "program": "delegator4.aleo",
+    "program": "pondo_delegator4.aleo",
     "version": "0.0.0",
     "description": "",
     "license": "MIT",
@@ -8,6 +8,11 @@
           "name": "credits.aleo",
           "location": "network",
             "network": "testnet"
+        },
+        {
+          "name": "pondo_oracle.aleo",
+          "location": "local",
+          "path": "../../oracle"
         }
     ]
 }

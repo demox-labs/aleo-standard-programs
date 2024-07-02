@@ -1,4 +1,4 @@
-# pondo_delegator1.aleo
+# pondo_delegator2.aleo
 
 ## Build Guide
 

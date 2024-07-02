@@ -1,5 +1,5 @@
 {
-    "program": "pondo_core_protocol.aleo",
+    "program": "core_protocol.aleo",
     "version": "0.0.0",
     "description": "",
     "license": "MIT",
@@ -7,12 +7,7 @@
         {
             "name": "credits.aleo",
             "location": "network",
-            "network": "testnet"
-        },
-        {
-            "name": "multi_token_support_program_v1.aleo",
-            "location": "local",
-            "path": "../../multi_token_support_program"
+            "network": "testnet3"
         },
         {
             "name": "pondo_oracle.aleo",
@@ -20,14 +15,14 @@
             "path": "../oracle"
         },
         {
-            "name": "pondo_staked_aleo_token.aleo",
+            "name": "ale.aleo",
             "location": "local",
-            "path": "../pondo_staked_aleo_token"
+            "path": "../ale"
         },
         {
-            "name": "pondo_token.aleo",
+            "name": "axel.aleo",
             "location": "local",
-            "path": "../pondo_token"
+            "path": "../axel"
         },
         {
             "name": "pondo_delegator1.aleo",

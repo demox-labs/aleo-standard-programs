@@ -1,7 +1,8 @@
 // The 'delegator' program.
 import credits.aleo;
+import pondo_oracle.aleo;
 
-program delegator1.aleo {
+program pondo_delegator1.aleo {
   // There are 4 potential states for a delegator:
   // 1. 0u8 => Is allowed to bond
   // 2. 1u8 => Is not allowed to unbond
@@ -14,6 +15,15 @@ program delegator1.aleo {
   const UNBONDING: u8 = 3u8;
   const TERMINAL: u8 = 4u8;
 
+  // The maximum increase in commission allowed before a validator is banned
+  const MAX_COMMISSION_INCREASE: u8 = 10u8;
+  const MAX_COMMISSION: u8 = 50u8;
+
+  struct validator_state {
+    validator: address,
+    commission: u8
+  }
+
   // Transitions:
   // 0 -> 1 done permissionless through bond
   // 1 -> 2 done by core protocol
@@ -22,7 +32,7 @@ program delegator1.aleo {
   // 4 -> 0 done by core protocol
   // 1 -> 4 done in edge case by forcible unbond by validator
   mapping state_mapping: u8 => u8;
-  mapping validator_mapping: u8 => address;
+  mapping validator_mapping: u8 => validator_state;
   mapping banned_validators: address => bool;
 
   // shadowed from credits.aleo
@@ -59,19 +69,27 @@ program delegator1.aleo {
   }
 
   async transition set_validator(
-    public new_validator: address
+    public new_validator: address,
+    public new_commission: u8
   ) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    return finalize_set_validator(new_validator);
+    return finalize_set_validator(new_validator, new_commission);
   }
 
   async function finalize_set_validator(
-    new_validator: address
+    new_validator: address,
+    new_commission: u8
   ) {
-    validator_mapping.set(0u8, new_validator);
+    // Set the new validator
+    let next_validator_state: validator_state = validator_state {
+      validator: new_validator,
+      commission: new_commission
+    };
+    validator_mapping.set(0u8, next_validator_state);
 
+    // Ensure the delegator is in the correct state
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state == TERMINAL);
 
@@ -82,7 +100,7 @@ program delegator1.aleo {
     public validator: address,
     public amount: u64
   ) -> Future {
-    let f0: Future = credits.aleo/bond_public(validator, delegator1.aleo, amount);
+    let f0: Future = credits.aleo/bond_public(validator, pondo_delegator1.aleo, amount);
 
     return finalize_bond(validator, f0);
   }
@@ -93,10 +111,10 @@ program delegator1.aleo {
   ) {
     f0.await();
 
-    let current_validator: address = validator_mapping.get(0u8);
-    assert_eq(validator, current_validator);
+    let current_validator_state: validator_state = validator_mapping.get(0u8);
+    assert_eq(validator, current_validator_state.validator);
 
-    let balance: u64 = credits.aleo/account.get(delegator1.aleo);
+    let balance: u64 = credits.aleo/account.get(pondo_delegator1.aleo);
     assert_eq(balance, 0u64);
 
     let current_state: u8 = state_mapping.get(0u8);
@@ -105,8 +123,13 @@ program delegator1.aleo {
     state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
   }
 
+  // Unbond the delegator fully
+  // This is a permissionless call
+  // It can only be called if the delegator is in the UNBOND_ALLOWED state
+  // Or if the validator commission changed while the delegator was bonded
   async transition unbond(public amount: u64) -> Future {
-    let f0: Future = credits.aleo/unbond_public(delegator1.aleo, amount);
+    // Unbond the delegator, only works if there's actually something to unbond
+    let f0: Future = credits.aleo/unbond_public(pondo_delegator1.aleo, amount);
 
     return finalize_unbond(f0);
   }
@@ -117,12 +140,30 @@ program delegator1.aleo {
     f0.await();
 
     // Should be entirely unbonded
-    let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
+    let bonded: bool = credits.aleo/bonded.contains(pondo_delegator1.aleo);
     assert_eq(bonded, false);
 
-    let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, UNBONDING);
+    // Get the current validator state
+    let current_validator_state: validator_state = validator_mapping.get(0u8);
+    // Get the committee state of the new validator
+    let default_committee_state: committee_state = committee_state {
+      is_open: true,
+      commission: 0u8
+    };
+    let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(current_validator_state.validator, default_committee_state);
+    // Check if the commission increased by more than the allowed amount
+    let commission_increased: bool = current_validator_state.commission > (validator_committee_state.commission + MAX_COMMISSION_INCREASE);
+    let commission_beyond_limit: bool = current_validator_state.commission > MAX_COMMISSION;
 
+    // If the commission changed, ban the validator, otherwise ensure the delegator is in the correct state
+    if (commission_increased || commission_beyond_limit) {
+      banned_validators.set(current_validator_state.validator, true);
+    } else {
+      let current_state: u8 = state_mapping.get(0u8);
+      assert_eq(current_state, UNBOND_ALLOWED);
+    }
+
+    // Set the state to unbonding
     state_mapping.set(0u8, UNBONDING);
   }
 
@@ -132,17 +173,17 @@ program delegator1.aleo {
   }
 
   async function finalize_terminal_state() {
-    let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
+    let bonded: bool = credits.aleo/bonded.contains(pondo_delegator1.aleo);
     assert_eq(bonded, false);
-    let is_unbonding: bool = credits.aleo/unbonding.contains(delegator1.aleo);
+    let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator1.aleo);
     assert_eq(is_unbonding, false);
 
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state != BOND_ALLOWED);
 
     if (current_state == UNBOND_NOT_ALLOWED) {
-      let validator: address = validator_mapping.get(0u8);
-      banned_validators.set(validator, true);
+      let current_validator_state: validator_state = validator_mapping.get(0u8);
+      banned_validators.set(current_validator_state.validator, true);
     }
 
     state_mapping.set(0u8, TERMINAL);
@@ -162,7 +203,7 @@ program delegator1.aleo {
   ) {
     f0.await();
 
-    let balance: u64 = credits.aleo/account.get(delegator1.aleo);
+    let balance: u64 = credits.aleo/account.get(pondo_delegator1.aleo);
     assert_eq(balance, 0u64);
 
     let current_state: u8 = state_mapping.get(0u8);
@@ -174,20 +215,29 @@ program delegator1.aleo {
   }
 
   async function finalize_bond_failed() {
-    let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
+    let bonded: bool = credits.aleo/bonded.contains(pondo_delegator1.aleo);
     assert_eq(bonded, false);
-    let is_unbonding: bool = credits.aleo/unbonding.contains(delegator1.aleo);
+    let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator1.aleo);
     assert_eq(is_unbonding, false);
 
-    let validator: address = validator_mapping.get(0u8);
-    let validator_committee_state: committee_state = credits.aleo/committee.get(validator);
-    assert(validator_committee_state.is_open == false);
+    let current_validator_state: validator_state = validator_mapping.get(0u8);
+    // Bonding always succeeds if the validator isn't in the committee given a sufficient balance
+    let validator_committee_state: committee_state = credits.aleo/committee.get(current_validator_state.validator);
+    let validator_is_unbonding: bool = credits.aleo/unbonding.contains(current_validator_state.validator);
+    // The two conditions that would prevent a valid bond are:
+    // 1. The validator is closed to delegators
+    // 2. The validator is unbonding
+    assert(validator_committee_state.is_open == false || validator_is_unbonding);
 
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state == BOND_ALLOWED);
 
     state_mapping.set(0u8, TERMINAL);
-    banned_validators.set(validator, true);
+
+    // If the validator is closed to delegators, ban the validator
+    if (validator_committee_state.is_open == false) {
+      banned_validators.set(current_validator_state.validator, true);
+    }
   }
 
   async transition insufficient_balance() -> Future {
@@ -195,17 +245,33 @@ program delegator1.aleo {
   }
 
   async function finalize_insufficient_balance() {
-    let bonded: bool = credits.aleo/bonded.contains(delegator1.aleo);
+    let bonded: bool = credits.aleo/bonded.contains(pondo_delegator1.aleo);
     assert_eq(bonded, false);
-    let is_unbonding: bool = credits.aleo/unbonding.contains(delegator1.aleo);
+    let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator1.aleo);
     assert_eq(is_unbonding, false);
 
-    let balance: u64 = credits.aleo/account.get(delegator1.aleo);
+    let balance: u64 = credits.aleo/account.get(pondo_delegator1.aleo);
     assert(balance < 10_000_000_000u64);
 
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state == BOND_ALLOWED);
 
     state_mapping.set(0u8, TERMINAL);
+  }
+
+  async transition ban_validator(
+    public validator: address
+  ) -> Future {
+    let f0: Future = pondo_oracle.aleo/pondo_ban_validator(validator);
+    return finalize_ban_validator(validator, f0);
+  }
+
+  async function finalize_ban_validator(
+    validator: address,
+    f0: Future
+  ) {
+    f0.await();
+
+    assert(banned_validators.contains(validator));
   }
 }
