@@ -25,27 +25,27 @@
             "path": "../pondo_token"
         },
         {
-            "name": "delegator1.aleo",
+            "name": "pondo_delegator1.aleo",
             "location": "local",
             "path": "../delegators/delegator1"
         },
         {
-            "name": "delegator2.aleo",
+            "name": "pondo_delegator2.aleo",
             "location": "local",
             "path": "../delegators/delegator2"
         },
         {
-            "name": "delegator3.aleo",
+            "name": "pondo_delegator3.aleo",
             "location": "local",
             "path": "../delegators/delegator3"
         },
         {
-            "name": "delegator4.aleo",
+            "name": "pondo_delegator4.aleo",
             "location": "local",
             "path": "../delegators/delegator4"
         },
         {
-            "name": "delegator5.aleo",
+            "name": "pondo_delegator5.aleo",
             "location": "local",
             "path": "../delegators/delegator5"
         }

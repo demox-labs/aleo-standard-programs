@@ -1,9 +1,9 @@
 import oracle.aleo;
-import delegator1.aleo;
-import delegator2.aleo;
-import delegator3.aleo;
-import delegator4.aleo;
-import delegator5.aleo;
+import pondo_delegator1.aleo;
+import pondo_delegator2.aleo;
+import pondo_delegator3.aleo;
+import pondo_delegator4.aleo;
+import pondo_delegator5.aleo;
 import credits.aleo;
 import ale.aleo;
 import axel.aleo;
@@ -361,11 +361,11 @@ program core_protocol.aleo {
     public unbond_amounts: [u64; 5],
     public reward_amounts: [u64; 5]
     ) {
-    delegator1.aleo/unbond(unbond_amounts[0u8]);
-    delegator2.aleo/unbond(unbond_amounts[1u8]);
-    delegator3.aleo/unbond(unbond_amounts[2u8]);
-    delegator4.aleo/unbond(unbond_amounts[3u8]);
-    delegator5.aleo/unbond(unbond_amounts[4u8]);
+    pondo_delegator1.aleo/unbond(unbond_amounts[0u8]);
+    pondo_delegator2.aleo/unbond(unbond_amounts[1u8]);
+    pondo_delegator3.aleo/unbond(unbond_amounts[2u8]);
+    pondo_delegator4.aleo/unbond(unbond_amounts[3u8]);
+    pondo_delegator5.aleo/unbond(unbond_amounts[4u8]);
 
     return then finalize(
       unbond_amounts,
@@ -603,20 +603,20 @@ program core_protocol.aleo {
     // ********** CLAIM UNBOND AND SEND TO PROTOCOL ALEO POOL **********
     // note -- in the case that a validator has forcibly unbonded a delegator,
     // the fix_orphaned_delegator transition must be called
-    delegator1.aleo/claim_unbond();
-    delegator1.aleo/transfer_to_core_protocol(unbond_amounts[0u8]);
+    pondo_delegator1.aleo/claim_unbond();
+    pondo_delegator1.aleo/transfer_to_core_protocol(unbond_amounts[0u8]);
 
-    delegator2.aleo/claim_unbond();
-    delegator2.aleo/transfer_to_core_protocol(unbond_amounts[1u8]);
+    pondo_delegator2.aleo/claim_unbond();
+    pondo_delegator2.aleo/transfer_to_core_protocol(unbond_amounts[1u8]);
 
-    delegator3.aleo/claim_unbond();
-    delegator3.aleo/transfer_to_core_protocol(unbond_amounts[2u8]);
+    pondo_delegator3.aleo/claim_unbond();
+    pondo_delegator3.aleo/transfer_to_core_protocol(unbond_amounts[2u8]);
 
-    delegator4.aleo/claim_unbond();
-    delegator4.aleo/transfer_to_core_protocol(unbond_amounts[3u8]);
+    pondo_delegator4.aleo/claim_unbond();
+    pondo_delegator4.aleo/transfer_to_core_protocol(unbond_amounts[3u8]);
 
-    delegator5.aleo/claim_unbond();
-    delegator5.aleo/transfer_to_core_protocol(unbond_amounts[4u8]);
+    pondo_delegator5.aleo/claim_unbond();
+    pondo_delegator5.aleo/transfer_to_core_protocol(unbond_amounts[4u8]);
 
     return then finalize(unbond_amounts);
   }
@@ -703,19 +703,19 @@ program core_protocol.aleo {
     // note -- in the case that a delegator is changing validators, the delegator
     // may not have cleared its entire stake, so clear_residual_bonded_delegators must be called
     credits.aleo/transfer_public(DELEGATOR_1, rebond_amounts[0u8]);
-    delegator1.aleo/bond(validators[0u8], rebond_amounts[0u8]);
+    pondo_delegator1.aleo/bond(validators[0u8], rebond_amounts[0u8]);
 
     credits.aleo/transfer_public(DELEGATOR_2, rebond_amounts[1u8]);
-    delegator2.aleo/bond(validators[1u8], rebond_amounts[1u8]);
+    pondo_delegator2.aleo/bond(validators[1u8], rebond_amounts[1u8]);
 
     credits.aleo/transfer_public(DELEGATOR_3, rebond_amounts[2u8]);
-    delegator3.aleo/bond(validators[2u8], rebond_amounts[2u8]);
+    pondo_delegator3.aleo/bond(validators[2u8], rebond_amounts[2u8]);
 
     credits.aleo/transfer_public(DELEGATOR_4, rebond_amounts[3u8]);
-    delegator4.aleo/bond(validators[3u8], rebond_amounts[3u8]);
+    pondo_delegator4.aleo/bond(validators[3u8], rebond_amounts[3u8]);
 
     credits.aleo/transfer_public(DELEGATOR_5, rebond_amounts[4u8]);
-    delegator5.aleo/bond(validators[4u8], rebond_amounts[4u8]);
+    pondo_delegator5.aleo/bond(validators[4u8], rebond_amounts[4u8]);
 
     return then finalize(rebond_amounts, validators);
   }
@@ -846,27 +846,27 @@ program core_protocol.aleo {
     // no rewards minted for residue clearing, as this should be a rare event
     if (residual_amounts[0u8] > 0u64) {
       oracle.aleo/clear_residual_delegator(DELEGATOR_1, residual_amounts[0u8]);
-      delegator1.aleo/unbond(residual_amounts[0u8]);
+      pondo_delegator1.aleo/unbond(residual_amounts[0u8]);
     }
 
     if (residual_amounts[1u8] > 0u64) {
       oracle.aleo/clear_residual_delegator(DELEGATOR_2, residual_amounts[1u8]);
-      delegator2.aleo/unbond(residual_amounts[1u8]);
+      pondo_delegator2.aleo/unbond(residual_amounts[1u8]);
     }
 
     if (residual_amounts[2u8] > 0u64) {
       oracle.aleo/clear_residual_delegator(DELEGATOR_3, residual_amounts[2u8]);
-      delegator3.aleo/unbond(residual_amounts[2u8]);
+      pondo_delegator3.aleo/unbond(residual_amounts[2u8]);
     }
 
     if (residual_amounts[3u8] > 0u64) {
       oracle.aleo/clear_residual_delegator(DELEGATOR_4, residual_amounts[3u8]);
-      delegator4.aleo/unbond(residual_amounts[3u8]);
+      pondo_delegator4.aleo/unbond(residual_amounts[3u8]);
     }
 
     if (residual_amounts[4u8] > 0u64) {
       oracle.aleo/clear_residual_delegator(DELEGATOR_5, residual_amounts[4u8]);
-      delegator5.aleo/unbond(residual_amounts[4u8]);
+      pondo_delegator5.aleo/unbond(residual_amounts[4u8]);
     }
 
     return then finalize(residual_amounts);
@@ -944,32 +944,32 @@ program core_protocol.aleo {
     public amounts: [u64; 5]
     ) {
     if (amounts[0u8] > 0u64) {
-      delegator1.aleo/claim_unbond();
-      delegator1.aleo/transfer_to_core_protocol(amounts[0u8]);
+      pondo_delegator1.aleo/claim_unbond();
+      pondo_delegator1.aleo/transfer_to_core_protocol(amounts[0u8]);
       oracle.aleo/confirm_orphaned_delegator(DELEGATOR_1, amounts[0u8]);
     }
 
     if (amounts[1u8] > 0u64) {
-      delegator2.aleo/claim_unbond();
-      delegator2.aleo/transfer_to_core_protocol(amounts[1u8]);
+      pondo_delegator2.aleo/claim_unbond();
+      pondo_delegator2.aleo/transfer_to_core_protocol(amounts[1u8]);
       oracle.aleo/confirm_orphaned_delegator(DELEGATOR_2, amounts[1u8]);
     }
 
     if (amounts[2u8] > 0u64) {
-      delegator3.aleo/claim_unbond();
-      delegator3.aleo/transfer_to_core_protocol(amounts[2u8]);
+      pondo_delegator3.aleo/claim_unbond();
+      pondo_delegator3.aleo/transfer_to_core_protocol(amounts[2u8]);
       oracle.aleo/confirm_orphaned_delegator(DELEGATOR_3, amounts[2u8]);
     }
 
     if (amounts[3u8] > 0u64) {
-      delegator4.aleo/claim_unbond();
-      delegator4.aleo/transfer_to_core_protocol(amounts[3u8]);
+      pondo_delegator4.aleo/claim_unbond();
+      pondo_delegator4.aleo/transfer_to_core_protocol(amounts[3u8]);
       oracle.aleo/confirm_orphaned_delegator(DELEGATOR_4, amounts[3u8]);
     }
 
     if (amounts[4u8] > 0u64) {
-      delegator5.aleo/claim_unbond();
-      delegator5.aleo/transfer_to_core_protocol(amounts[4u8]);
+      pondo_delegator5.aleo/claim_unbond();
+      pondo_delegator5.aleo/transfer_to_core_protocol(amounts[4u8]);
       oracle.aleo/confirm_orphaned_delegator(DELEGATOR_5, amounts[4u8]);
     }
 
@@ -1117,11 +1117,11 @@ program core_protocol.aleo {
     public withdraw_block: u32
     ) {
     assert_eq(total_amount, unbond_amounts[0u8] + unbond_amounts[1u8] + unbond_amounts[2u8] + unbond_amounts[3u8] + unbond_amounts[4u8]);
-    delegator1.aleo/unbond(unbond_amounts[0u8]);
-    delegator2.aleo/unbond(unbond_amounts[1u8]);
-    delegator3.aleo/unbond(unbond_amounts[2u8]);
-    delegator4.aleo/unbond(unbond_amounts[3u8]);
-    delegator5.aleo/unbond(unbond_amounts[4u8]);
+    pondo_delegator1.aleo/unbond(unbond_amounts[0u8]);
+    pondo_delegator2.aleo/unbond(unbond_amounts[1u8]);
+    pondo_delegator3.aleo/unbond(unbond_amounts[2u8]);
+    pondo_delegator4.aleo/unbond(unbond_amounts[3u8]);
+    pondo_delegator5.aleo/unbond(unbond_amounts[4u8]);
 
     return then finalize(unbond_amounts, total_amount, withdraw_block);
   }
@@ -1235,20 +1235,20 @@ program core_protocol.aleo {
     // ********** CLAIM UNBOND AND SEND TO ALEO POOL OWNED BY ALE **********
     // note -- in the case that a validator has forcibly unbonded a delegator,
     // the fix_orphaned_delegator transition must be called
-    delegator1.aleo/claim_unbond();
-    delegator1.aleo/transfer_to_ale(unbond_amounts[0u8]);
+    pondo_delegator1.aleo/claim_unbond();
+    pondo_delegator1.aleo/transfer_to_ale(unbond_amounts[0u8]);
 
-    delegator2.aleo/claim_unbond();
-    delegator2.aleo/transfer_to_ale(unbond_amounts[1u8]);
+    pondo_delegator2.aleo/claim_unbond();
+    pondo_delegator2.aleo/transfer_to_ale(unbond_amounts[1u8]);
 
-    delegator3.aleo/claim_unbond();
-    delegator3.aleo/transfer_to_ale(unbond_amounts[2u8]);
+    pondo_delegator3.aleo/claim_unbond();
+    pondo_delegator3.aleo/transfer_to_ale(unbond_amounts[2u8]);
 
-    delegator4.aleo/claim_unbond();
-    delegator4.aleo/transfer_to_ale(unbond_amounts[3u8]);
+    pondo_delegator4.aleo/claim_unbond();
+    pondo_delegator4.aleo/transfer_to_ale(unbond_amounts[3u8]);
 
-    delegator5.aleo/claim_unbond();
-    delegator5.aleo/transfer_to_ale(unbond_amounts[4u8]);
+    pondo_delegator5.aleo/claim_unbond();
+    pondo_delegator5.aleo/transfer_to_ale(unbond_amounts[4u8]);
 
     return then finalize(unbond_amounts);
   }
@@ -1401,19 +1401,19 @@ program core_protocol.aleo {
     ) {
     // Transfer to each validator
     credits.aleo/transfer_public(DELEGATOR_1, transfer_amounts[0u8]);
-    delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
+    pondo_delegator1.aleo/bond(validators[0u8], transfer_amounts[0u8]);
 
     credits.aleo/transfer_public(DELEGATOR_2, transfer_amounts[1u8]);
-    delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
+    pondo_delegator2.aleo/bond(validators[1u8], transfer_amounts[1u8]);
 
     credits.aleo/transfer_public(DELEGATOR_3, transfer_amounts[2u8]);
-    delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
+    pondo_delegator3.aleo/bond(validators[2u8], transfer_amounts[2u8]);
 
     credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
-    delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
+    pondo_delegator4.aleo/bond(validators[3u8], transfer_amounts[3u8]);
 
     credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
-    delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
+    pondo_delegator5.aleo/bond(validators[4u8], transfer_amounts[4u8]);
 
     return then finalize(validators, transfer_amounts);
   }

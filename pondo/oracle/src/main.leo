@@ -41,39 +41,45 @@ program pondo_oracle.aleo {
   // A mapping to store the list of top 10 validators as specified by the delegator
   // ie this is a list of delegators but the validators are guaranteed to be unique or the 0 group address
   mapping top_valdiators: u8 => [address; 10];
+  // A mapping of banned validators
+  mapping banned_validators: address => bool;
 
   // Called by the reference delegator program to establish that the reference delegator has been created
   // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
-  async transition propose_reference_delegator(
+  async transition propose_delegator(
     public validator: address
   ) -> Future {
     // Ensure a program is calling
     assert_neq(self.caller, self.signer);
 
-    return propose_delegator(self.caller, validator);
+    return finalize_propose_delegator(self.caller, validator);
   }
 
-  async function propose_delegator(
+  async function finalize_propose_delegator(
     public reference_delegator: address,
     public validator: address
   ) {
-    let contains_delegator: bool = Mapping::contains(delegator_to_validator, reference_delegator);
+    // Ensure the validator isn't banned
+    let is_banned: bool = banned_validators.contains(validator);
+    assert_eq(is_banned, false);
+
+    let contains_delegator: bool = delegator_to_validator.contains(reference_delegator);
     assert_eq(contains_delegator, false);
 
-    Mapping::set(delegator_to_validator, reference_delegator, validator);
+    delegator_to_validator.set(reference_delegator, validator);
   }
 
   // To be called by the delegator approver who will have to ensure offchain that the delegator meets the requirements to be considered a reference delegator
   // The only requirement is that reference delegator meets the exact standard set by reference_delegator.aleo
-  async transition add_reference_delegator(
+  async transition add_delegator(
     public delegator: address
   ) -> Future {
     assert_eq(self.caller, DELEGATOR_APPROVER_ADDRESS);
 
-    return add_delegator(delegator);
+    return finalize_add_delegator(delegator);
   }
 
-  async function add_delegator(
+  async function finalize_add_delegator(
     public delegator: address
   ) {
     // Check that proposed_reference_delegator contains the reference delegator
@@ -88,6 +94,10 @@ program pondo_oracle.aleo {
     let proposed_validator_address: address = Mapping::get(delegator_to_validator, delegator);
     let bonded: bond_state = credits.aleo/bonded.get(delegator);
     assert_eq(bonded.validator, proposed_validator_address);
+
+    // Ensure the validator isn't banned
+    let is_banned: bool = banned_validators.contains(proposed_validator_address);
+    assert_eq(is_banned, false);
 
     // Ensure the reference delegator is not already part of the reference delegators
     let contains_validator_reference: bool = Mapping::contains(validator_data, proposed_validator_address);
@@ -106,17 +116,21 @@ program pondo_oracle.aleo {
 
   // Update the data for the given reference delegator
   // It's permissionless ie callable by anyone
-  async transition update_validator_data(
+  async transition update_data(
     public delegator: address
   ) -> Future {
-    return update_data(delegator);
+    return finalize_update_data(delegator);
   }
 
-  async function update_data(
+  async function finalize_update_data(
     public delegator: address
   ) {
     // Get the existing data, fails if the reference delegator isn't there
-    let existing_validator_datum: validator_datum = Mapping::get(validator_data, delegator);
+    let existing_validator_datum: validator_datum = validator_data.get(delegator);
+
+    // Ensure the validator isn't banned
+    let is_banned: bool = banned_validators.contains(existing_validator_datum.validator);
+    assert_eq(is_banned, false);
 
     // Check if update is in the allowed update period
     let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
@@ -154,11 +168,10 @@ program pondo_oracle.aleo {
       bonded_microcredits: bonded.microcredits,
       microcredits_yield_per_epoch: new_microcredits_yield_per_epoch
     };
-    Mapping::set(validator_data, delegator, new_validator_datum);
+    validator_data.set(delegator, new_validator_datum);
 
     // Get the array of top validators
-    let top_validators_addresses: [address; 10] = Mapping::get_or_use(
-      top_valdiators,
+    let top_validators_addresses: [address; 10] = top_valdiators.get_or_use(
       0u8,
       [
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
@@ -182,16 +195,16 @@ program pondo_oracle.aleo {
     };
 
     // Fetch all of the data for each validator
-    let datum_0: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[0u8], default_validator_datum);
-    let datum_1: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[1u8], default_validator_datum);
-    let datum_2: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[2u8], default_validator_datum);
-    let datum_3: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[3u8], default_validator_datum);
-    let datum_4: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[4u8], default_validator_datum);
-    let datum_5: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[5u8], default_validator_datum);
-    let datum_6: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[6u8], default_validator_datum);
-    let datum_7: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[7u8], default_validator_datum);
-    let datum_8: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[8u8], default_validator_datum);
-    let datum_9: validator_datum = Mapping::get_or_use(validator_data, top_validators_addresses[9u8], default_validator_datum);
+    let datum_0: validator_datum = validator_data.get_or_use(top_validators_addresses[0u8], default_validator_datum);
+    let datum_1: validator_datum = validator_data.get_or_use(top_validators_addresses[1u8], default_validator_datum);
+    let datum_2: validator_datum = validator_data.get_or_use(top_validators_addresses[2u8], default_validator_datum);
+    let datum_3: validator_datum = validator_data.get_or_use(top_validators_addresses[3u8], default_validator_datum);
+    let datum_4: validator_datum = validator_data.get_or_use(top_validators_addresses[4u8], default_validator_datum);
+    let datum_5: validator_datum = validator_data.get_or_use(top_validators_addresses[5u8], default_validator_datum);
+    let datum_6: validator_datum = validator_data.get_or_use(top_validators_addresses[6u8], default_validator_datum);
+    let datum_7: validator_datum = validator_data.get_or_use(top_validators_addresses[7u8], default_validator_datum);
+    let datum_8: validator_datum = validator_data.get_or_use(top_validators_addresses[8u8], default_validator_datum);
+    let datum_9: validator_datum = validator_data.get_or_use(top_validators_addresses[9u8], default_validator_datum);
 
     // Calculate the epoch start block
     let epoch_start_height: u32 = current_epoch * BLOCKS_PER_EPOCH;
@@ -222,16 +235,16 @@ program pondo_oracle.aleo {
     ];
 
     // Set the new top 10
-    Mapping::set(top_valdiators, 0u8, new_top_10);
+    top_valdiators.set(0u8, new_top_10);
   }
 
   // Remove the reference delegator
   // It can be used whether or not the reference delegator has been approved
-  async transition remove_reference_delegator() -> Future {
-    return remove_delegator(self.caller);
+  async transition remove_delegator() -> Future {
+    return finalize_remove_delegator(self.caller);
   }
   
-  async function remove_delegator(
+  async function finalize_remove_delegator(
     public delegator_address: address
   ) {
     // Ensure an update period isn't occuring
@@ -241,19 +254,19 @@ program pondo_oracle.aleo {
     assert(is_not_update_period);
 
     // Remove from the proposed_delegators if there
-    let contains_delegator: bool = Mapping::contains(delegator_to_validator, delegator_address);
+    let contains_delegator: bool = delegator_to_validator.contains(delegator_address);
     if (contains_delegator) {
-      Mapping::remove(delegator_to_validator, delegator_address);
+      delegator_to_validator.remove(delegator_address);
     }
 
     // Remove from the validator_data
-    let data_contains_delegator: bool = Mapping::contains(validator_data, delegator_address);
+    let data_contains_delegator: bool = validator_data.contains(delegator_address);
     if (data_contains_delegator) {
-      Mapping::remove(validator_data, delegator_address);
+      validator_data.remove(delegator_address);
     }
 
     // Remove from the top 10 validators if there
-    let top_validators_addresses: [address; 10] = Mapping::get(top_valdiators, 0u8);
+    let top_validators_addresses: [address; 10] = top_valdiators.get(0u8);
     let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[0u8];
     let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[1u8];
     let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[2u8];
@@ -288,7 +301,52 @@ program pondo_oracle.aleo {
       swap_result_8.0,
       swap_result_8.1,
     ];
-    Mapping::set(top_valdiators, 0u8, new_top_validators_addresses);
+    top_valdiators.set(0u8, new_top_validators_addresses);
+  }
+
+  // Pondo delegators can ban a validator
+  // This is to prevent a validator from keeping reference delegators while forcibly unbonding pondo delegators
+  // or closing the validator to delegators when the pondo delegators try to bond
+  async transition pondo_ban_validator(
+    public validator: address
+  ) -> Future {
+    assert(
+      self.caller == pondo_delegator1.aleo ||
+      self.caller == pondo_delegator2.aleo ||
+      self.caller == pondo_delegator3.aleo ||
+      self.caller == pondo_delegator4.aleo ||
+      self.caller == pondo_delegator5.aleo
+    );
+
+    return finalize_pondo_ban_validator(validator);
+  }
+
+  async function finalize_pondo_ban_validator(
+    public validator: address
+  ) {
+    banned_validators.set(validator, true);
+  }
+
+  // Anyone can ban a validator if the validator has an unbonding state not during an update window
+  async transition ban_validator(
+    public validator: address
+  ) -> Future {
+    return finalize_ban_validator(validator);
+  }
+
+  async function finalize_ban_validator(
+    public validator: address
+  ) {
+    // Ensure an update period isn't occuring
+    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
+    let is_not_update_period: bool = epoch_blocks < UPDATE_BLOCKS_DISALLOWED;
+    assert(is_not_update_period);
+
+    // Ensure the validator has an unbonding state
+    let is_unbonding: bool = credits.aleo/unbonding.contains(validator);
+    assert(is_unbonding);
+
+    banned_validators.set(validator, true);
   }
 
   // Swap the positions of each datum given:
@@ -346,6 +404,7 @@ program pondo_oracle.aleo {
     return should_swap ? (datum_1, datum_0, new_auto_swap) : (datum_0, datum_1, new_auto_swap);
   }
 
+  // Swap the zero group address to the end of the list
   inline swap_zero_group_address(
     address_0: address,
     address_1: address

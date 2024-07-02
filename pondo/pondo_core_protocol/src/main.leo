@@ -262,11 +262,11 @@ program pondo_core_protocol.aleo {
     assert(account_balance >= boost_pool_balance + pending_withdrawal_balance);
 
     // Confirm each delegator is already bonded and in the correct state
-    let delegator1_state: u8 = delegator1.aleo/state_mapping.get(0u8);
-    let delegator2_state: u8 = delegator2.aleo/state_mapping.get(0u8);
-    let delegator3_state: u8 = delegator3.aleo/state_mapping.get(0u8);
-    let delegator4_state: u8 = delegator4.aleo/state_mapping.get(0u8);
-    let delegator5_state: u8 = delegator5.aleo/state_mapping.get(0u8);
+    let delegator1_state: u8 = pondo_delegator1.aleo/state_mapping.get(0u8);
+    let delegator2_state: u8 = pondo_delegator2.aleo/state_mapping.get(0u8);
+    let delegator3_state: u8 = pondo_delegator3.aleo/state_mapping.get(0u8);
+    let delegator4_state: u8 = pondo_delegator4.aleo/state_mapping.get(0u8);
+    let delegator5_state: u8 = pondo_delegator5.aleo/state_mapping.get(0u8);
     assert(delegator1_state == UNBOND_NOT_ALLOWED && delegator2_state == UNBOND_NOT_ALLOWED && delegator3_state == UNBOND_NOT_ALLOWED && delegator4_state == UNBOND_NOT_ALLOWED && delegator5_state == UNBOND_NOT_ALLOWED);
 
     // TODO: Check delegator proportions
@@ -479,11 +479,11 @@ program pondo_core_protocol.aleo {
   }
 
   async transition prep_rebalance() -> Future {
-    let f0: Future = delegator1.aleo/set_state(UNBOND_ALLOWED);
-    let f1: Future = delegator2.aleo/set_state(UNBOND_ALLOWED);
-    let f2: Future = delegator3.aleo/set_state(UNBOND_ALLOWED);
-    let f3: Future = delegator4.aleo/set_state(UNBOND_ALLOWED);
-    let f4: Future = delegator5.aleo/set_state(UNBOND_ALLOWED);
+    let f0: Future = pondo_delegator1.aleo/set_state(UNBOND_ALLOWED);
+    let f1: Future = pondo_delegator2.aleo/set_state(UNBOND_ALLOWED);
+    let f2: Future = pondo_delegator3.aleo/set_state(UNBOND_ALLOWED);
+    let f3: Future = pondo_delegator4.aleo/set_state(UNBOND_ALLOWED);
+    let f4: Future = pondo_delegator5.aleo/set_state(UNBOND_ALLOWED);
 
     return finalize_prep_rebalance(f0, f1, f2, f3, f4);
   }
@@ -516,11 +516,11 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) -> Future {
-    let f0: Future = delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
-    let f1: Future = delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
-    let f2: Future = delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
-    let f3: Future = delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
-    let f4: Future = delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
+    let f0: Future = pondo_delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
+    let f1: Future = pondo_delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
+    let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
+    let f3: Future = pondo_delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
+    let f4: Future = pondo_delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
     let f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
 
     return finalize_rebalance_retrieve_credits(f0, f1, f2, f3, f4, f5, transfer_amounts, commission_mint);
@@ -584,17 +584,17 @@ program pondo_core_protocol.aleo {
     let f3: Future = credits.aleo/transfer_public(DELEGATOR_4, transfer_amounts[3u8]);
     let f4: Future = credits.aleo/transfer_public(DELEGATOR_5, transfer_amounts[4u8]);
 
-    let f5: Future = delegator1.aleo/set_state(BOND_ALLOWED);
-    let f6: Future = delegator2.aleo/set_state(BOND_ALLOWED);
-    let f7: Future = delegator3.aleo/set_state(BOND_ALLOWED);
-    let f8: Future = delegator4.aleo/set_state(BOND_ALLOWED);
-    let f9: Future = delegator5.aleo/set_state(BOND_ALLOWED);
+    let f5: Future = pondo_delegator1.aleo/set_state(BOND_ALLOWED);
+    let f6: Future = pondo_delegator2.aleo/set_state(BOND_ALLOWED);
+    let f7: Future = pondo_delegator3.aleo/set_state(BOND_ALLOWED);
+    let f8: Future = pondo_delegator4.aleo/set_state(BOND_ALLOWED);
+    let f9: Future = pondo_delegator5.aleo/set_state(BOND_ALLOWED);
 
-    let f10: Future = delegator1.aleo/set_validator(validators[0u8]);
-    let f11: Future = delegator2.aleo/set_validator(validators[1u8]);
-    let f12: Future = delegator3.aleo/set_validator(validators[2u8]);
-    let f13: Future = delegator4.aleo/set_validator(validators[3u8]);
-    let f14: Future = delegator5.aleo/set_validator(validators[4u8]);
+    let f10: Future = pondo_delegator1.aleo/set_validator(validators[0u8]);
+    let f11: Future = pondo_delegator2.aleo/set_validator(validators[1u8]);
+    let f12: Future = pondo_delegator3.aleo/set_validator(validators[2u8]);
+    let f13: Future = pondo_delegator4.aleo/set_validator(validators[3u8]);
+    let f14: Future = pondo_delegator5.aleo/set_validator(validators[4u8]);
 
     return finalize_rebalance_redistribute(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, validators, transfer_amounts);
   }
