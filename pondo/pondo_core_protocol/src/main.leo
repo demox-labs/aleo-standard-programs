@@ -324,7 +324,37 @@ program pondo_core_protocol.aleo {
     let delegator5_state: u8 = delegator5.aleo/state_mapping.get(0u8);
     assert(delegator1_state == UNBOND_NOT_ALLOWED && delegator2_state == UNBOND_NOT_ALLOWED && delegator3_state == UNBOND_NOT_ALLOWED && delegator4_state == UNBOND_NOT_ALLOWED && delegator5_state == UNBOND_NOT_ALLOWED);
 
-    // TODO: Check delegator proportions
+    // Check delegator proportions (note: the margin for error is +/- 1% of the total amount of aleo held in the protocol)
+    let base_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u128 = credits.aleo/bonded.get_or_use(delegator1.aleo, base_bond_state).microcredits as u128;
+    let delegator2_bonded: u128 = credits.aleo/bonded.get_or_use(delegator2.aleo, base_bond_state).microcredits as u128;
+    let delegator3_bonded: u128 = credits.aleo/bonded.get_or_use(delegator3.aleo, base_bond_state).microcredits as u128;
+    let delegator4_bonded: u128 = credits.aleo/bonded.get_or_use(delegator4.aleo, base_bond_state).microcredits as u128;
+    let delegator5_bonded: u128 = credits.aleo/bonded.get_or_use(delegator5.aleo, base_bond_state).microcredits as u128;
+
+    let delegator1_account: u128 = credits.aleo/account.get_or_use(delegator1.aleo, 0u64) as u128;
+    let delegator2_account: u128 = credits.aleo/account.get_or_use(delegator2.aleo, 0u64) as u128;
+    let delegator3_account: u128 = credits.aleo/account.get_or_use(delegator3.aleo, 0u64) as u128;
+    let delegator4_account: u128 = credits.aleo/account.get_or_use(delegator4.aleo, 0u64) as u128;
+    let delegator5_account: u128 = credits.aleo/account.get_or_use(delegator5.aleo, 0u64) as u128;
+
+    let delegator1_total: u128 = delegator1_bonded + delegator1_account;
+    let delegator2_total: u128 = delegator2_bonded + delegator2_account;
+    let delegator3_total: u128 = delegator3_bonded + delegator3_account;
+    let delegator4_total: u128 = delegator4_bonded + delegator4_account;
+    let delegator5_total: u128 = delegator5_bonded + delegator5_account;
+
+    let total: u128 = delegator1_total + delegator2_total + delegator3_total + delegator4_total + delegator5_total;
+
+    let delegator1_portion: u128 = delegator1_total * PRECISION_UNSIGNED / total;
+    let delegator2_portion: u128 = delegator2_total * PRECISION_UNSIGNED / total;
+    let delegator3_portion: u128 = delegator3_total * PRECISION_UNSIGNED / total;
+    let delegator4_portion: u128 = delegator4_total * PRECISION_UNSIGNED / total;
+    let delegator5_portion: u128 = delegator5_total * PRECISION_UNSIGNED / total;
+    assert(delegator1_portion == PORTION_1 && delegator2_portion == PORTION_2 && delegator3_portion == PORTION_3 && delegator4_portion == PORTION_4 && delegator5_portion == PORTION_5);
   }
 
   // -------------------
@@ -355,7 +385,9 @@ program pondo_core_protocol.aleo {
     f0.await();
     f1.await();
 
-    // TODO: block withdrawals during a rebalance
+    // Block withdrawals during a rebalance
+    let rebalanced_prepped: bool = validator_set.contains(1u8);
+    assert(!rebalanced_prepped);
 
     // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: bool = withdrawals.contains(caller);
@@ -651,7 +683,7 @@ program pondo_core_protocol.aleo {
     public validators: [address; 5],
     public transfer_amounts: [u64; 5]
   ) -> Future {
-    // Transfer to each delegator and set state to 0
+    // Transfer to each delegator and set validator
     let f0: Future = credits.aleo/transfer_public(delegator1.aleo, transfer_amounts[0u8]);
     let f1: Future = credits.aleo/transfer_public(delegator2.aleo, transfer_amounts[1u8]);
     let f2: Future = credits.aleo/transfer_public(delegator3.aleo, transfer_amounts[2u8]);
@@ -691,17 +723,38 @@ program pondo_core_protocol.aleo {
     f7.await();
     f8.await();
     f9.await();
-    // TODO: Reset boost pool
-    // TODO: Check that there's still enough account balance left for pending withdrawals
-    // TODO: Check that the new validator set is correct (address and proportion)
+
+    // TODO: Reset boost pool for each validator
+    balances.set(BOOST_POOL, 0u64);
+
+    // Check that the new validator set is correct
+    let next_validator_set: [address; 5] = validator_set.get(1u8);
+    validator_set.set(0u8, next_validator_set);
+    validator_set.remove(1u8);
+    for i: u8 in 0u8..5u8 {
+      assert(validators[i] == next_validator_set[i]);
+    }
+    // Check that each validator has the correct portion of credits
+    let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
+    let total_credits_128: u128 = total_credits as u128;
+    let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator2_portion: u128 = (transfer_amounts[1u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator3_portion: u128 = (transfer_amounts[2u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator4_portion: u128 = (transfer_amounts[3u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator5_portion: u128 = (transfer_amounts[4u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    assert(validator1_portion == PORTION_1);
+    assert(validator2_portion == PORTION_2);
+    assert(validator3_portion == PORTION_3);
+    assert(validator4_portion == PORTION_4);
+    assert(validator5_portion == PORTION_5);
+
+    // Check that there's still enough account balance left for pending withdrawals
+    let account_balance: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
+    let pending_withdrawal_balance: u64 = balances.get_or_use(WITHDRAWALS_AVAILABLE_TO_CLAIM, 0u64);
+    assert(account_balance >= pending_withdrawal_balance);
 
     // Update last rebalance epoch
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     last_rebalance_epoch.set(0u8, current_epoch);
-
-    // Update validator set
-    let next_validator_set: [address; 5] = validator_set.get(1u8);
-    validator_set.set(0u8, next_validator_set);
-    validator_set.remove(1u8);
   }
 }
