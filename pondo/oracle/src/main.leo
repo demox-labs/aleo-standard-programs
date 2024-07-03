@@ -1,9 +1,7 @@
 import credits.aleo;
 
 // TODO: 
-// 1. Add a scaling waiting period for adding a new delegator
-// 2. Add a direct way for a validator to ban themselves
-// 3. Add boosting to the oracle
+// 1. Fix boosting so that it's accurate to the benefits for boosting and slightly profitable to boost
 
 
 // The program to permissionless calculate the yield of reference delegators to validators
@@ -20,6 +18,10 @@ program pondo_oracle.aleo {
   const UPDATE_BLOCKS_DISALLOWED: u32 = 103_680u32; // 6 day of blocks, assuming 5 sec per block
   // The max allowable commission by the validators
   const MAX_COMMISSION: u8 = 50u8;
+  // The multiple for boosting
+  // Note: Since the biggest difference a validator can go is from 0% to 40% of the tvl of pondo, we can use a multiple of 2
+  // This makes boosting a validator cheaper but still more expensive than increasing normal yield ie decreasing commission
+  const BOOST_MULTIPLE: u128 = 2u128; // 2x boost
 
   // The data to store for each validator to calculate the return
   struct validator_datum {
@@ -29,6 +31,11 @@ program pondo_oracle.aleo {
     bonded_microcredits: u64,
     microcredits_yield_per_epoch: u128,
     commission: u8
+  }
+
+  struct validator_boost {
+    epoch: u32,
+    boost_amount: u64
   }
 
   // Shadow credits.aleo/bond_state
@@ -50,6 +57,8 @@ program pondo_oracle.aleo {
   mapping banned_validators: address => bool;
   // A mapping of the pondo total value locked
   mapping pondo_tvl: u8 => u64;
+  // A mapping of the validator boosting for the epoch
+  mapping validator_boosting: address => validator_boost;
 
   // Called by the reference delegator program to establish that the reference delegator has been created
   // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
@@ -164,6 +173,9 @@ program pondo_oracle.aleo {
     // Get the bonded state of the delegator
     let bonded: bond_state = credits.aleo/bonded.get(delegator);
 
+    // Get the current epoch
+    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
+
     // Note: We calculate return per epoch
     // For example, given an annualized return of 10%, after a week we expected 10_000_000_000 microcredits (10K credits) to become 10_018_345_688 microcredits
     // Because we use u128, we cannot calculate a percentage yield as it would always be 0 so we normalize the return
@@ -173,12 +185,21 @@ program pondo_oracle.aleo {
     let normalized_microcredits_earned: u128 = microcredits_earned * PRECISION / existing_validator_datum.bonded_microcredits as u128;
     let yield_per_epoch: u128 = normalized_microcredits_earned * BLOCKS_PER_EPOCH as u128 / block_range as u128;
 
+    // Get the boost amount for the validator
+    let boost: validator_boost = validator_boosting.get_or_use(existing_validator_datum.validator, validator_boost {
+      epoch: 0u32,
+      boost_amount: 0u64
+    });
+    let boost_amount: u128 = boost.epoch == current_epoch ? boost.boost_amount as u128 : 0u128;
+    // Normalize the boost amount by the pondo tvl
+    let current_pondo_tvl: u128 = pondo_tvl.get_or_use(0u8, 10_000_000_000_000u64) as u128; // use a high default
+    let normalized_boost_amount: u128 = boost_amount * PRECISION * BOOST_MULTIPLE / current_pondo_tvl as u128;
+
     // Ensure the last update was in the previous epoch, otherwise set the yield to zero
     // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
-    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     let previous_update_epoch: u32 = existing_validator_datum.block_height / BLOCKS_PER_EPOCH;
     let did_update_last_epoch: bool = (previous_update_epoch + 1u32) == current_epoch;
-    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
+    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch + normalized_boost_amount : 0u128;
 
     // Construct and save the new validator_datum for the delegator
     let new_validator_datum: validator_datum = validator_datum {
@@ -382,11 +403,13 @@ program pondo_oracle.aleo {
     banned_validators.set(validator, true);
   }
 
+  // Set the pondo tvl from the core protocol
+  // Used for boost pool normalization
   async transition set_pondo_tvl(
     public tvl: u64
   ) -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
-    
+
     return finalize_set_pondo_tvl(tvl);
   }
 
@@ -394,6 +417,70 @@ program pondo_oracle.aleo {
     public tvl: u64
   ) {
     pondo_tvl.set(0u8, tvl);
+  }
+
+  // Ban a validator as the withdrawal address of that validator
+  async transition ban_self(validator: address) -> Future {
+    return finalize_ban_self(validator, self.caller);
+  }
+
+  async function finalize_ban_self(
+    public validator: address,
+    public caller: address
+  ) {
+    // Ensure the caller is the withdrawal address of the validator
+    let withdraw_address: address = credits.aleo/withdraw.get(validator);
+    assert_eq(withdraw_address, caller);
+
+    // Assert that the validator is in the committee, will fail 
+    let committee_state_contains_validator: bool = credits.aleo/committee.contains(validator);
+    assert(committee_state_contains_validator);
+
+    // Ban the validator
+    banned_validators.set(validator, true);
+  }
+
+  // Boost a validator
+  async transition boost_validator(
+    public validator: address,
+    public boost_amount: u64
+  ) -> Future {
+    // Transfer credits to the pondo core protocol
+    let f0: Future = credits.aleo/transfer_public_as_signer(pondo_core_protocol.aleo, boost_amount);
+    return finalize_boost_validator(f0, validator, boost_amount);
+  }
+
+  async function finalize_boost_validator(
+    public f0: Future,
+    public validator: address,
+    public boost_amount: u64
+  ) {
+    // Wait for the transfer to complete
+    f0.await();
+
+    // Get the current epoch
+    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
+
+    // Ensure that you cannot boost during the update period
+    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
+    let is_update_period: bool = epoch_blocks >= UPDATE_BLOCKS_DISALLOWED;
+    assert(!is_update_period);
+
+    // Get the current boosting for the validator
+    let current_boost: validator_boost = validator_boosting.get_or_use(validator, validator_boost {
+      epoch: 0u32,
+      boost_amount: 0u64
+    });
+
+    // If the boost is in the same epoch, add the boost amount
+    let new_boost_amount: u64 = current_boost.epoch == current_epoch ? current_boost.boost_amount + boost_amount : boost_amount;
+
+    // Set the boosting for the validator
+    let new_boost: validator_boost = validator_boost {
+      epoch: current_epoch,
+      boost_amount: new_boost_amount
+    };
+    validator_boosting.set(validator, new_boost);
   }
 
   // Swap the positions of each datum given:

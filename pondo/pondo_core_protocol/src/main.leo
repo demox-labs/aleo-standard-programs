@@ -757,4 +757,45 @@ program pondo_core_protocol.aleo {
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     last_rebalance_epoch.set(0u8, current_epoch);
   }
+
+  // A crank to set the oracle tvl
+  async transition set_oracle_tvl(
+    public tvl: u64
+  ) -> Future {
+    let f0: Future = pondo_oracle.aleo/set_pondo_tvl(tvl);
+    return finalize_set_oracle_tvl(f0, tvl);
+  }
+
+  async function finalize_set_oracle_tvl(
+    public f0: Future,
+    public tvl: u64
+  ) {
+    f0.await();
+
+    // Ensure the tvl matches what exists in the core protocol
+    // Get all of the delegator balances
+    let delegator1_balance = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_balance = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_balance = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_balance = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_balance = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+    // Get all of the bonded balances
+    let default_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, default_bond_state).microcredits;
+    let delegator2_bonded = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, default_bond_state).microcredits;
+    let delegator3_bonded = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, default_bond_state).microcredits;
+    let delegator4_bonded = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, default_bond_state).microcredits;
+    let delegator5_bonded = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, default_bond_state).microcredits;
+    // Get the core protocol balance
+    let core_protocol_balance = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
+
+    // Calculate the total tvl
+    let total_tvl = delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance + delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded + core_protocol_balance;
+
+    // Assert that the total tvl matches the tvl provided within a margin of error of 2%
+    assert(total_tvl >= tvl * 98u64 / 100u64 && total_tvl <= tvl * 102u64 / 100u64);
+  }
 }
