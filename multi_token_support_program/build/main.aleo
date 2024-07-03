@@ -284,6 +284,14 @@ finalize update_token_management:
 
 
 
+function generate_hash:
+    input r0 as field.public;
+    input r1 as address.public;
+    cast r1 r0 into r2 as TokenOwner;
+    hash.bhp256 r2 into r3 as field;
+    output r3 as field.private;
+
+
 
 function mint_public:
     input r0 as field.public;
@@ -621,86 +629,4 @@ finalize transfer_from_public_to_private:
     sub r13.balance r2 into r15;
     cast r0 r1 r15 r13.authorized_until into r16 as Balance;
     set r16 into authorized_balances[r12];
-
-
-
-
-function deposit_credits_public:
-    input r0 as u64.public;
-    call credits.aleo/transfer_public_as_signer multi_token_support_program_v1.aleo r0 into r1;
-    cast r0 into r2 as u128;
-    async deposit_credits_public r1 r2 self.caller into r3;
-    output r3 as multi_token_support_program_v1.aleo/deposit_credits_public.future;
-
-finalize deposit_credits_public:
-    input r0 as credits.aleo/transfer_public_as_signer.future;
-    input r1 as u128.public;
-    input r2 as address.public;
-    await r0;
-    cast r2 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3 as TokenOwner;
-    hash.bhp256 r3 into r4 as field;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 0u128 4294967295u32 into r5 as Balance;
-    get.or_use authorized_balances[r4] r5 into r6;
-    add r6.balance r1 into r7;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 r7 r6.authorized_until into r8 as Balance;
-    set r8 into authorized_balances[r4];
-
-
-
-
-function deposit_credits_private:
-    input r0 as credits.aleo/credits.record;
-    input r1 as u64.private;
-    call credits.aleo/transfer_private_to_public r0 multi_token_support_program_v1.aleo r1 into r2 r3;
-    cast r1 into r4 as u128;
-    cast r0.owner r4 3443843282313283355522573239085696902919850365217539366784739393210722344986field false 4294967295u32 into r5 as Token.record;
-    async deposit_credits_private into r6;
-    output r2 as credits.aleo/credits.record;
-    output r5 as Token.record;
-    output r6 as multi_token_support_program_v1.aleo/deposit_credits_private.future;
-
-finalize deposit_credits_private:
-    assert.eq true true;
-
-
-
-
-function withdraw_credits_public:
-    input r0 as u64.private;
-    call credits.aleo/transfer_public self.caller r0 into r1;
-    cast r0 into r2 as u128;
-    async withdraw_credits_public r1 r2 self.caller into r3;
-    output r3 as multi_token_support_program_v1.aleo/withdraw_credits_public.future;
-
-finalize withdraw_credits_public:
-    input r0 as credits.aleo/transfer_public.future;
-    input r1 as u128.public;
-    input r2 as address.public;
-    await r0;
-    cast r2 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3 as TokenOwner;
-    hash.bhp256 r3 into r4 as field;
-    get authorized_balances[r4] into r5;
-    sub r5.balance r1 into r6;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 r6 r5.authorized_until into r7 as Balance;
-    set r7 into authorized_balances[r4];
-
-
-
-
-function withdraw_credits_private:
-    input r0 as Token.record;
-    input r1 as u64.private;
-    is.eq r0.token_id 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r2;
-    assert.eq r2 true;
-    call credits.aleo/transfer_public_to_private r0.owner r1 into r3 r4;
-    cast r1 into r5 as u128;
-    sub r0.amount r5 into r6;
-    cast r0.owner r6 r0.token_id r0.external_authorization_required r0.authorized_until into r7 as Token.record;
-    async withdraw_credits_private into r8;
-    output r7 as Token.record;
-    output r3 as credits.aleo/credits.record;
-    output r8 as multi_token_support_program_v1.aleo/withdraw_credits_private.future;
-
-finalize withdraw_credits_private:
-    assert.eq true true;
 

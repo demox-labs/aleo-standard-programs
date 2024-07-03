@@ -1,6 +1,6 @@
 import credits.aleo;
 import multi_token_support_program_v1.aleo;
-program cat_no_hat.aleo;
+program simple_token_v2.aleo;
 
 
 struct TokenMetadata:
@@ -22,11 +22,11 @@ struct TokenOwner:
 
 
 function initialize:
-    assert.eq aleo1784rtr929xtrag6xr5kqntafuzc8ktrgav89s27m5swpschdz5gqhdem0x self.caller;
-    call multi_token_support_program_v1.aleo/register_token 4846247369341682004field 4846247369341682004u128 4846247369341682004u128 6u8 1_000_000_000_000_000u128 false cat_no_hat.aleo into r0;
-    call multi_token_support_program_v1.aleo/mint_public 4846247369341682004field aleo1784rtr929xtrag6xr5kqntafuzc8ktrgav89s27m5swpschdz5gqhdem0x 1_000_000_000_000_000u128 4_294_967_295u32 into r1;
+    assert.eq self.caller aleo15xd9tee983ts3urff8j22q64wvcyc8geakghyc3ew5u0v8jfuqgs958t6d;
+    call multi_token_support_program_v1.aleo/register_token 4846247369341682005field 4846247369341682004u128 4846247369341682004u128 6u8 1_000_000_000_000_000u128 false simple_token_v2.aleo into r0;
+    call multi_token_support_program_v1.aleo/mint_public 4846247369341682005field aleo15xd9tee983ts3urff8j22q64wvcyc8geakghyc3ew5u0v8jfuqgs958t6d 1_000_000_000_000_000u128 4_294_967_295u32 into r1;
     async initialize r0 r1 into r2;
-    output r2 as cat_no_hat.aleo/initialize.future;
+    output r2 as simple_token_v2.aleo/initialize.future;
 
 finalize initialize:
     input r0 as multi_token_support_program_v1.aleo/register_token.future;
@@ -34,3 +34,10 @@ finalize initialize:
     await r0;
     await r1;
 
+
+
+function generate_hash:
+    input r0 as field.public;
+    input r1 as address.public;
+    call multi_token_support_program_v1.aleo/generate_hash r0 r1 into r2;
+    output r2 as field.private;

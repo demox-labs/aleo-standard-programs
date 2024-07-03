@@ -57,9 +57,9 @@ mapping allowances:
 
 
 function transfer_public:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
     async transfer_public r0 r1 r2 self.caller into r3;
     output r3 as multi_token_support_program_v1.aleo/transfer_public.future;
 
@@ -99,9 +99,9 @@ finalize transfer_public:
 
 
 function transfer_public_as_signer:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
     async transfer_public_as_signer r0 r1 r2 self.signer into r3;
     output r3 as multi_token_support_program_v1.aleo/transfer_public_as_signer.future;
 
@@ -165,8 +165,8 @@ finalize transfer_private:
 
 
 function transfer_private_to_public:
-    input r0 as address.private;
-    input r1 as u128.private;
+    input r0 as address.public;
+    input r1 as u128.public;
     input r2 as Token.record;
     sub r2.amount r1 into r3;
     cast r2.owner r3 r2.token_id r2.external_authorization_required r2.authorized_until into r4 as Token.record;
@@ -203,30 +203,29 @@ finalize transfer_private_to_public:
 
 
 function transfer_public_to_private:
-    input r0 as field.private;
+    input r0 as field.public;
     input r1 as address.private;
-    input r2 as u128.private;
-    input r3 as boolean.private;
+    input r2 as u128.public;
+    input r3 as boolean.public;
     ternary r3 0u32 4294967295u32 into r4;
     cast r1 r2 r0 r3 r4 into r5 as Token.record;
-    async transfer_public_to_private r0 r1 r2 self.caller r3 into r6;
+    async transfer_public_to_private r0 r2 self.caller r3 into r6;
     output r5 as Token.record;
     output r6 as multi_token_support_program_v1.aleo/transfer_public_to_private.future;
 
 finalize transfer_public_to_private:
     input r0 as field.public;
-    input r1 as address.public;
-    input r2 as u128.public;
-    input r3 as address.public;
-    input r4 as boolean.public;
-    get registered_tokens[r0] into r5;
-    assert.eq r5.external_authorization_required r4;
-    cast r3 r0 into r6 as TokenOwner;
-    hash.bhp256 r6 into r7 as field;
-    get authorized_balances[r7] into r8;
-    sub r8.balance r2 into r9;
-    cast r0 r3 r9 r8.authorized_until into r10 as Balance;
-    set r10 into authorized_balances[r7];
+    input r1 as u128.public;
+    input r2 as address.public;
+    input r3 as boolean.public;
+    get registered_tokens[r0] into r4;
+    assert.eq r4.external_authorization_required r3;
+    cast r2 r0 into r5 as TokenOwner;
+    hash.bhp256 r5 into r6 as field;
+    get authorized_balances[r6] into r7;
+    sub r7.balance r1 into r8;
+    cast r0 r2 r8 r7.authorized_until into r9 as Balance;
+    set r9 into authorized_balances[r6];
 
 
 
@@ -243,13 +242,13 @@ finalize initialize:
 
 
 function register_token:
-    input r0 as field.private;
-    input r1 as u128.private;
-    input r2 as u128.private;
-    input r3 as u8.private;
-    input r4 as u128.private;
-    input r5 as boolean.private;
-    input r6 as address.private;
+    input r0 as field.public;
+    input r1 as u128.public;
+    input r2 as u128.public;
+    input r3 as u8.public;
+    input r4 as u128.public;
+    input r5 as boolean.public;
+    input r6 as address.public;
     is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r7;
     assert.eq r7 true;
     cast r0 r1 r2 r3 0u128 r4 self.caller r5 r6 into r8 as TokenMetadata;
@@ -266,9 +265,9 @@ finalize register_token:
 
 
 function update_token_management:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as address.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as address.public;
     is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3;
     assert.eq r3 true;
     async update_token_management r0 r1 r2 self.caller into r4;
@@ -285,12 +284,20 @@ finalize update_token_management:
 
 
 
+function generate_hash:
+    input r0 as field.public;
+    input r1 as address.public;
+    cast r1 r0 into r2 as TokenOwner;
+    hash.bhp256 r2 into r3 as field;
+    output r3 as field.private;
+
+
 
 function mint_public:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
-    input r3 as u32.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
+    input r3 as u32.public;
     is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r4;
     assert.eq r4 true;
     async mint_public r0 r1 r2 r3 self.caller into r5;
@@ -332,11 +339,11 @@ finalize mint_public:
 
 
 function mint_private:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
-    input r3 as boolean.private;
-    input r4 as u32.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
+    input r3 as boolean.public;
+    input r4 as u32.public;
     is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r5;
     assert.eq r5 true;
     cast r1 r2 r0 r3 r4 into r6 as Token.record;
@@ -364,12 +371,14 @@ finalize mint_private:
 
 
 function burn_public:
-    input r0 as TokenOwner.private;
-    input r1 as u128.private;
-    is.neq r0.token_id 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r2;
-    assert.eq r2 true;
-    async burn_public r0 r1 self.caller into r3;
-    output r3 as multi_token_support_program_v1.aleo/burn_public.future;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
+    is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3;
+    assert.eq r3 true;
+    cast r1 r0 into r4 as TokenOwner;
+    async burn_public r4 r2 self.caller into r5;
+    output r5 as multi_token_support_program_v1.aleo/burn_public.future;
 
 finalize burn_public:
     input r0 as TokenOwner.public;
@@ -407,7 +416,7 @@ finalize burn_public:
 
 function burn_private:
     input r0 as Token.record;
-    input r1 as u128.private;
+    input r1 as u128.public;
     is.neq r0.token_id 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r2;
     assert.eq r2 true;
     sub r0.amount r1 into r3;
@@ -430,9 +439,9 @@ finalize burn_private:
 
 
 function prehook_public:
-    input r0 as TokenOwner.private;
-    input r1 as u128.private;
-    input r2 as u32.private;
+    input r0 as TokenOwner.public;
+    input r1 as u128.public;
+    input r2 as u32.public;
     async prehook_public r0 r1 r2 self.caller into r3;
     output r3 as multi_token_support_program_v1.aleo/prehook_public.future;
 
@@ -442,20 +451,18 @@ finalize prehook_public:
     input r2 as u32.public;
     input r3 as address.public;
     get registered_tokens[r0.token_id] into r4;
-    is.eq r3 r4.admin into r5;
-    is.eq r3 r4.external_authorization_party into r6;
-    or r5 r6 into r7;
-    assert.eq r7 true;
-    hash.bhp256 r0 into r8 as field;
-    get balances[r8] into r9;
-    sub r9.balance r1 into r10;
-    cast r0.token_id r0.account r10 r9.authorized_until into r11 as Balance;
-    set r11 into balances[r8];
-    cast r0.token_id r0.account 0u128 r2 into r12 as Balance;
-    get.or_use authorized_balances[r8] r12 into r13;
-    add r13.balance r1 into r14;
-    cast r0.token_id r0.account r14 r2 into r15 as Balance;
-    set r15 into authorized_balances[r8];
+    is.eq r3 r4.external_authorization_party into r5;
+    assert.eq r5 true;
+    hash.bhp256 r0 into r6 as field;
+    get balances[r6] into r7;
+    sub r7.balance r1 into r8;
+    cast r0.token_id r0.account r8 r7.authorized_until into r9 as Balance;
+    set r9 into balances[r6];
+    cast r0.token_id r0.account 0u128 r2 into r10 as Balance;
+    get.or_use authorized_balances[r6] r10 into r11;
+    add r11.balance r1 into r12;
+    cast r0.token_id r0.account r12 r2 into r13 as Balance;
+    set r13 into authorized_balances[r6];
 
 
 
@@ -476,18 +483,16 @@ finalize prehook_private:
     input r0 as field.public;
     input r1 as address.public;
     get registered_tokens[r0] into r2;
-    is.eq r1 r2.admin into r3;
-    is.eq r1 r2.external_authorization_party into r4;
-    or r3 r4 into r5;
-    assert.eq r5 true;
+    is.eq r1 r2.external_authorization_party into r3;
+    assert.eq r3 true;
 
 
 
 
 function approve_public:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
     async approve_public r0 r1 r2 self.caller into r3;
     output r3 as multi_token_support_program_v1.aleo/approve_public.future;
 
@@ -512,9 +517,9 @@ finalize approve_public:
 
 
 function unapprove_public:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as u128.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u128.public;
     async unapprove_public r0 r1 r2 self.caller into r3;
     output r3 as multi_token_support_program_v1.aleo/unapprove_public.future;
 
@@ -535,10 +540,10 @@ finalize unapprove_public:
 
 
 function transfer_from_public:
-    input r0 as field.private;
-    input r1 as address.private;
-    input r2 as address.private;
-    input r3 as u128.private;
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as address.public;
+    input r3 as u128.public;
     async transfer_from_public r0 r1 r2 r3 self.caller into r4;
     output r4 as multi_token_support_program_v1.aleo/transfer_from_public.future;
 
@@ -589,86 +594,39 @@ finalize transfer_from_public:
 
 
 function transfer_from_public_to_private:
-    input r0 as field.private;
-    input r1 as address.private;
+    input r0 as field.public;
+    input r1 as address.public;
     input r2 as address.private;
-    input r3 as u128.private;
-    input r4 as boolean.private;
+    input r3 as u128.public;
+    input r4 as boolean.public;
     ternary r4 0u32 4294967295u32 into r5;
     cast r2 r3 r0 r4 r5 into r6 as Token.record;
-    async transfer_from_public_to_private r0 r1 r2 r3 self.caller r4 into r7;
+    async transfer_from_public_to_private r0 r1 r3 self.caller r4 into r7;
     output r6 as Token.record;
     output r7 as multi_token_support_program_v1.aleo/transfer_from_public_to_private.future;
 
 finalize transfer_from_public_to_private:
     input r0 as field.public;
     input r1 as address.public;
-    input r2 as address.public;
-    input r3 as u128.public;
-    input r4 as address.public;
-    input r5 as boolean.public;
-    get registered_tokens[r0] into r6;
-    assert.eq r6.external_authorization_required r5;
-    cast r1 r4 r0 into r7 as Allowance;
-    hash.bhp256 r7 into r8 as field;
-    get allowances[r8] into r9;
-    gte r9 r3 into r10;
-    assert.eq r10 true;
-    sub r9 r3 into r11;
-    set r11 into allowances[r8];
-    cast r1 r0 into r12 as TokenOwner;
-    hash.bhp256 r1 into r13 as field;
-    get authorized_balances[r13] into r14;
-    assert.eq r1 r14.account;
-    gte r14.balance r3 into r15;
-    assert.eq r15 true;
-    sub r14.balance r3 into r16;
-    cast r0 r1 r16 r14.authorized_until into r17 as Balance;
-    set r17 into authorized_balances[r13];
-
-
-
-
-function deposit_credits_public:
-    input r0 as u64.private;
-    input r1 as field.private;
-    call credits.aleo/transfer_public_as_signer multi_token_support_program_v1.aleo r0 into r2;
-    cast r0 into r3 as u128;
-    async deposit_credits_public r2 r3 self.caller into r4;
-    output r4 as multi_token_support_program_v1.aleo/deposit_credits_public.future;
-
-finalize deposit_credits_public:
-    input r0 as credits.aleo/transfer_public_as_signer.future;
-    input r1 as u128.public;
-    input r2 as address.public;
-    await r0;
-    cast r2 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3 as TokenOwner;
-    hash.bhp256 r3 into r4 as field;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 0u128 4294967295u32 into r5 as Balance;
-    get.or_use authorized_balances[r4] r5 into r6;
-    add r6.balance r1 into r7;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 r7 r6.authorized_until into r8 as Balance;
-    set r8 into authorized_balances[r4];
-
-
-
-
-function withdraw_credits_public:
-    input r0 as u64.private;
-    call credits.aleo/transfer_public self.caller r0 into r1;
-    cast r0 into r2 as u128;
-    async withdraw_credits_public r1 r2 self.caller into r3;
-    output r3 as multi_token_support_program_v1.aleo/withdraw_credits_public.future;
-
-finalize withdraw_credits_public:
-    input r0 as credits.aleo/transfer_public.future;
-    input r1 as u128.public;
-    input r2 as address.public;
-    await r0;
-    cast r2 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3 as TokenOwner;
-    hash.bhp256 r3 into r4 as field;
-    get authorized_balances[r4] into r5;
-    sub r5.balance r1 into r6;
-    cast 3443843282313283355522573239085696902919850365217539366784739393210722344986field r2 r6 r5.authorized_until into r7 as Balance;
-    set r7 into authorized_balances[r4];
+    input r2 as u128.public;
+    input r3 as address.public;
+    input r4 as boolean.public;
+    get registered_tokens[r0] into r5;
+    assert.eq r5.external_authorization_required r4;
+    cast r1 r3 r0 into r6 as Allowance;
+    hash.bhp256 r6 into r7 as field;
+    get allowances[r7] into r8;
+    gte r8 r2 into r9;
+    assert.eq r9 true;
+    sub r8 r2 into r10;
+    set r10 into allowances[r7];
+    cast r1 r0 into r11 as TokenOwner;
+    hash.bhp256 r1 into r12 as field;
+    get authorized_balances[r12] into r13;
+    assert.eq r1 r13.account;
+    gte r13.balance r2 into r14;
+    assert.eq r14 true;
+    sub r13.balance r2 into r15;
+    cast r0 r1 r15 r13.authorized_until into r16 as Balance;
+    set r16 into authorized_balances[r12];
 

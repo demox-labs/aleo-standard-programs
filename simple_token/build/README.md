@@ -1,4 +1,4 @@
-# cat_no_hat.aleo
+# simple_token_v2.aleo
 
 ## Build Guide
 
