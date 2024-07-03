@@ -15,6 +15,10 @@ program pondo_delegator1.aleo {
   const UNBONDING: u8 = 3u8;
   const TERMINAL: u8 = 4u8;
 
+  // The maximum increase in commission allowed before a validator is banned
+  const MAX_COMMISSION_INCREASE: u8 = 10u8;
+  const MAX_COMMISSION: u8 = 50u8;
+
   struct validator_state {
     validator: address,
     commission: u8
@@ -65,28 +69,23 @@ program pondo_delegator1.aleo {
   }
 
   async transition set_validator(
-    public new_validator: address
+    public new_validator: address,
+    public new_commission: u8
   ) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    return finalize_set_validator(new_validator);
+    return finalize_set_validator(new_validator, new_commission);
   }
 
   async function finalize_set_validator(
-    new_validator: address
+    new_validator: address,
+    new_commission: u8
   ) {
-    // Get the committee state of the new validator
-    let default_committee_state: committee_state = committee_state {
-      is_open: true,
-      commission: 0u8
-    };
-    let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(new_validator, default_committee_state);
-
     // Set the new validator
     let next_validator_state: validator_state = validator_state {
       validator: new_validator,
-      commission: validator_committee_state.commission
+      commission: new_commission
     };
     validator_mapping.set(0u8, next_validator_state);
 
@@ -150,11 +149,12 @@ program pondo_delegator1.aleo {
       commission: 0u8
     };
     let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(current_validator_state.validator, default_committee_state);
-    // Check if the commission changed
-    let commission_changed: bool = current_validator_state.commission != validator_committee_state.commission;
+    // Check if the commission increased by more than the allowed amount
+    let commission_increased: bool = current_validator_state.commission > (validator_committee_state.commission + MAX_COMMISSION_INCREASE);
+    let commission_beyond_limit: bool = current_validator_state.commission > MAX_COMMISSION;
 
     // If the commission changed, ban the validator, otherwise ensure the delegator is in the correct state
-    if (commission_changed) {
+    if (commission_increased || commission_beyond_limit) {
       banned_validators.set(current_validator_state.validator, true);
     } else {
       let current_state: u8 = state_mapping.get(0u8);
@@ -219,6 +219,7 @@ program pondo_delegator1.aleo {
     assert_eq(is_unbonding, false);
 
     let current_validator_state: validator_state = validator_mapping.get(0u8);
+    // Bonding always succeeds if the validator isn't in the committee given a sufficient balance
     let validator_committee_state: committee_state = credits.aleo/committee.get(current_validator_state.validator);
     let validator_is_unbonding: bool = credits.aleo/unbonding.contains(current_validator_state.validator);
     // The two conditions that would prevent a valid bond are:
@@ -230,7 +231,11 @@ program pondo_delegator1.aleo {
     assert(current_state == BOND_ALLOWED);
 
     state_mapping.set(0u8, TERMINAL);
-    banned_validators.set(current_validator_state.validator, true);
+
+    // If the validator is closed to delegators, ban the validator
+    if (validator_committee_state.is_open == false) {
+      banned_validators.set(current_validator_state.validator, true);
+    }
   }
 
   async transition insufficient_balance() -> Future {

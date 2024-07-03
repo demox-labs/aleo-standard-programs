@@ -1,7 +1,9 @@
 import credits.aleo;
 
 // TODO: 
-// 1. Add a way for validators to ban themselves
+// 1. Add a scaling waiting period for adding a new delegator
+// 2. Add a direct way for a validator to ban themselves
+// 3. Add boosting to the oracle
 
 
 // The program to permissionless calculate the yield of reference delegators to validators
@@ -16,6 +18,8 @@ program pondo_oracle.aleo {
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
   // The number of blocks to not allow updates, so updates must happen in the last 1 day of an epoch
   const UPDATE_BLOCKS_DISALLOWED: u32 = 103_680u32; // 6 day of blocks, assuming 5 sec per block
+  // The max allowable commission by the validators
+  const MAX_COMMISSION: u8 = 50u8;
 
   // The data to store for each validator to calculate the return
   struct validator_datum {
@@ -23,7 +27,8 @@ program pondo_oracle.aleo {
     validator: address,
     block_height: u32,
     bonded_microcredits: u64,
-    microcredits_yield_per_epoch: u128
+    microcredits_yield_per_epoch: u128,
+    commission: u8
   }
 
   // Shadow credits.aleo/bond_state
@@ -43,6 +48,8 @@ program pondo_oracle.aleo {
   mapping top_valdiators: u8 => [address; 10];
   // A mapping of banned validators
   mapping banned_validators: address => bool;
+  // A mapping of the pondo total value locked
+  mapping pondo_tvl: u8 => u64;
 
   // Called by the reference delegator program to establish that the reference delegator has been created
   // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
@@ -83,7 +90,7 @@ program pondo_oracle.aleo {
     public delegator: address
   ) {
     // Check that proposed_reference_delegator contains the reference delegator
-    let contains_delegator: bool = Mapping::contains(delegator_to_validator, delegator);
+    let contains_delegator: bool = delegator_to_validator.contains(delegator);
     assert_eq(contains_delegator, true);
 
     // Ensure the withdrawal address is the same program address
@@ -91,7 +98,7 @@ program pondo_oracle.aleo {
     assert_eq(withdraw_address, delegator);
 
     // Get the validator address and ensure the delegator is bonded to the validator
-    let proposed_validator_address: address = Mapping::get(delegator_to_validator, delegator);
+    let proposed_validator_address: address = delegator_to_validator.get(delegator);
     let bonded: bond_state = credits.aleo/bonded.get(delegator);
     assert_eq(bonded.validator, proposed_validator_address);
 
@@ -100,8 +107,13 @@ program pondo_oracle.aleo {
     assert_eq(is_banned, false);
 
     // Ensure the reference delegator is not already part of the reference delegators
-    let contains_validator_reference: bool = Mapping::contains(validator_data, proposed_validator_address);
+    let contains_validator_reference: bool = validator_data.contains(proposed_validator_address);
     assert_eq(contains_validator_reference, false);
+
+    // Get the commission from the committee state
+    let validator_committee_state: committee_state = credits.aleo/committee.get(proposed_validator_address);
+    assert(validator_committee_state.is_open);
+    assert(validator_committee_state.commission < MAX_COMMISSION);
 
     // Add to the validator_data
     let initial_validator_datum: validator_datum = validator_datum {
@@ -109,9 +121,10 @@ program pondo_oracle.aleo {
       validator: proposed_validator_address,
       block_height: block.height,
       bonded_microcredits: bonded.microcredits,
-      microcredits_yield_per_epoch: 0u128
+      microcredits_yield_per_epoch: 0u128,
+      commission: validator_committee_state.commission
     };
-    Mapping::set(validator_data, delegator, initial_validator_datum);
+    validator_data.set(delegator, initial_validator_datum);
   }
 
   // Update the data for the given reference delegator
@@ -141,6 +154,13 @@ program pondo_oracle.aleo {
     let block_range: u32 = block.height - existing_validator_datum.block_height;
     assert(block_range > UPDATE_BLOCKS_DISALLOWED);
 
+    // Get the committee state of the validator
+    let validator_committee_state: committee_state = credits.aleo/committee.get(existing_validator_datum.validator);
+    // Ensure the commission is less than MAX_COMMISSION
+    assert(validator_committee_state.commission < MAX_COMMISSION);
+    // Ensure the validator is open
+    assert(validator_committee_state.is_open);
+
     // Get the bonded state of the delegator
     let bonded: bond_state = credits.aleo/bonded.get(delegator);
 
@@ -166,7 +186,8 @@ program pondo_oracle.aleo {
       validator: existing_validator_datum.validator,
       block_height: block.height,
       bonded_microcredits: bonded.microcredits,
-      microcredits_yield_per_epoch: new_microcredits_yield_per_epoch
+      microcredits_yield_per_epoch: new_microcredits_yield_per_epoch,
+      commission: validator_committee_state.commission
     };
     validator_data.set(delegator, new_validator_datum);
 
@@ -191,7 +212,8 @@ program pondo_oracle.aleo {
       validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
       block_height: 0u32,
       bonded_microcredits: 0u64,
-      microcredits_yield_per_epoch: 0u128
+      microcredits_yield_per_epoch: 0u128,
+      commission: 0u8
     };
 
     // Fetch all of the data for each validator
@@ -327,26 +349,49 @@ program pondo_oracle.aleo {
     banned_validators.set(validator, true);
   }
 
-  // Anyone can ban a validator if the validator has an unbonding state not during an update window
+  // Anyone can ban a validator if the validator in the update window if:
+  // 1. The validator has a commission greater than MAX_COMMISSION
+  // 2. The validator leaves the committee
   async transition ban_validator(
-    public validator: address
+    public reference_delegator: address,
   ) -> Future {
-    return finalize_ban_validator(validator);
+    return finalize_ban_validator(reference_delegator);
   }
 
   async function finalize_ban_validator(
-    public validator: address
+    public reference_delegator: address
   ) {
-    // Ensure an update period isn't occuring
-    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
-    let is_not_update_period: bool = epoch_blocks < UPDATE_BLOCKS_DISALLOWED;
-    assert(is_not_update_period);
+    // Get the validator address
+    let validator: address = delegator_to_validator.get(reference_delegator);
 
-    // Ensure the validator has an unbonding state
-    let is_unbonding: bool = credits.aleo/unbonding.contains(validator);
-    assert(is_unbonding);
+    // Check if the height is within the update window
+    let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
+    let is_update_period: bool = epoch_blocks >= UPDATE_BLOCKS_DISALLOWED;
+    assert(is_update_period);
+
+    // Default committee state of the validator
+    let default_committee_state: committee_state = committee_state {
+      is_open: false,
+      commission: MAX_COMMISSION + 1u8
+    };
+    // Get the committee state of the validator
+    let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(validator, default_committee_state);
+    // Ensure the validator is open & the commission is less than MAX_COMMISSION
+    assert(!validator_committee_state.is_open || validator_committee_state.commission > MAX_COMMISSION);
 
     banned_validators.set(validator, true);
+  }
+
+  async transition set_pondo_tvl(
+    public tvl: u64
+  ) {
+    assert_eq(self.caller, pondo_core_protocol.aleo);
+  }
+
+  async function finalize_set_pondo_tvl(
+    public tvl: u64
+  ) {
+    pondo_tvl.set(0u8, tvl);
   }
 
   // Swap the positions of each datum given:
