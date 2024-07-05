@@ -11,11 +11,11 @@ import pondo_delegator5.aleo;
 program pondo_core_protocol.aleo {
   const PRECISION: i128 = 1000i128;
   const PRECISION_UNSIGNED: u128 = 1000u128;
-  const PORTION_1: u128 = 400u128;
-  const PORTION_2: u128 = 250u128;
+  const PORTION_1: u128 = 370u128;
+  const PORTION_2: u128 = 260u128;
   const PORTION_3: u128 = 160u128;
-  const PORTION_4: u128 = 110u128;
-  const PORTION_5: u128 = 80u128;
+  const PORTION_4: u128 = 120u128;
+  const PORTION_5: u128 = 90u128;
   const MINIMUM_BOND_POOL: u64 = 125_000_000u64; // microcredits
 
   // The number of blocks in an epoch

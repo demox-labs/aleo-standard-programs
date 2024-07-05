@@ -9,7 +9,7 @@ import credits.aleo;
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
-  const DELEGATOR_APPROVER_ADDRESS: address = aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039;
+  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039;
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch
@@ -21,7 +21,7 @@ program pondo_oracle.aleo {
   // The multiple for boosting
   // Note: Since the biggest difference a validator can go is from 0% to 40% of the tvl of pondo, we can use a multiple of 2
   // This makes boosting a validator cheaper but still more expensive than increasing normal yield ie decreasing commission
-  const BOOST_MULTIPLE: u128 = 2u128; // 2x boost
+  const BOOST_PRECISION: u128 = 1_000u128;
 
   // The data to store for each validator to calculate the return
   struct validator_datum {
@@ -30,7 +30,8 @@ program pondo_oracle.aleo {
     block_height: u32,
     bonded_microcredits: u64,
     microcredits_yield_per_epoch: u128,
-    commission: u8
+    commission: u8,
+    boost: u128
   }
 
   struct validator_boost {
@@ -59,6 +60,108 @@ program pondo_oracle.aleo {
   mapping pondo_tvl: u8 => u64;
   // A mapping of the validator boosting for the epoch
   mapping validator_boosting: address => validator_boost;
+  // Addresses that can ban validators, the bool indicates if the address is the admin
+  mapping control_addresses: address => bool;
+  mapping delegator_allocation: u8 => [u128; 10];
+
+  async transition initialize() -> Future {
+    return finalize_initialize();
+  }
+
+  async function finalize_initialize() {
+    // Set the control addresses
+    control_addresses.set(INITIAL_DELEGATOR_APPROVER_ADDRESS, true);
+    control_addresses.set(pondo_delegator1.aleo, false);
+    control_addresses.set(pondo_delegator2.aleo, false);
+    control_addresses.set(pondo_delegator3.aleo, false);
+    control_addresses.set(pondo_delegator4.aleo, false);
+    control_addresses.set(pondo_delegator5.aleo, false);
+
+    delegator_allocation.set(0u8, [
+      370u128,
+      260u128,
+      160u128,
+      120u128,
+      90u128,
+      90u128,
+      90u128,
+      90u128,
+      90u128,
+      90u128
+    ]);
+  }
+
+  async transition add_control_address(
+    public control_address: address
+  ) -> Future {
+    return finalize_add_control_address(control_address, self.caller);
+  }
+
+  async function finalize_add_control_address(
+    public control_address: address,
+    public caller: address
+  ) {
+    // Ensure the caller is an admin
+    let is_admin: bool = control_addresses.get(caller);
+    assert(is_admin);
+
+    control_addresses.set(control_address, false);
+  }
+
+  async transition remove_control_address(
+    public control_address: address
+  ) -> Future {
+    return finalize_remove_control_address(control_address, self.caller);
+  }
+
+  async function finalize_remove_control_address(
+    public control_address: address,
+    public caller: address
+  ) {
+    // Ensure the caller is an admin
+    let is_admin: bool = control_addresses.get(caller);
+    assert(is_admin);
+
+    control_addresses.remove(control_address);
+  }
+
+  async transition update_admin(
+    public new_admin: address
+  ) -> Future {
+    return finalize_update_admin(new_admin, self.caller);
+  }
+
+  async function finalize_update_admin(
+    public new_admin: address,
+    public caller: address
+  ) {
+    // Ensure the caller is an admin
+    let is_admin: bool = control_addresses.get(caller);
+    assert(is_admin);
+
+    // Set the new admin
+    control_addresses.set(new_admin, true);
+    // Remove the old admin
+    control_addresses.remove(caller);
+  }
+
+  async transition update_delegator_allocations(
+    public multiple: [u128; 10]
+  ) -> Future {
+    return finalize_update_delegator_allocations(multiple, self.caller);
+  }
+
+  async function finalize_update_delegator_allocations(
+    public multiple: [u128; 10],
+    public caller: address
+  ) {
+    // Ensure the caller is an admin
+    let is_admin: bool = control_addresses.get(caller);
+    assert(is_admin);
+
+    delegator_allocation.set(0u8, multiple);
+  }
+  
 
   // Called by the reference delegator program to establish that the reference delegator has been created
   // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
@@ -90,14 +193,17 @@ program pondo_oracle.aleo {
   async transition add_delegator(
     public delegator: address
   ) -> Future {
-    assert_eq(self.caller, DELEGATOR_APPROVER_ADDRESS);
-
-    return finalize_add_delegator(delegator);
+    return finalize_add_delegator(delegator, self.caller);
   }
 
   async function finalize_add_delegator(
-    public delegator: address
+    public delegator: address,
+    public caller: address
   ) {
+    // Ensure the caller is a admin address
+    let is_admin: bool = control_addresses.get(caller);
+    assert(is_admin);
+
     // Check that proposed_reference_delegator contains the reference delegator
     let contains_delegator: bool = delegator_to_validator.contains(delegator);
     assert_eq(contains_delegator, true);
@@ -131,7 +237,8 @@ program pondo_oracle.aleo {
       block_height: block.height,
       bonded_microcredits: bonded.microcredits,
       microcredits_yield_per_epoch: 0u128,
-      commission: validator_committee_state.commission
+      commission: validator_committee_state.commission,
+      boost: 0u128
     };
     validator_data.set(delegator, initial_validator_datum);
   }
@@ -192,8 +299,10 @@ program pondo_oracle.aleo {
     });
     let boost_amount: u128 = boost.epoch == current_epoch ? boost.boost_amount as u128 : 0u128;
     // Normalize the boost amount by the pondo tvl
-    let current_pondo_tvl: u128 = pondo_tvl.get_or_use(0u8, 10_000_000_000_000u64) as u128; // use a high default
-    let normalized_boost_amount: u128 = boost_amount * PRECISION * BOOST_MULTIPLE / current_pondo_tvl as u128;
+    let current_pondo_tvl: u128 = pondo_tvl.get_or_use(0u8, 10_000_000_000_000_000u64) as u128; // use a high default, 10B credits
+    // The normalized boost amount is the amount of boost per 10K credits staked
+    // Note: This precision is 1 credit on a TVL of 10M credits
+    let normalized_boost_amount: u128 = boost_amount * PRECISION / current_pondo_tvl as u128;
 
     // Ensure the last update was in the previous epoch, otherwise set the yield to zero
     // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
@@ -208,7 +317,8 @@ program pondo_oracle.aleo {
       block_height: block.height,
       bonded_microcredits: bonded.microcredits,
       microcredits_yield_per_epoch: new_microcredits_yield_per_epoch,
-      commission: validator_committee_state.commission
+      commission: validator_committee_state.commission,
+      boost: boost_amount
     };
     validator_data.set(delegator, new_validator_datum);
 
@@ -234,7 +344,8 @@ program pondo_oracle.aleo {
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
-      commission: 0u8
+      commission: 0u8,
+      boost: 0u128
     };
 
     // Fetch all of the data for each validator
@@ -252,18 +363,21 @@ program pondo_oracle.aleo {
     // Calculate the epoch start block
     let epoch_start_height: u32 = current_epoch * BLOCKS_PER_EPOCH;
 
+    // Get the boost multiple
+    let allocations: [u128; 10] = delegator_allocation.get(0u8);
+
     // Perform swaps and drop the last element
     // The order of the swap_validator_data is subtle but very important.
-    let swap_result_0: (validator_datum, validator_datum, bool) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, false);
-    let swap_result_1: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, swap_result_0.2);
-    let swap_result_2: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, swap_result_1.2);
-    let swap_result_3: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, swap_result_2.2);
-    let swap_result_4: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, swap_result_3.2);
-    let swap_result_5: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, swap_result_4.2);
-    let swap_result_6: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, swap_result_5.2);
-    let swap_result_7: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, swap_result_6.2);
-    let swap_result_8: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, swap_result_7.2);
-    let swap_result_9: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, swap_result_8.2);
+    let swap_result_0: (validator_datum, validator_datum, bool) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, false, allocations[0u8]);
+    let swap_result_1: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, swap_result_0.2, allocations[1u8]);
+    let swap_result_2: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, swap_result_1.2, allocations[2u8]);
+    let swap_result_3: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, swap_result_2.2, allocations[3u8]);
+    let swap_result_4: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, swap_result_3.2, allocations[4u8]);
+    let swap_result_5: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, swap_result_4.2, allocations[5u8]);
+    let swap_result_6: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, swap_result_5.2, allocations[6u8]);
+    let swap_result_7: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, swap_result_6.2, allocations[7u8]);
+    let swap_result_8: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, swap_result_7.2, allocations[8u8]);
+    let swap_result_9: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, swap_result_8.2, allocations[9u8]);
     let new_top_10: [address; 10] = [
       swap_result_0.0.delegator,
       swap_result_1.0.delegator,
@@ -353,20 +467,17 @@ program pondo_oracle.aleo {
   async transition pondo_ban_validator(
     public validator: address
   ) -> Future {
-    assert(
-      self.caller == pondo_delegator1.aleo ||
-      self.caller == pondo_delegator2.aleo ||
-      self.caller == pondo_delegator3.aleo ||
-      self.caller == pondo_delegator4.aleo ||
-      self.caller == pondo_delegator5.aleo
-    );
-
-    return finalize_pondo_ban_validator(validator);
+    return finalize_pondo_ban_validator(validator, self.caller);
   }
 
   async function finalize_pondo_ban_validator(
-    public validator: address
+    public validator: address,
+    public caller: address
   ) {
+    // Check if the caller is a control address
+    let is_control_address: bool = control_addresses.contains(caller);
+    assert(is_control_address);
+
     banned_validators.set(validator, true);
   }
 
@@ -492,7 +603,8 @@ program pondo_oracle.aleo {
     datum_0: validator_datum,
     datum_1: validator_datum,
     epoch_start_block: u32,
-    auto_swap: bool
+    auto_swap: bool,
+    boost_multiple: u128,
   ) -> (validator_datum, validator_datum, bool) {
     if (auto_swap) {
       return (datum_1, datum_0, true);
@@ -525,6 +637,13 @@ program pondo_oracle.aleo {
       return (datum_1, datum_0, new_auto_swap);
     }
 
+    // Calculate the yields
+    // Note: the boost multiple depends on the % of the pondo tvl that the spot would get
+    // If the boost multiple is too high, it would be more profitable to boost than to decrease commission ie protocol loses money
+    // If the boost multiple is too low, it would be more profitable to decrease commission than to boost ie no one would ever boost unless commissions were 0s
+    let first_yield: u128 = datum_0.microcredits_yield_per_epoch + datum_0.boost * BOOST_PRECISION / boost_multiple;
+    let second_yield: u128 = datum_1.microcredits_yield_per_epoch + datum_1.boost * BOOST_PRECISION / boost_multiple;
+
     // Choose the datum with the higher yield in the normal case
     // In the case where they reference the same validator, return the one with the lower yield
     // If we return the one with the higher yield, a validator may keep 2 reference delegators around and alternate them
@@ -533,7 +652,7 @@ program pondo_oracle.aleo {
     // The alternative is that if we choose the lower one, it's much more difficult and expensive for competing validators
     // to keep around many delegators with slightly different ranges and try to choose the worst one for their competitors.
     // all the while paying transaction fees while giving their competitors commissions from delegations.
-    let should_swap: bool = new_auto_swap ? datum_0.microcredits_yield_per_epoch > datum_1.microcredits_yield_per_epoch : datum_0.microcredits_yield_per_epoch < datum_1.microcredits_yield_per_epoch;
+    let should_swap: bool = new_auto_swap ? first_yield > second_yield : first_yield < second_yield;
 
     return should_swap ? (datum_1, datum_0, new_auto_swap) : (datum_0, datum_1, new_auto_swap);
   }
