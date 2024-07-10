@@ -52,8 +52,8 @@ finalize burn_private:
 
 function initialize_token:
     assert.eq self.caller pondo_core_protocol.aleo;
-    call multi_token_support_program_v1.aleo/register_token 0field 0u128 0u128 6u8 0u128 false pondo_token.aleo into r0;
-    call multi_token_support_program_v1.aleo/mint_public 0field pondo_token.aleo 0u128 4294967295u32 into r1;
+    call multi_token_support_program_v1.aleo/register_token 0field 345466889327u128 1347306575u128 6u8 1_000_000_000_000_000u128 false pondo_token.aleo into r0;
+    call multi_token_support_program_v1.aleo/mint_public 0field pondo_token.aleo 1_000_000_000_000_000u128 4294967295u32 into r1;
     async initialize_token r0 r1 into r2;
     output r2 as pondo_token.aleo/initialize_token.future;
 

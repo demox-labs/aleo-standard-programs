@@ -27,6 +27,17 @@ mapping banned_validators:
 	value as boolean.public;
 
 
+function initialize:
+    assert.eq self.caller pondo_core_protocol.aleo;
+    async initialize into r0;
+    output r0 as pondo_delegator1.aleo/initialize.future;
+
+finalize initialize:
+    set 4u8 into state_mapping[0u8];
+
+
+
+
 function ban_validator:
     input r0 as address.public;
     call pondo_oracle.aleo/pondo_ban_validator r0 into r1;

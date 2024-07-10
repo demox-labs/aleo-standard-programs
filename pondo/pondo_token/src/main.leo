@@ -7,10 +7,10 @@ program pondo_token.aleo {
   async transition initialize_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    let name: u128 = 0u128;
-    let symbol: u128 = 0u128;
+    let name: u128 = 345466889327u128;
+    let symbol: u128 = 1347306575u128;
     let decimals: u8 = 6u8;
-    let max_supply: u128 = 0u128;
+    let max_supply: u128 = 1_000_000_000_000_000u128;
     let external_authorization_required: bool = false;
     let external_authorization_party: address = pondo_token.aleo;
 

@@ -41,6 +41,17 @@ program pondo_delegator1.aleo {
     commission: u8
   }
 
+  async transition initialize() -> Future {
+    // Assert that the caller is the pondo core protocol
+    assert_eq(self.caller, pondo_core_protocol.aleo);
+
+    return finalize_initialize();
+  }
+
+  async function finalize_initialize() {
+    state_mapping.set(0u8, TERMINAL);
+  }
+
   async transition set_state(
     public new_state: u8
   ) -> Future {

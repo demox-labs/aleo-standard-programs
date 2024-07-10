@@ -12,6 +12,7 @@ export const Simulator: React.FC = () => {
   const sharesRef = useRef<HTMLInputElement>(null);
 
   const calculateNewShares = useCallback(() => {
+    return;
   }, [balanceRef, pendingDepositsRef, depositRef, sharesRef]);
 
   return (
