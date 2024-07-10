@@ -29,6 +29,11 @@ pushd "pondo/oracle" > /dev/null
 leo build
 popd > /dev/null
 
+# Run "leo build" for pondo_core_protocol in the pondo folder
+pushd "pondo/pondo_core_protocol" > /dev/null
+leo build
+popd > /dev/null
+
 exit 0
 
 exit 0

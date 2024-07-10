@@ -34,7 +34,7 @@ mapping validator_data:
 	value as validator_datum.public;
 
 
-mapping top_valdiators:
+mapping top_validators:
 	key as u8.public;
 	value as [address; 10u32].public;
 
@@ -243,7 +243,7 @@ finalize update_data:
     cast r0 r1.validator block.height r9.microcredits r35 r7.commission r25 into r36 as validator_datum;
     set r36 into validator_data[r0];
     cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r37 as [address; 10u32];
-    get.or_use top_valdiators[0u8] r37 into r38;
+    get.or_use top_validators[0u8] r37 into r38;
     cast aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc 0u32 0u64 0u128 0u8 0u128 into r39 as validator_datum;
     get.or_use validator_data[r38[0u32]] r39 into r40;
     get.or_use validator_data[r38[1u32]] r39 into r41;
@@ -1598,7 +1598,7 @@ finalize update_data:
     cast r1383 r1384 r1385 r1386 r1387 r1388 r1389 into r1390 as validator_datum;
     ternary r1257 true r1374 into r1391;
     cast  r176.delegator r310.delegator r444.delegator r578.delegator r712.delegator r846.delegator r980.delegator r1114.delegator r1248.delegator r1382.delegator into r1392 as [address; 10u32];
-    set r1392 into top_valdiators[0u8];
+    set r1392 into top_validators[0u8];
 
 
 
@@ -1626,7 +1626,7 @@ finalize remove_delegator:
     branch.eq true true to end_otherwise_0_3;
     position end_then_0_2;
     position end_otherwise_0_3;
-    get top_valdiators[0u8] into r5;
+    get top_validators[0u8] into r5;
     is.eq r5[0u32] r0 into r6;
     ternary r6 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[0u32] into r7;
     is.eq r5[1u32] r0 into r8;
@@ -1675,7 +1675,7 @@ finalize remove_delegator:
     ternary r50 r25 r49 into r51;
     ternary r50 r49 r25 into r52;
     cast  r27 r30 r33 r36 r39 r42 r45 r48 r51 r52 into r53 as [address; 10u32];
-    set r53 into top_valdiators[0u8];
+    set r53 into top_validators[0u8];
 
 
 

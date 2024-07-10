@@ -1,6 +1,6 @@
 import credits.aleo;
 
-// TODO: 
+// TODO:
 // 1. Fix boosting so that it's accurate to the benefits for boosting and slightly profitable to boost
 
 
@@ -53,7 +53,7 @@ program pondo_oracle.aleo {
   mapping validator_data: address => validator_datum;
   // A mapping to store the list of top 10 validators as specified by the delegator
   // ie this is a list of delegators but the validators are guaranteed to be unique or the 0 group address
-  mapping top_valdiators: u8 => [address; 10];
+  mapping top_validators: u8 => [address; 10];
   // A mapping of banned validators
   mapping banned_validators: address => bool;
   // A mapping of the pondo total value locked
@@ -161,7 +161,7 @@ program pondo_oracle.aleo {
 
     delegator_allocation.set(0u8, multiple);
   }
-  
+
 
   // Called by the reference delegator program to establish that the reference delegator has been created
   // At this point, it hasn't been approved so we cannot trust that the reference delegator actually implements the program correctly
@@ -323,7 +323,7 @@ program pondo_oracle.aleo {
     validator_data.set(delegator, new_validator_datum);
 
     // Get the array of top validators
-    let top_validators_addresses: [address; 10] = top_valdiators.get_or_use(
+    let top_validators_addresses: [address; 10] = top_validators.get_or_use(
       0u8,
       [
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
@@ -392,7 +392,7 @@ program pondo_oracle.aleo {
     ];
 
     // Set the new top 10
-    top_valdiators.set(0u8, new_top_10);
+    top_validators.set(0u8, new_top_10);
   }
 
   // Remove the reference delegator
@@ -400,7 +400,7 @@ program pondo_oracle.aleo {
   async transition remove_delegator() -> Future {
     return finalize_remove_delegator(self.caller);
   }
-  
+
   async function finalize_remove_delegator(
     public delegator_address: address
   ) {
@@ -423,7 +423,7 @@ program pondo_oracle.aleo {
     }
 
     // Remove from the top 10 validators if there
-    let top_validators_addresses: [address; 10] = top_valdiators.get(0u8);
+    let top_validators_addresses: [address; 10] = top_validators.get(0u8);
     let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[0u8];
     let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[1u8];
     let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[2u8];
@@ -434,7 +434,7 @@ program pondo_oracle.aleo {
     let new_validator_7: address = top_validators_addresses[7u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[7u8];
     let new_validator_8: address = top_validators_addresses[8u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[8u8];
     let new_validator_9: address = top_validators_addresses[9u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[9u8];
-    
+
     // Swap until 0group address is at the end of the array
     let swap_result_0: (address, address) = swap_zero_group_address(new_validator_0, new_validator_1);
     let swap_result_1: (address, address) = swap_zero_group_address(swap_result_0.1, new_validator_2);
@@ -445,7 +445,7 @@ program pondo_oracle.aleo {
     let swap_result_6: (address, address) = swap_zero_group_address(swap_result_5.1, new_validator_7);
     let swap_result_7: (address, address) = swap_zero_group_address(swap_result_6.1, new_validator_8);
     let swap_result_8: (address, address) = swap_zero_group_address(swap_result_7.1, new_validator_9);
-    
+
     let new_top_validators_addresses: [address; 10] = [
       swap_result_0.0,
       swap_result_1.0,
@@ -458,7 +458,7 @@ program pondo_oracle.aleo {
       swap_result_8.0,
       swap_result_8.1,
     ];
-    top_valdiators.set(0u8, new_top_validators_addresses);
+    top_validators.set(0u8, new_top_validators_addresses);
   }
 
   // Pondo delegators can ban a validator
@@ -543,7 +543,7 @@ program pondo_oracle.aleo {
     let withdraw_address: address = credits.aleo/withdraw.get(validator);
     assert_eq(withdraw_address, caller);
 
-    // Assert that the validator is in the committee, will fail 
+    // Assert that the validator is in the committee, will fail
     let committee_state_contains_validator: bool = credits.aleo/committee.contains(validator);
     assert(committee_state_contains_validator);
 

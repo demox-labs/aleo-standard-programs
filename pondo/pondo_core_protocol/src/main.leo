@@ -9,13 +9,12 @@ import pondo_delegator4.aleo;
 import pondo_delegator5.aleo;
 
 program pondo_core_protocol.aleo {
-  const PRECISION: i128 = 1000i128;
   const PRECISION_UNSIGNED: u128 = 1000u128;
   const PORTION_1: u128 = 370u128;
   const PORTION_2: u128 = 260u128;
   const PORTION_3: u128 = 160u128;
-  const PORTION_4: u128 = 110u128;
-  const PORTION_5: u128 = 80u128;
+  const PORTION_4: u128 = 120u128;
+  const PORTION_5: u128 = 90u128;
 
   // The number of blocks in an epoch
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
@@ -54,9 +53,25 @@ program pondo_core_protocol.aleo {
     height: u32
   }
 
+  // shadowed from pondo_oracle.aleo
+  struct validator_datum {
+    delegator: address,
+    validator: address,
+    block_height: u32,
+    bonded_microcredits: u64,
+    microcredits_yield_per_epoch: u128,
+    commission: u8,
+    boost: u128
+  }
+
+  struct validator_state {
+    validator: address,
+    commission: u8
+  }
+
   // 0u8 -> the current validator set
   // 1u8 -> the next validator set
-  mapping validator_set: u8 => [address; 5];
+  mapping validator_set: u8 => [validator_state; 5];
 
   // 0u8 -> current state of the protocol
   // * 0u8 -> normal operation, post rebalance
@@ -232,7 +247,66 @@ program pondo_core_protocol.aleo {
     public expected_paleo_mint: u64,
     public referrer: address
   ) {
-    // TODO: copy the finalize_deposit_public_as_signer function here
+    f0.await();
+    f1.await();
+
+    let base_bond_state: bond_state = bond_state {
+      validator: pondo_core_protocol.aleo,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
+
+    let base_unbond_state: unbond_state = unbond_state {
+      microcredits: 0u64,
+      height: 0u32
+    };
+    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator1.aleo, base_unbond_state).microcredits;
+    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator2.aleo, base_unbond_state).microcredits;
+    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator3.aleo, base_unbond_state).microcredits;
+    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator4.aleo, base_unbond_state).microcredits;
+    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator5.aleo, base_unbond_state).microcredits;
+
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
+    let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
+    let bonded_withdrawals: u64 = balances.get_or_use(BONDED_WITHDRAWALS, 0u64);
+    let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
+
+    let currently_delegated: u64 = balances.get_or_use(DELEGATED_BALANCE, 0u64);
+    let current_owed_commission: u64 = owed_commission.get_or_use(0u8, 0u64);
+    let total_paleo_minted: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+
+    let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    currently_delegated += rewards as u64 - new_commission;
+
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
+    let current_state: u8 = protocol_state.get_or_use(0u8, 0u8);
+    let deposit_pool: u64 = current_state == 0u8
+     ? core_protocol_account - credits_deposit
+     : core_protocol_account - currently_delegated - credits_deposit; // if the protocol is rebalancing, the full balance is in the account
+    let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
+
+    total_paleo_minted += new_commission_paleo as u128;
+    currently_delegated += new_commission;
+    // Update bonded pool balance with latest rewards
+    balances.set(DELEGATED_BALANCE, currently_delegated);
+
+    // Calculate mint for deposit
+    let paleo_for_deposit: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, credits_deposit as u128, total_paleo_minted);
+    assert(paleo_for_deposit >= 1u64);
+    assert(paleo_for_deposit >= expected_paleo_mint);
   }
 
   async transition distribute_deposits(
@@ -354,7 +428,7 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
     let current_state: u8 = protocol_state.get_or_use(0u8, 0u8);
     let deposit_pool: u64 = current_state == 0u8
-     ? core_protocol_account + withdrawal_credits;
+     ? core_protocol_account + withdrawal_credits
      : core_protocol_account - currently_delegated + withdrawal_credits; // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
@@ -390,17 +464,15 @@ program pondo_core_protocol.aleo {
   ) -> Future {
     // Burn pALEO for withdrawal
     let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.caller);
-    return finalize_withdraw_public(f0, f1, paleo_burn_amount, self.caller);
+    return finalize_withdraw_public(f0, paleo_burn_amount, self.caller);
   }
 
   async function finalize_withdraw_public(
     public f0: Future,
-    public f1: Future,
     public paleo_burn_amount: u64,
     public caller: address
   ) {
     f0.await();
-    f1.await();
 
     // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: bool = withdrawals.contains(caller);
@@ -454,8 +526,8 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
     let current_state: u8 = protocol_state.get_or_use(0u8, 0u8);
     let deposit_pool: u64 = current_state == 0u8
-     ? core_protocol_account + withdrawal_credits;
-     : core_protocol_account - currently_delegated + withdrawal_credits; // if the protocol is rebalancing, the full balance is in the account
+     ? core_protocol_account
+     : core_protocol_account - currently_delegated; // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
@@ -463,7 +535,7 @@ program pondo_core_protocol.aleo {
     currently_delegated += new_commission;
 
     // Calculate full pool size
-    let full_pool: u128 = current_balance as u128 + deposit_pool as u128;
+    let full_pool: u128 = currently_delegated as u128 + deposit_pool as u128;
 
     // Calculate credits value of burned pALEO
     let withdrawal_calculation: u128 = (paleo_burn_amount as u128 * full_pool as u128) / total_paleo_minted as u128;
@@ -473,7 +545,7 @@ program pondo_core_protocol.aleo {
     balances.set(BONDED_WITHDRAWALS, bonded_withdrawals + withdrawal);
 
     // Update total balance to reflect withdrawal
-    balances.set(DELEGATED_BALANCE, current_balance - withdrawal);
+    balances.set(DELEGATED_BALANCE, currently_delegated - withdrawal);
 
     // Create withdrawal for caller in next batch
     let batch_height: (u32, u32) = get_withdrawal_batch(block.height);
@@ -568,9 +640,14 @@ program pondo_core_protocol.aleo {
     let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
     assert(blocks_into_epoch < REBALANCE_PERIOD); // if we miss the rebalance window for whatever reason, we can't rebalance until the next epoch and withdrawals will be delayed
 
-    let top_validators: [address; 5] = pondo_oracle.aleo/top_validators.get_or_use(
+    let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
       [
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
@@ -578,13 +655,29 @@ program pondo_core_protocol.aleo {
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
       ]
     );
-    // TODO: add default validator datum for zero group
+    let default_datum: validator_datum = validator_datum {
+      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      block_height: 0u32,
+      bonded_microcredits: 0u64,
+      microcredits_yield_per_epoch: 0u128,
+      commission: 0u8,
+      boost: 0u128
+    };
     let validator1_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[0u8]).commission;
     let validator2_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[1u8]).commission;
     let validator3_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[2u8]).commission;
     let validator4_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[3u8]).commission;
     let validator5_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[4u8]).commission;
-    // TODO: set validator_set(1u8) to top_validators with commissions
+
+    let next_validator_set: [validator_state; 5] = [
+      validator_state { validator: top_validators[0u8], commission: validator1_commission },
+      validator_state { validator: top_validators[1u8], commission: validator2_commission },
+      validator_state { validator: top_validators[2u8], commission: validator3_commission },
+      validator_state { validator: top_validators[3u8], commission: validator4_commission },
+      validator_state { validator: top_validators[4u8], commission: validator5_commission }
+    ];
+    validator_set.set(1u8, next_validator_set);
   }
 
   async transition rebalance_retrieve_credits(
@@ -656,7 +749,7 @@ program pondo_core_protocol.aleo {
   }
 
   async transition rebalance_redistribute(
-    public validators: [address; 5], // TODO: change to validator_state struct
+    public validators: [validator_state; 5],
     public transfer_amounts: [u64; 5]
   ) -> Future {
     // Transfer to each delegator and set validator
@@ -666,11 +759,11 @@ program pondo_core_protocol.aleo {
     let f3: Future = credits.aleo/transfer_public(pondo_delegator4.aleo, transfer_amounts[3u8]);
     let f4: Future = credits.aleo/transfer_public(pondo_delegator5.aleo, transfer_amounts[4u8]);
 
-    let f5: Future = pondo_delegator1.aleo/set_validator(validators[0u8]);
-    let f6: Future = pondo_delegator2.aleo/set_validator(validators[1u8]);
-    let f7: Future = pondo_delegator3.aleo/set_validator(validators[2u8]);
-    let f8: Future = pondo_delegator4.aleo/set_validator(validators[3u8]);
-    let f9: Future = pondo_delegator5.aleo/set_validator(validators[4u8]);
+    let f5: Future = pondo_delegator1.aleo/set_validator(validators[0u8].validator, validators[0u8].commission);
+    let f6: Future = pondo_delegator2.aleo/set_validator(validators[1u8].validator, validators[1u8].commission);
+    let f7: Future = pondo_delegator3.aleo/set_validator(validators[2u8].validator, validators[2u8].commission);
+    let f8: Future = pondo_delegator4.aleo/set_validator(validators[3u8].validator, validators[3u8].commission);
+    let f9: Future = pondo_delegator5.aleo/set_validator(validators[4u8].validator, validators[4u8].commission);
 
     return finalize_rebalance_redistribute(f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, validators, transfer_amounts);
   }
@@ -686,7 +779,7 @@ program pondo_core_protocol.aleo {
     public f7: Future,
     public f8: Future,
     public f9: Future,
-    public validators: [address; 5],
+    public validators: [validator_state; 5],
     public transfer_amounts: [u64; 5]
   ) {
     f0.await();
@@ -701,13 +794,25 @@ program pondo_core_protocol.aleo {
     f9.await();
 
     // Check that the new validator set is correct
-    let next_validator_set: [address; 5] = validator_set.get(1u8);
+    let next_validator_set: [validator_state; 5] = validator_set.get(1u8);
     validator_set.set(0u8, next_validator_set);
     validator_set.remove(1u8);
     for i: u8 in 0u8..5u8 {
       assert(validators[i] == next_validator_set[i]);
     }
     // Check that each validator has the correct portion of credits
+    let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(0u8, [
+      PORTION_1,
+      PORTION_2,
+      PORTION_3,
+      PORTION_4,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5
+    ]);
     let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let total_credits_128: u128 = total_credits as u128;
     let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
@@ -715,11 +820,11 @@ program pondo_core_protocol.aleo {
     let validator3_portion: u128 = (transfer_amounts[2u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator4_portion: u128 = (transfer_amounts[3u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator5_portion: u128 = (transfer_amounts[4u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
-    assert(validator1_portion == PORTION_1);
-    assert(validator2_portion == PORTION_2);
-    assert(validator3_portion == PORTION_3);
-    assert(validator4_portion == PORTION_4);
-    assert(validator5_portion == PORTION_5);
+    assert(validator1_portion == delegator_allocation[0u8]);
+    assert(validator2_portion == delegator_allocation[1u8]);
+    assert(validator3_portion == delegator_allocation[2u8]);
+    assert(validator4_portion == delegator_allocation[3u8]);
+    assert(validator5_portion == delegator_allocation[4u8]);
 
     // Check that there's still enough account balance left for pending withdrawals
     let account_balance: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
@@ -750,36 +855,36 @@ program pondo_core_protocol.aleo {
 
     // Ensure the tvl matches what exists in the core protocol
     // Get all of the delegator balances
-    let delegator1_balance = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
-    let delegator2_balance = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
-    let delegator3_balance = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
-    let delegator4_balance = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
-    let delegator5_balance = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+    let delegator1_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
     // Get all of the bonded balances
     let default_bond_state: bond_state = bond_state {
       validator: pondo_core_protocol.aleo,
       microcredits: 0u64
     };
-    let delegator1_bonded = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, default_bond_state).microcredits;
-    let delegator2_bonded = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, default_bond_state).microcredits;
-    let delegator3_bonded = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, default_bond_state).microcredits;
-    let delegator4_bonded = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, default_bond_state).microcredits;
-    let delegator5_bonded = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, default_bond_state).microcredits;
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, default_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, default_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, default_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, default_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, default_bond_state).microcredits;
     // Get all of the unbonding balances
     let default_unbond_state: unbond_state = unbond_state {
       microcredits: 0u64,
       height: 0u32
     };
-    let delegator1_unbonding = credits.aleo/unbonding.get_or_use(pondo_delegator1.aleo, default_unbond_state).microcredits;
-    let delegator2_unbonding = credits.aleo/unbonding.get_or_use(pondo_delegator2.aleo, default_unbond_state).microcredits;
-    let delegator3_unbonding = credits.aleo/unbonding.get_or_use(pondo_delegator3.aleo, default_unbond_state).microcredits;
-    let delegator4_unbonding = credits.aleo/unbonding.get_or_use(pondo_delegator4.aleo, default_unbond_state).microcredits;
-    let delegator5_unbonding = credits.aleo/unbonding.get_or_use(pondo_delegator5.aleo, default_unbond_state).microcredits;
+    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator1.aleo, default_unbond_state).microcredits;
+    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator2.aleo, default_unbond_state).microcredits;
+    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator3.aleo, default_unbond_state).microcredits;
+    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator4.aleo, default_unbond_state).microcredits;
+    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator5.aleo, default_unbond_state).microcredits;
     // Get the core protocol balance
-    let core_protocol_balance = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
+    let core_protocol_balance: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
 
     // Calculate the total tvl
-    let total_tvl = delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance
+    let total_tvl: u64 = delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance
       + delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded + core_protocol_balance
       + delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
 
