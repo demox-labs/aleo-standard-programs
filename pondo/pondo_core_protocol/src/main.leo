@@ -347,6 +347,7 @@ program pondo_core_protocol.aleo {
 
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
     let current_owed_commission: u64 = owed_commission.get(0u8);
+    // same bug here as above with expected_paleo_mint not being subtracted from the total_paleo_minted
     let total_paleo_minted: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
 
     let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
@@ -500,6 +501,8 @@ program pondo_core_protocol.aleo {
     // and without any rewards that have been earned since the update
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
     let current_owed_commission: u64 = owed_commission.get(0u8);
+    // Because we're getting this mapping value after the burn calls finish, this the paleo supply post burn.
+    // We correct to the paleo supply pre-burn by adding the paleo_burn_amount
     let paleo_minted_post_burn: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
@@ -758,7 +761,7 @@ program pondo_core_protocol.aleo {
       validator_state { validator: top_validators[3u8], commission: validator4_commission },
       validator_state { validator: top_validators[4u8], commission: validator5_commission }
     ];
-    validator_set.set(NEXT, next_validator_set);
+    validator_set.set(NEXT_SET, next_validator_set);
   }
 
   async transition rebalance_retrieve_credits(
@@ -969,6 +972,7 @@ program pondo_core_protocol.aleo {
     let core_protocol_balance: u64 = credits.aleo/account.get_or_use(pondo_core_protocol.aleo, 0u64);
 
     // Calculate the total tvl
+    // do we need to account for bonded withdrawals?
     let total_tvl: u64 = delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance
       + delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded + core_protocol_balance
       + delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;

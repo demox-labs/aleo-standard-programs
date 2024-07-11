@@ -273,6 +273,7 @@ program pondo_delegator1.aleo {
   async transition ban_validator(
     public validator: address
   ) -> Future {
+    // Is this allowed to be called by anybody? Also, why not set this call directly on the core protocol so it's not duplicated across delegators?
     let f0: Future = pondo_oracle.aleo/pondo_ban_validator(validator);
     return finalize_ban_validator(validator, f0);
   }
