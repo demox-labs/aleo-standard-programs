@@ -11,7 +11,7 @@
     "clean": "rm -rf node_modules",
     "get-program-addresses": "tsc ./util/getProgramAddresses.ts && node ./util/getPromgramAddresses.js",
     "convert-mtsp": "yarn tsx ./util/convertMTSP.ts",
-    "convert-pondo": "yarn tsx ./util/convertMTSP.ts && yarn tsx ./util/convertPondoPrograms.ts",
+    "convert-pondo": "yarn tsx ./util/convertPondoPrograms.ts",
     "calculate-new-shares": "yarn tsx ./src/utils/ARC-0038/calculateNewShares.ts",
     "calculate-withdrawal": "yarn tsx ./src/utils/ARC-0038/calculateWithdrawal.ts"
   },

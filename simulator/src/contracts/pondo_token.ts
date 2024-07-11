@@ -21,7 +21,7 @@ export class pondo_tokenProgram {
   }
 
   //program pondo_token.aleo {
-// The Pondo token is only minted once and the total supply is fixed.
+  // The Pondo token is only minted once and the total supply is fixed.
   initialize_token(
   ) {
     assert(this.caller === "pondo_core_protocol.aleo");
@@ -38,14 +38,14 @@ export class pondo_tokenProgram {
     this.multi_token_support_program_v1.caller = "pondo_token.aleo";
     this.multi_token_support_program_v1.mint_public(this.PONDO_TOKEN_ID, "pondo_token.aleo", max_supply, BigInt("4294967295"));
 
-    return this.finalize_initialize_token( );
-    }
+    return this.finalize_initialize_token();
+  }
 
   finalize_initialize_token(
   ) {
 
 
-    }
+  }
 
   burn_public(
     burner: string,
@@ -54,12 +54,12 @@ export class pondo_tokenProgram {
     this.multi_token_support_program_v1.caller = "pondo_token.aleo";
     this.multi_token_support_program_v1.burn_public(this.PONDO_TOKEN_ID, burner, amount);
     return this.finalize_burn_public();
-    }
+  }
 
   finalize_burn_public(
   ) {
 
-    }
+  }
 
   burn_private(
     input_record: Token,
@@ -67,10 +67,10 @@ export class pondo_tokenProgram {
   ): Token {
     this.multi_token_support_program_v1.caller = "pondo_token.aleo";
     return this.multi_token_support_program_v1.burn_private(input_record, burn_amount);
-    }
+  }
 
   finalize_burn_private(
   ) {
     assert(true);
-    }
-    }
+  }
+}

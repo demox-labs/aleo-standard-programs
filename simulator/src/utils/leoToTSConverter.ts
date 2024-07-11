@@ -5,6 +5,7 @@ import * as readline from 'readline';
 const constants: Set<string> = new Set();
 const inlines: string[] = [];
 const importedInterfaces: { programName: string, interfaceName: string }[] = [];
+const definedInterfaces: { interfaceName: string, fields: string[] }[] = [];
 
 export const convertLeoToTs = async (filePath: string) => {
   console.log(`Converting Leo contract from: ${filePath}`);
@@ -73,6 +74,7 @@ export const convertLeoToTs = async (filePath: string) => {
   }
 
   tsCode = replaceInlines(tsCode);
+  tsCode = replaceInlineStructs(tsCode);
 
   const tsFilePath = path.join('./src/contracts', `${parentDirectoryName}.ts`);
   console.log(`TypeScript file will be saved to: ${tsFilePath}`);
@@ -367,10 +369,14 @@ const replaceMapping = (leoLine: string): string => {
   const getOrUseRegex = /(\w+)\.get_or_use\((?:(\w+.*\w+),\s*(\w+)\)(\.\w+)*)*/;
   const getOrUseMatch = leoLine.match(getOrUseRegex);
   if (getOrUseMatch) {
-    const [, mappingName, keyName, defaultValue, propertyName] = getOrUseMatch;
+    let [, mappingName, keyName, defaultValue, propertyName] = getOrUseMatch;
     const propertyAccess = propertyName ? `?${propertyName}` : '';
-    // Adjust to use the correct TypeScript equivalent, considering the "||" for default value
-    leoLine = leoLine.replace(getOrUseRegex, `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess}`);
+    if (originalLine.endsWith('(')) {
+      leoLine = leoLine.replace(getOrUseRegex, `this.${mappingName}.get(`);
+    } else {
+      // Adjust to use the correct TypeScript equivalent, considering the "||" for default value
+      leoLine = leoLine.replace(getOrUseRegex, `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess}`);
+    }
   }
 
   const setRegex = /(\w+)\.set\(([^,]+),\s*(.+)\);/;
@@ -538,6 +544,16 @@ const replaceInlines = (leoLine: string): string => {
   return leoLine;
 }
 
+const replaceInlineStructs = (leoLines: string): string => {
+  definedInterfaces.forEach(({ interfaceName, fields }) => {
+    const fieldRegexs = fields.join(':.+,.+');
+    const regex = new RegExp(`${interfaceName}(\\s\\{\\s*${fieldRegexs}.+\\})`, 'g');
+    leoLines = leoLines.replace(regex, `$1`);
+  });
+
+  return leoLines;
+}
+
 const convertToInterface = (leoLines: string[], tsCode: string): string => {
   // Determine if it's a record or struct and extract the name
   const firstLine = leoLines[0].trim();
@@ -549,6 +565,7 @@ const convertToInterface = (leoLines: string[], tsCode: string): string => {
   }
 
   let interfaceCode = '';
+  let fields: string[] = [];
   // Start TypeScript interface
   interfaceCode += `export interface ${name} {\n`;
 
@@ -558,10 +575,12 @@ const convertToInterface = (leoLines: string[], tsCode: string): string => {
       interfaceCode += `${TAB}${line}\n`;
     } else {
       const [field, type] = line.trim().split(':').map(part => part.trim());
+      fields.push(field);
       interfaceCode += `${TAB}${field}: ${convertType(type.replace(',', ''))};\n`; // Remove commas and convert types
     }
   });
 
+  definedInterfaces.push({ interfaceName: name, fields });
   // Close TypeScript interface
   interfaceCode += '}\n';
   return addToInterfaces(interfaceCode, tsCode);

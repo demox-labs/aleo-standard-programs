@@ -156,15 +156,6 @@ program pondo_core_protocol.aleo {
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
       ]
     );
-    let default_datum: validator_datum = validator_datum {
-      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      block_height: 0u32,
-      bonded_microcredits: 0u64,
-      microcredits_yield_per_epoch: 0u128,
-      commission: 0u8,
-      boost: 0u128
-    };
     let validator1_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[0u8]).commission;
     let validator2_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[1u8]).commission;
     let validator3_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[2u8]).commission;
@@ -878,18 +869,20 @@ program pondo_core_protocol.aleo {
       assert(validators[i] == next_validator_set[i]);
     }
     // Check that each validator has the correct portion of credits
-    let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(0u8, [
-      PORTION_1,
-      PORTION_2,
-      PORTION_3,
-      PORTION_4,
-      PORTION_5,
-      PORTION_5,
-      PORTION_5,
-      PORTION_5,
-      PORTION_5,
-      PORTION_5
-    ]);
+    let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(
+      0u8,
+      [
+        PORTION_1,
+        PORTION_2,
+        PORTION_3,
+        PORTION_4,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5
+      ]);
     let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let total_credits_128: u128 = total_credits as u128;
     let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
