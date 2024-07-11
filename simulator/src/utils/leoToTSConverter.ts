@@ -28,7 +28,8 @@ export const convertLeoToTs = async (filePath: string) => {
   let collectedLines: string[] = [];
   let nestedLevel = 0;
   let endBracketFound = false;
-  for await (const line of rl) {
+  for await (let line of rl) {
+    line = line.replace('async', '');
     const trimmedLine = line.trim();
     // Check if we're starting a record or struct
     if (trimmedLine.startsWith('record')
@@ -165,6 +166,10 @@ const convertType = (leoType: string): string => {
         const tsArrayType = convertType(leoType.substring(leoType.indexOf('[') + 1, leoType.indexOf(';')));
         return `${tsArrayType}[]`;
       }
+      if (leoType?.includes('(')) {
+        const tsTupleTypes = leoType.substring(1, leoType.length - 1).split(',').map(type => convertType(type.trim()));
+        return tsTupleTypes.every((v, _, arr)=> v === arr[0]) ? `${tsTupleTypes[0]}[]` : `[${tsTupleTypes.join(', ')}]`;
+      }
       if (leoType?.includes(".aleo") || leoType?.includes(".leo")) {
         const programName = leoType.substring(0, leoType.indexOf('.'));
         const interfaceEnd = leoType.indexOf(',') > 0 ? leoType.indexOf(',') : leoType.length;
@@ -201,7 +206,7 @@ const convertValue = (leoValue: string, leoType: string): string => {
 };
 
 const convertMapping = (leoLine: string, tsCode: string): string => {
-  const mappingMatch = leoLine.match(/mapping\s+(\w+):\s+(\w+)\s+=>\s+(\w+);/);
+  const mappingMatch = leoLine.match(/mapping\s+(\w+):\s+(\w+)\s+=>\s+(\w+|\[\w+\s*;\s+\w+\]);/);
   if (mappingMatch) {
     const [, name, keyType, valueType] = mappingMatch;
     // TypeScript doesn't have a direct equivalent of Leo's mapping, using Map for demonstration
@@ -226,6 +231,11 @@ const generalConvert = (leoLine: string, blockName?: string, programAddress?: st
   leoLine = replaceCalls(leoLine, programAddress);
   leoLine = replaceMathOperations(leoLine);
   leoLine = replaceLeoNums(leoLine);
+  leoLine = replaceTupleAcces(leoLine);
+  leoLine = replaceContractAddress(leoLine);
+  leoLine = replaceNullAddress(leoLine);
+  leoLine = replaceAwaits(leoLine);
+  leoLine = replaceFutures(leoLine);
   leoLine = replaceThenFinalize(leoLine, blockName);
   leoLine = replaceBlockHeight(leoLine);
   leoLine = replaceTupleReturn(leoLine);
@@ -235,7 +245,7 @@ const generalConvert = (leoLine: string, blockName?: string, programAddress?: st
 
 const replaceAssignment = (leoLine: string): string => {
  // Regex to match the pattern "let <name>: <type> = <initialization>" with a complex type
-  const regex = /let (\w+):\s*([\w\.\/]+)\s*=\s*(.+)/;
+  const regex = /let (\w+):\s*([\w\.\/]+|\[.+\]|\(.+\))\s*=\s*(.+)/;
   const match = leoLine.match(regex);
 
   if (match) {
@@ -286,10 +296,32 @@ const replaceTupleReturn = (leoLine: string): string => {
 }
 
 const replaceLeoNums = (leoLine: string): string => {
-  const numericLiteralRegex = /(\d+)[ui]\d+/g;
-  leoLine = leoLine.replace(numericLiteralRegex, (match, num) => `BigInt("${num}")`);
+  const numericLiteralRegex = /(\d+(?:_*\d+)*)[ui]\d+/g;
+  leoLine = leoLine.replace(numericLiteralRegex, (match, num) => `BigInt("${num.replace(/_/g, '')}")`);
 
   return leoLine;
+}
+
+const replaceContractAddress = (leoLine: string): string => {
+  const contractRegex = /([^\"\'])(\w+\.aleo)([^\"\'])/g;
+  return leoLine.replace(contractRegex, (match, char, contractAddress, char2) => `${char}"${contractAddress}"${char2}`);
+}
+
+const replaceNullAddress = (leoLine: string): string => {
+  return leoLine.replace('aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc', '"aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"');
+}
+
+const replaceAwaits = (leoLine: string): string => {
+  const awaitRegex = /f\d+\.await\(\);/;
+  return leoLine.replace(awaitRegex, (match, awaitStatement) => '');
+}
+
+const replaceFutures = (leoLine: string): string => {
+  const functionCallRegex = /let f\d+:\s+.*=\s(.+)/;
+  let line = leoLine.replace(functionCallRegex, (match, functionCall) => `${functionCall}`);
+  const futureRegex = /(?:,\s)*f\d+(?:\:\sFuture,*)*,*/g;
+  line = line.replace(futureRegex, '');
+  return line;
 }
 
 const replaceForLoop = (leoLine: string): string => {
@@ -307,12 +339,8 @@ const replaceForLoop = (leoLine: string): string => {
 }
 
 const replaceMapping = (leoLine: string): string => {
-  // if (leoLine.includes("residual_delegator")) {
-  //   console.log(leoLine);
-  // }
-
   const originalLine = leoLine;
-  const get = /(\w+)\.get\((\w+)\)/;
+  const get = /(\w+)\.get\((\w+.*\w+.)\)/;
   const getMatch = leoLine.match(get);
   if (getMatch) {
     const [mappingName, keyName ] = getMatch;
@@ -320,7 +348,7 @@ const replaceMapping = (leoLine: string): string => {
     leoLine = leoLine.replace(get, (match, mappingName, keyName) => `this.${mappingName}.get(${keyName})!`);
   }
 
-  const remove = /(\w+)\.remove\((\w+)\)/;
+  const remove = /(\w+)\.remove\((\w+.*\w+)\)/;
   const removeMatch = leoLine.match(remove);
   if (removeMatch) {
     const [ mappingName, keyName ] = removeMatch;
@@ -328,7 +356,7 @@ const replaceMapping = (leoLine: string): string => {
     leoLine = leoLine.replace(remove, (match, mappingName, keyName) => `this.${mappingName}.delete(${keyName})`);
   }
 
-  const containsRegex = /(\w+)\.contains\((\w+)\)/;
+  const containsRegex = /(\w+)\.contains\((\w+.*\w+)\)/;
   const containsMatch = leoLine.match(containsRegex);
   if (containsMatch) {
     const [ mappingName, keyName ] = containsMatch;
@@ -336,7 +364,7 @@ const replaceMapping = (leoLine: string): string => {
     leoLine = leoLine.replace(containsRegex, (match, mappingName, keyName) => `this.${mappingName}.has(${keyName})`);
   }
 
-  const getOrUseRegex = /(\w+)\.get_or_use\((\w+),\s*(\w+)\)(\.\w+)*/;
+  const getOrUseRegex = /(\w+)\.get_or_use\((?:(\w+.*\w+),\s*(\w+)\)(\.\w+)*)*/;
   const getOrUseMatch = leoLine.match(getOrUseRegex);
   if (getOrUseMatch) {
     const [, mappingName, keyName, defaultValue, propertyName] = getOrUseMatch;
@@ -474,8 +502,17 @@ const replaceArrayAccess = (leoLine: string): string => {
   return leoLine.replace(regex, '$1[$2]');
 }
 
+const replaceTupleAcces = (leoLine: string): string => {
+  // This regex matches the pattern "tuple.index" and captures "tuple" as $1 and "index" as $2
+  const regex = /(\w+)\.(\d+)/g;
+
+  // Replace the matched pattern with "tuple[index]"
+  return leoLine.replace(regex, '$1[$2]');
+}
+
 const replaceThenFinalize = (leoLine: string, blockName?: string): string => {
   leoLine = leoLine.replace("then finalize", `this.finalize_${blockName}`);
+  leoLine = leoLine.replace(`finalize_`, `this.finalize_`);
   return leoLine;
 }
 
@@ -598,6 +635,10 @@ const convertFunction = (leoLines: string[], tsCode: string, programAddress: str
 
 const convertArgs = (leoArgs: string[]): string => {
   return leoArgs.map(arg => {
+    const futureRegex = /(?:,\s)*f\d+(?:\:\sFuture,*)*/;
+    if (arg.match(futureRegex)) {
+      return '';
+    }
     if (arg.trim().startsWith("//")) {
       return arg;
     }
