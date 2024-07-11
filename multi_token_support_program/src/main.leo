@@ -46,9 +46,10 @@ program multi_token_support_program_v1.aleo {
   mapping authorized_balances: field => Balance; // hash(token_id, account) => Balance
   mapping allowances: field => u128; // hash(token_id, account, spender) => Allowance
 
-  // mapping struct_balances: TokenOwner => Balance;
-  // mapping struct_authorized_balances: TokenOwner => Balance;
-  // mapping struct_allowances: Allowance => u128;
+  const MINTER_ROLE: u8 = 1u8;
+  const BURNER_ROLE: u8 = 2u8;
+  const SUPPLY_MANAGER_ROLE: u8 = 3u8;
+  mapping roles: field => u8; // hash(token_id, account) => role
 
   // -------------------------
   // Called by token admins
@@ -67,9 +68,9 @@ program multi_token_support_program_v1.aleo {
       decimals: 6u8,
       supply: 1_500_000_000_000_000u128,
       max_supply: 1_500_000_000_000_000u128,
-      admin: multi_token_support_program_v1.aleo,
+      admin: self.address,
       external_authorization_required: false,
-      external_authorization_party: multi_token_support_program_v1.aleo
+      external_authorization_party: self.address
     };
 
     registered_tokens.set(CREDITS_RESERVED_TOKEN_ID, credits_reserved_token);
@@ -137,6 +138,59 @@ program multi_token_support_program_v1.aleo {
       external_authorization_required: token.external_authorization_required,
       external_authorization_party: external_authorization_party
     };
+    registered_tokens.set(token_id, new_metadata);
+  }
+
+  async transition set_role(
+    public token_id: field,
+    public account: address,
+    public role: u8
+  ) -> Future {
+    assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+    return finalize_set_role(token_id, account, role, self.caller);
+  }
+
+  async function finalize_set_role(
+    token_id: field,
+    account: address,
+    role: u8,
+    caller: address
+  ) {
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(caller, token.admin);
+
+    let role_owner: TokenOwner = TokenOwner {
+      account: account,
+      token_id: token_id
+    };
+    let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+
+    roles.set(role_owner_hash, role);
+  }
+
+  async transition remove_role(
+    public token_id: field,
+    public account: address
+  ) -> Future {
+    assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+    return finalize_remove_role(token_id, account, self.caller);
+  }
+
+  async function finalize_remove_role(
+    token_id: field,
+    account: address,
+    caller: address
+  ) {
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(caller, token.admin);
+
+    let role_owner: TokenOwner = TokenOwner {
+      account: account,
+      token_id: token_id
+    };
+    let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+
+    roles.remove(role_owner_hash);
   }
 
   async transition mint_public(
@@ -154,12 +208,22 @@ program multi_token_support_program_v1.aleo {
     recipient: address,
     amount: u128,
     authorized_until: u32,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == MINTER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: u128 = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
@@ -177,7 +241,9 @@ program multi_token_support_program_v1.aleo {
     };
     let authorization_required: bool = token.external_authorization_required;
     // Get the locked balance if authorization is required, otherwise get the authorized balance
-    let balance: Balance = authorization_required ? balances.get_or_use(balance_key, default_balance) : authorized_balances.get_or_use(balance_key, default_balance);
+    let balance: Balance = authorization_required
+      ? balances.get_or_use(balance_key, default_balance)
+      : authorized_balances.get_or_use(balance_key, default_balance);
     let new_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -222,27 +288,37 @@ program multi_token_support_program_v1.aleo {
       authorized_until: authorized_until
     };
 
-    return (token, finalize_mint_private(token_id, recipient, amount, external_authorization_required, authorized_until, self.caller));
+    return (token, finalize_mint_private(token_id, amount, external_authorization_required, authorized_until, self.caller));
   }
 
   async function finalize_mint_private(
     token_id: field,
-    recipient: address,
     amount: u128,
     external_authorization_required: bool,
     authorized_until: u32,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == MINTER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: u128 = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
     // Check that whether the token is authorized or not matches the authorized parameter
     let authorization_required: bool = token.external_authorization_required;
     assert_eq(authorization_required, external_authorization_required);
+    assert(authorized_until == 0u32 || !authorization_required);
 
     // Update the token supply
     let new_metadata: TokenMetadata = TokenMetadata {
@@ -277,15 +353,35 @@ program multi_token_support_program_v1.aleo {
   async function finalize_burn_public(
     owner: TokenOwner,
     amount: u128,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    assert_eq(token.admin, token_admin);
-    let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
+    if (caller != token.admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: owner.token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
 
-    // Get the locked balance for the recipient
+    // Update the token supply
+    let new_metadata: TokenMetadata = TokenMetadata {
+      token_id: token.token_id,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      supply: token.supply - amount, // underflow will be caught by the VM
+      max_supply: token.max_supply,
+      admin: token.admin,
+      external_authorization_required: token.external_authorization_required,
+      external_authorization_party: token.external_authorization_party
+    };
+    registered_tokens.set(owner.token_id, new_metadata);
+
+    // Get the authorized balance for the recipient
     let default_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
@@ -293,47 +389,49 @@ program multi_token_support_program_v1.aleo {
       authorized_until: 0u32
     };
     let balance_key: field = BHP256::hash_to_field(owner);
-    let balance: Balance = balances.get_or_use(balance_key, default_balance);
-    let remaining_after_burn: i128 = balance.balance as i128 - amount as i128;
-    // Burn from locked balance
-    let new_locked_balance: u128 = remaining_after_burn >= 0i128 ? remaining_after_burn as u128 : 0u128;
-    let new_balance: Balance = Balance {
-      token_id: owner.token_id,
-      account: owner.account,
-      balance: new_locked_balance,
-      authorized_until: balance.authorized_until
-    };
-    balances.set(balance_key, new_balance);
-
-    // Burn from authorized balance
-    if (remaining_after_burn < 0i128) {
-      let remaining_burn_balance: u128 = amount - balance.balance;
-      let authorized_balance: Balance = authorized_balances.get(balance_key);
-      let new_authorized_balance: Balance = Balance {
+    let authorized_balance: Balance = authorized_balances.get_or_use(balance_key, default_balance);
+    // Check if the authorized balance is enough to burn
+    if (authorized_balance.balance > 0u128) {
+      // Burn from authorized balance
+      if (authorized_balance.balance > amount) {
+        let new_authorized_balance: Balance = Balance {
+          token_id: owner.token_id,
+          account: owner.account,
+          balance: authorized_balance.balance - amount,
+          authorized_until: authorized_balance.authorized_until
+        };
+        authorized_balances.set(balance_key, new_authorized_balance);
+        return; // Done burning
+      } else {
+        authorized_balances.remove(balance_key);
+        let left_to_burn: u128 = amount - authorized_balance.balance;
+        // Burn remainder from locked balance
+        let locked_balance: Balance = balances.get(balance_key);
+        let new_locked_balance: Balance = Balance {
+          token_id: owner.token_id,
+          account: owner.account,
+          balance: locked_balance.balance - left_to_burn,
+          authorized_until: locked_balance.authorized_until
+        };
+        balances.set(balance_key, new_locked_balance);
+      }
+    } else {
+      // Otherwise burn directly from locked balance
+      let locked_balance: Balance = balances.get(balance_key);
+      let new_locked_balance: Balance = Balance {
         token_id: owner.token_id,
         account: owner.account,
-        balance: authorized_balance.balance - remaining_burn_balance,
-        authorized_until: authorized_balance.authorized_until
+        balance: locked_balance.balance - amount,
+        authorized_until: locked_balance.authorized_until
       };
-      authorized_balances.set(balance_key, new_authorized_balance);
+      balances.set(balance_key, new_locked_balance);
     }
-
-    // Update the token supply
-    let new_metadata: TokenMetadata = TokenMetadata {
-      token_id: owner.token_id,
-      name: token.name,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      supply: new_supply,
-      max_supply: token.max_supply,
-      admin: token.admin,
-      external_authorization_required: token.external_authorization_required,
-      external_authorization_party: token.external_authorization_party
-    };
-    registered_tokens.set(owner.token_id, new_metadata);
   }
 
-  async transition burn_private(input_record: Token, public amount: u128) -> (Token, Future) {
+  async transition burn_private(
+    input_record: Token,
+    public amount: u128
+  ) -> (Token, Future) {
     assert(input_record.token_id != CREDITS_RESERVED_TOKEN_ID);
     let output_record: Token = Token {
         owner: input_record.owner,
@@ -345,11 +443,25 @@ program multi_token_support_program_v1.aleo {
     return (output_record, finalize_burn_private(input_record.token_id, amount, self.caller));
   }
 
-  async function finalize_burn_private(token_id: field, amount: u128, token_admin: address) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+  async function finalize_burn_private(
+    token_id: field,
+    amount: u128,
+    caller: address
+  ) {
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply - amount >= 0
     let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
 
     // Update the token supply
@@ -383,36 +495,49 @@ program multi_token_support_program_v1.aleo {
   ) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == external_authorization_party);
+    assert(caller == token.external_authorization_party);
 
-    // Get the balance for the recipient
-    let balance_key: field = BHP256::hash_to_field(owner);
-    let balance: Balance = balances.get(balance_key);
-    // Update the balance, and check that the balance >= 0
-    let new_balance: Balance = Balance {
-      token_id: owner.token_id,
-      account: owner.account,
-      balance: balance.balance - amount,
-      authorized_until: balance.authorized_until
-    };
-    balances.set(balance_key, new_balance);
-
-    // Move balance to authorized_balances
-    let default_balance: Balance = Balance {
+     let default_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
       balance: 0u128,
-      authorized_until: authorized_until
+      authorized_until: 0u32
     };
+    let balance_key: field = BHP256::hash_to_field(owner);
+    // Get the locked balance for the recipient
+    let locked_balance: Balance = balances.get_or_use(balance_key, default_balance);
+    // Get the authorized balance for the recipient
     let authorized_balance: Balance = authorized_balances.get_or_use(balance_key, default_balance);
-    let new_authorized_balance: Balance = Balance {
+    // Check if the authorized balance is expired
+    let authorized_balance_expired: bool = authorized_balance.authorized_until < block.height;
+    // If the authorized balance is expired, treat is as part of the locked balance
+    let actual_locked_balance: u128 = authorized_balance_expired
+      ? locked_balance.balance + authorized_balance.balance
+      : locked_balance.balance;
+    let actual_authorized_balance: u128 = authorized_balance_expired
+      ? 0u128
+      : authorized_balance.balance;
+    // Move the amount from the locked balance to the authorized balance
+    let new_locked_balance: u128 = actual_locked_balance - amount;
+    let new_authorized_balance: u128 = actual_authorized_balance + amount;
+
+    // Update the authorized balance with the incremented amount and new expiration
+    let new_authorized_balance_struct: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
-      balance: authorized_balance.balance + amount,
+      balance: new_authorized_balance,
       authorized_until: authorized_until
     };
-    authorized_balances.set(balance_key, new_authorized_balance);
+    authorized_balances.set(balance_key, new_authorized_balance_struct);
+
+    // Update the locked balance
+    let new_locked_balance_struct: Balance = Balance {
+      token_id: owner.token_id,
+      account: owner.account,
+      balance: new_locked_balance,
+      authorized_until: locked_balance.authorized_until
+    };
+    balances.set(balance_key, new_locked_balance_struct);
   }
 
   async transition prehook_private(input_record: Token, amount: u128, authorized_until: u32) -> (Token, Token, Future) {
@@ -436,8 +561,7 @@ program multi_token_support_program_v1.aleo {
   async function finalize_prehook_private(token_id: field, caller: address) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(token_id);
-    let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == external_authorization_party);
+    assert(caller == token.external_authorization_party);
   }
 
   // -------------------------
@@ -466,6 +590,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balance for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -491,12 +618,14 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
 
     // Update recipient balance
@@ -529,6 +658,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balance for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -554,12 +686,14 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
 
     // Update recipient balance
@@ -578,16 +712,16 @@ program multi_token_support_program_v1.aleo {
     return finalize_approve_public(token_id, spender, amount, self.caller);
   }
 
-  async function finalize_approve_public(token_id: field, spender: address, amount: u128, owner: address) {
+  async function finalize_approve_public(
+    token_id: field,
+    spender: address,
+    amount: u128,
+    owner: address
+  ) {
     let owner_key: TokenOwner = TokenOwner {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
-    let has_locked_balance: bool = balances.contains(owner_key_hash);
-    let has_authorized_balance: bool = authorized_balances.contains(owner_key_hash);
-    // Confirm that the caller has a balance in the token
-    assert(has_locked_balance || has_authorized_balance);
 
     let allowance: Allowance = Allowance {
       account: owner,
@@ -621,7 +755,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Decrease the allowance amount
     allowances.set(allowance_key, current_allowance - amount);
   }
@@ -650,7 +783,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Decrease the allowance by the amount being spent
     allowances.set(allowance_key, current_allowance - amount);
 
@@ -659,10 +791,11 @@ program multi_token_support_program_v1.aleo {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
-    assert_eq(owner, balance.account);
-    assert(balance.balance >= amount);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
 
     // Update the balance for the owner
     let new_balance: Balance = Balance {
@@ -688,12 +821,14 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
     // Update the balance of the recipient
     if (authorization_required) {
@@ -738,6 +873,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balances for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token_metadata: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token_metadata.external_authorization_required);
     // Update the balance
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -785,7 +923,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Update the allowance
     allowances.set(allowance_key, current_allowance - amount);
 
@@ -794,11 +931,11 @@ program multi_token_support_program_v1.aleo {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
-    assert_eq(owner, balance.account);
-    assert(balance.balance >= amount);
-
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token_metadata: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token_metadata.external_authorization_required);
     // Update the balance for the owner
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -855,10 +992,25 @@ program multi_token_support_program_v1.aleo {
       authorized_until: input_record.authorized_until
     };
 
-    return (updated_record, finalize_transfer_private_to_public(input_record.token_id, recipient, amount));
+    return (updated_record,
+      finalize_transfer_private_to_public(
+        input_record.token_id,
+        recipient,
+        amount,
+        input_record.authorized_until,
+        input_record.external_authorization_required
+    ));
   }
 
-  async function finalize_transfer_private_to_public(token_id: field, recipient: address, amount: u128) {
+  async function finalize_transfer_private_to_public(
+    token_id: field,
+    recipient: address,
+    amount: u128,
+    record_authorized_until: u32,
+    external_authorization_required: bool
+  ) {
+    // Assert that the record authorization is not expired
+    assert(block.height <= record_authorized_until || !external_authorization_required);
     // Get or create the balance for the recipient
     let recipient_key: TokenOwner = TokenOwner {
       account: recipient,
@@ -874,7 +1026,9 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -896,25 +1050,25 @@ program multi_token_support_program_v1.aleo {
   async transition deposit_credits_public(
     public amount: u64
   ) -> Future {
-    let f0: Future = credits.aleo/transfer_public_as_signer(multi_token_support_program_v1.aleo, amount);
-    return finalize_deposit_credits_public(f0, amount as u128, self.caller);
+    let f0: Future = credits.aleo/transfer_public_as_signer(self.address, amount);
+    return finalize_deposit_credits_public(f0, amount as u128, self.signer);
   }
 
   async function finalize_deposit_credits_public(
     f0: Future,
     amount: u128,
-    caller: address
+    signer: address
   ) {
     f0.await();
-    // Get or create a credits balance for the caller
+    // Get or create a credits balance for the signer
     let balance_key: TokenOwner = TokenOwner {
-      account: caller,
+      account: signer,
       token_id: CREDITS_RESERVED_TOKEN_ID
     };
     let balance_key_hash: field = BHP256::hash_to_field(balance_key);
     let default_balance: Balance = Balance {
       token_id: CREDITS_RESERVED_TOKEN_ID,
-      account: caller,
+      account: signer,
       balance: 0u128,
       authorized_until: 4294967295u32
     };
@@ -922,7 +1076,7 @@ program multi_token_support_program_v1.aleo {
     // Increment the balance by the amount deposited
     let new_balance: Balance = Balance {
       token_id: CREDITS_RESERVED_TOKEN_ID,
-      account: caller,
+      account: signer,
       balance: balance.balance + amount,
       authorized_until: balance.authorized_until
     };
@@ -934,7 +1088,7 @@ program multi_token_support_program_v1.aleo {
     input_record: credits.aleo/credits,
     amount: u64
   ) -> (credits.aleo/credits, Token, Future) {
-    let transfer_output: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, multi_token_support_program_v1.aleo, amount);
+    let transfer_output: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, self.address, amount);
     let token: Token = Token {
       owner: input_record.owner,
       amount: amount as u128,

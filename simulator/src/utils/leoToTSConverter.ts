@@ -185,6 +185,9 @@ const convertType = (leoType: string): string => {
     case 'bool':
       return 'boolean';
     default:
+      if (leoType === 'Future') {
+        return '';
+      }
       if (leoType?.includes('[')) {
         const tsArrayType = convertType(
           leoType.substring(leoType.indexOf('[') + 1, leoType.indexOf(';'))
@@ -195,7 +198,11 @@ const convertType = (leoType: string): string => {
         const tsTupleTypes = leoType
           .substring(1, leoType.length - 1)
           .split(',')
-          .map((type) => convertType(type.trim()));
+          .map((type) => convertType(type.trim()))
+          .filter((type) => type !== '');
+        if (tsTupleTypes.length === 1) {
+          return tsTupleTypes[0];
+        }
         return tsTupleTypes.every((v, _, arr) => v === arr[0])
           ? `${tsTupleTypes[0]}[]`
           : `[${tsTupleTypes.join(', ')}]`;
@@ -377,7 +384,7 @@ const replaceCasts = (leoLine: string): string => {
 
 const replaceTupleReturn = (leoLine: string): string => {
   // Matches a return statement with a tuple, capturing the tuple contents
-  const regex = /return\s+\(([^)]+)\);/;
+  const regex = /return\s+\((.+)\);/;
   return leoLine.replace(regex, (match, tupleContents) => {
     // Replace the captured tuple with an array notation
     return `return [${tupleContents}];`;
@@ -488,9 +495,15 @@ const replaceMapping = (leoLine: string): string => {
   }
 
   const getOrUseRegex =
-    /(\w+)\.get_or_use\((?:(\w+.*\w+(?:\[\d+])*),\s*(\w+)\)(\.\w+)*)*;/;
+    /(\w+)\.get_or_use\((?:(\w+.*\w+(?:\[\d+])*),\s*(\w+)\)(\.\w+)*)*/;
   const getOrUseMatch = leoLine.match(getOrUseRegex);
-  if (getOrUseMatch) {
+  const openParenRegex = /\(/g;
+  const closeParenRegex = /\)/g;
+  if (
+    getOrUseMatch &&
+    (leoLine.match(openParenRegex) || []).length ===
+      (leoLine.match(closeParenRegex) || []).length
+  ) {
     let [, mappingName, keyName, defaultValue, propertyName] = getOrUseMatch;
     const propertyAccess = propertyName ? `?${propertyName}` : '';
     // Adjust to use the correct TypeScript equivalent, considering the "||" for default value
@@ -716,7 +729,7 @@ const convertToInterface = (leoLines: string[], tsCode: string): string => {
         .map((part) => part.trim());
       fields.push(field);
       interfaceCode += `${TAB}${field}: ${convertType(
-        type.replace(',', '')
+        type.replace(/,.*/g, '')
       )};\n`; // Remove commas and convert types
     }
   });
