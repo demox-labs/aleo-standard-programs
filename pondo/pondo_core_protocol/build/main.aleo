@@ -121,19 +121,18 @@ finalize initialize:
     set 0u8 into protocol_state[0u8];
     cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r7 as [address; 10u32];
     get.or_use pondo_oracle.aleo/top_validators[0u8] r7 into r8;
-    cast aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc 0u32 0u64 0u128 0u8 0u128 into r9 as validator_datum;
-    get pondo_oracle.aleo/validator_data[r8[0u32]] into r10;
-    get pondo_oracle.aleo/validator_data[r8[1u32]] into r11;
-    get pondo_oracle.aleo/validator_data[r8[2u32]] into r12;
-    get pondo_oracle.aleo/validator_data[r8[3u32]] into r13;
-    get pondo_oracle.aleo/validator_data[r8[4u32]] into r14;
-    cast r8[0u32] r10.commission into r15 as validator_state;
-    cast r8[1u32] r11.commission into r16 as validator_state;
-    cast r8[2u32] r12.commission into r17 as validator_state;
-    cast r8[3u32] r13.commission into r18 as validator_state;
-    cast r8[4u32] r14.commission into r19 as validator_state;
-    cast  r15 r16 r17 r18 r19 into r20 as [validator_state; 5u32];
-    set r20 into validator_set[1u8];
+    get pondo_oracle.aleo/validator_data[r8[0u32]] into r9;
+    get pondo_oracle.aleo/validator_data[r8[1u32]] into r10;
+    get pondo_oracle.aleo/validator_data[r8[2u32]] into r11;
+    get pondo_oracle.aleo/validator_data[r8[3u32]] into r12;
+    get pondo_oracle.aleo/validator_data[r8[4u32]] into r13;
+    cast r8[0u32] r9.commission into r14 as validator_state;
+    cast r8[1u32] r10.commission into r15 as validator_state;
+    cast r8[2u32] r11.commission into r16 as validator_state;
+    cast r8[3u32] r12.commission into r17 as validator_state;
+    cast r8[4u32] r13.commission into r18 as validator_state;
+    cast  r14 r15 r16 r17 r18 into r19 as [validator_state; 5u32];
+    set r19 into validator_set[1u8];
 
 
 
