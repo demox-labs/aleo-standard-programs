@@ -45,6 +45,12 @@ program pondo_oracle.aleo {
     microcredits: u64
   }
 
+  // Shadow credits.aleo/committee_state
+  struct committee_state {
+    is_open: bool,
+    commission: u8
+  }
+
   // A mapping of the reference delegator to the validator address
   // It may contain unapproved reference delegators
   mapping delegator_to_validator: address => address;

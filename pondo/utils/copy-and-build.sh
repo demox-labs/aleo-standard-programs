@@ -1,21 +1,21 @@
 #!/bin/bash
 
 # Path to the source file
-SOURCE_FILE="pondo/delegators/delegator1/src/main.leo"
+SOURCE_FILE="pondo/delegators/pondo_delegator1/src/main.leo"
 
 # List of target delegators
 DELEGATORS=("delegator2" "delegator3" "delegator4" "delegator5")
 
 # Copy and modify the file for each delegator
 for DELEGATOR in "${DELEGATORS[@]}"; do
-    TARGET_FILE="pondo/delegators/$DELEGATOR/src/main.leo"
+    TARGET_FILE="pondo/delegators/pondo_$DELEGATOR/src/main.leo"
     cp "$SOURCE_FILE" "$TARGET_FILE"
     sed -i '' "s/pondo_delegator1.aleo/pondo_${DELEGATOR}.aleo/g" "$TARGET_FILE"
 done
 
 # Run "leo build" for each delegator in the pondo/delegators folder
 for DELEGATOR in "delegator1" "${DELEGATORS[@]}"; do
-    pushd "pondo/delegators/$DELEGATOR" > /dev/null
+    pushd "pondo/delegators/pondo_$DELEGATOR" > /dev/null
     leo build
     popd > /dev/null
 done

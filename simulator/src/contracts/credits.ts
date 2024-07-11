@@ -18,6 +18,11 @@ export interface unbond_state {
   height: bigint;
 }
 
+export interface committee_state {
+  is_open: boolean;
+  commission: bigint;
+}
+
 export class creditsProgram {
   caller: string = "not set";
   signer: string = "not set";
@@ -28,7 +33,8 @@ export class creditsProgram {
   account: Map<string, bigint> = new Map();
   bonded: Map<string, bond_state> = new Map();
   unbonding: Map<string, unbond_state> = new Map();
-  committee: Set<string> = new Set(['test-validator', 'new-validator']);
+  committee: Map<string, committee_state> = new Map();
+  withdraw: Map<string, string> = new Map();
 
   transfer_public_to_private(
     receiver: string,
@@ -96,14 +102,16 @@ export class creditsProgram {
 
   bond_public(
     validator: string,
+    withdraw: string,
     amount: bigint
   ) {
-    this.finalize_bond_public(this.caller, validator, amount);
+    this.finalize_bond_public(this.caller, validator, withdraw, amount);
   }
 
   finalize_bond_public(
     delegator: string,
     validator: string,
+    withdraw: string,
     amount: bigint
   ) {
     assert(this.committee.has(validator));
@@ -116,18 +124,24 @@ export class creditsProgram {
     const newSenderBalance: bigint = this.account.get(delegator)! - amount;
     this.bonded.set(delegator, bonded);assert(newSenderBalance >= BigInt(0), "insufficient balance");
     this.account.set(delegator, newSenderBalance);
+    if (this.withdraw.has(delegator)) {
+      assert(this.withdraw.get(delegator) === withdraw, "withdraw address mismatch");
+    }
+    this.withdraw.set(delegator, withdraw);
   }
 
   unbond_public(
+    delegator: string,
     amount: bigint
   ) {
-    this.finalize_unbond_public(this.caller, amount);
+    this.finalize_unbond_public(delegator, amount);
   }
 
   finalize_unbond_public(
     delegator: string,
     amount: bigint
   ) {
+    // TODO: assert that the caller is allowed to call unbond for the delegator
     const bonded: bond_state | undefined = this.bonded.get(delegator);
     assert(bonded !== undefined, "not bonded");
     assert(bonded!.microcredits >= amount, "insufficient credits to unbond");
@@ -148,8 +162,8 @@ export class creditsProgram {
     this.unbonding.set(delegator, unbonding);
   }
 
-  claim_unbond_public() {
-    this.finalize_claim_unbond_public(this.caller);
+  claim_unbond_public(delegator: string) {
+    this.finalize_claim_unbond_public(delegator);
   }
 
   finalize_claim_unbond_public(
