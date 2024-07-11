@@ -17,7 +17,7 @@
         {
             "name": "pondo_oracle.aleo",
             "location": "local",
-            "path": "../oracle"
+            "path": "../pondo_oracle"
         },
         {
             "name": "pondo_staked_aleo_token.aleo",
@@ -32,27 +32,27 @@
         {
             "name": "pondo_delegator1.aleo",
             "location": "local",
-            "path": "../delegators/delegator1"
+            "path": "../delegators/pondo_delegator1"
         },
         {
             "name": "pondo_delegator2.aleo",
             "location": "local",
-            "path": "../delegators/delegator2"
+            "path": "../delegators/pondo_delegator2"
         },
         {
             "name": "pondo_delegator3.aleo",
             "location": "local",
-            "path": "../delegators/delegator3"
+            "path": "../delegators/pondo_delegator3"
         },
         {
             "name": "pondo_delegator4.aleo",
             "location": "local",
-            "path": "../delegators/delegator4"
+            "path": "../delegators/pondo_delegator4"
         },
         {
             "name": "pondo_delegator5.aleo",
             "location": "local",
-            "path": "../delegators/delegator5"
+            "path": "../delegators/pondo_delegator5"
         }
     ]
 }

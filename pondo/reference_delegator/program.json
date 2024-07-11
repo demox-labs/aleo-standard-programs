@@ -12,7 +12,7 @@
     {
         "name": "pondo_oracle.aleo",
         "location": "local",
-        "path": "../oracle"
+        "path": "../pondo_oracle"
     }
   ]
 }

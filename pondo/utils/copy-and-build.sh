@@ -25,7 +25,7 @@ pushd "pondo/reference_delegator" > /dev/null
 leo build
 popd > /dev/null
 
-pushd "pondo/oracle" > /dev/null
+pushd "pondo/pondo_oracle" > /dev/null
 leo build
 popd > /dev/null
 
