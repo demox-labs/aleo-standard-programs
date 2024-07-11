@@ -4,8 +4,8 @@ const prefix = '../pondo';
 const programPaths = [
   // '/pondo_staked_aleo_token',
   // '/pondo_token',
-  '/pondo_core_protocol',
-  '/pondo_oracle',
+  //'/pondo_core_protocol',
+  //'/pondo_oracle',
   '/reference_delegator',
   // '/delegators/pondo_delegator1',
   // '/delegators/pondo_delegator2',

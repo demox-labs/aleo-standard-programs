@@ -299,10 +299,10 @@ program pondo_oracle.aleo {
     let yield_per_epoch: u128 = normalized_microcredits_earned * BLOCKS_PER_EPOCH as u128 / block_range as u128;
 
     // Get the boost amount for the validator
-    let boost: validator_boost = validator_boosting.get_or_use(existing_validator_datum.validator, validator_boost {
-      epoch: 0u32,
-      boost_amount: 0u64
-    });
+    let boost: validator_boost = validator_boosting.get_or_use(
+      existing_validator_datum.validator,
+      validator_boost { epoch: 0u32, boost_amount: 0u64 }
+    );
     let boost_amount: u128 = boost.epoch == current_epoch ? boost.boost_amount as u128 : 0u128;
     // Normalize the boost amount by the pondo tvl
     let current_pondo_tvl: u128 = pondo_tvl.get_or_use(0u8, 10_000_000_000_000_000u64) as u128; // use a high default, 10B credits
@@ -584,10 +584,10 @@ program pondo_oracle.aleo {
     assert(!is_update_period);
 
     // Get the current boosting for the validator
-    let current_boost: validator_boost = validator_boosting.get_or_use(validator, validator_boost {
-      epoch: 0u32,
-      boost_amount: 0u64
-    });
+    let current_boost: validator_boost = validator_boosting.get_or_use(
+      validator,
+      validator_boost { epoch: 0u32, boost_amount: 0u64 }
+    );
 
     // If the boost is in the same epoch, add the boost amount
     let new_boost_amount: u64 = current_boost.epoch == current_epoch ? current_boost.boost_amount + boost_amount : boost_amount;

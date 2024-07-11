@@ -19,9 +19,9 @@ export class pondo_staked_aleo_tokenProgram {
     this.multi_token_support_program_v1 = multi_token_support_program_v1Contract;
   }
 
-// -----------------------------------------------------------
-// pALEO Token Program
-// -----------------------------------------------------------
+  // -----------------------------------------------------------
+  // pALEO Token Program
+  // -----------------------------------------------------------
   //program pondo_staked_aleo_token.aleo {
   register_token(
   ) {
@@ -38,12 +38,12 @@ export class pondo_staked_aleo_tokenProgram {
     this.multi_token_support_program_v1.register_token(this.PALEO_TOKEN_ID, name, symbol, decimals, max_supply, external_authorization_required, external_authorization_party);
 
     return this.finalize_register_token();
-    }
+  }
 
   finalize_register_token(
   ) {
 
-    }
+  }
 
   mint_public(
     amount: bigint,
@@ -54,12 +54,12 @@ export class pondo_staked_aleo_tokenProgram {
     this.multi_token_support_program_v1.caller = "pondo_staked_aleo_token.aleo";
     this.multi_token_support_program_v1.mint_public(this.PALEO_TOKEN_ID, receiver, amount, BigInt("4294967295"));
     return this.finalize_mint_public();
-    }
+  }
 
   finalize_mint_public(
   ) {
 
-    }
+  }
 
   burn_public(
     amount: bigint,
@@ -70,10 +70,10 @@ export class pondo_staked_aleo_tokenProgram {
     this.multi_token_support_program_v1.caller = "pondo_staked_aleo_token.aleo";
     this.multi_token_support_program_v1.burn_public(this.PALEO_TOKEN_ID, owner, amount);
     return this.finalize_burn_public();
-    }
+  }
 
   finalize_burn_public(
   ) {
 
-    }
-    }
+  }
+}
