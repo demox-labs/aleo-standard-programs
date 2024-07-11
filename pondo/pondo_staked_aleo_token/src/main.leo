@@ -9,6 +9,7 @@ program pondo_staked_aleo_token.aleo {
   async transition register_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
+    // add comments for the ascii characters these u128s represent
     let name: u128 = 1480444737813606060884u128;
     let symbol: u128 = 482131854671u128;
     let decimals: u8 = 6u8;
@@ -31,6 +32,7 @@ program pondo_staked_aleo_token.aleo {
   ) -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
+    // might be useful to leave a comment stating this is a u32 max which means tokens are authorized forever
     let f0: Future = multi_token_support_program_v1.aleo/mint_public(PALEO_TOKEN_ID, receiver, amount as u128, 4294967295u32);
     return finalize_mint_public(f0);
   }

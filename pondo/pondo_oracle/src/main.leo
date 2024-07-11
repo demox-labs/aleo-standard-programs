@@ -305,6 +305,7 @@ program pondo_oracle.aleo {
     );
     let boost_amount: u128 = boost.epoch == current_epoch ? boost.boost_amount as u128 : 0u128;
     // Normalize the boost amount by the pondo tvl
+    // For a given boost amount, why do we normalize by pondo tvl instead of by the delegator's stake?
     let current_pondo_tvl: u128 = pondo_tvl.get_or_use(0u8, 10_000_000_000_000_000u64) as u128; // use a high default, 10B credits
     // The normalized boost amount is the amount of boost per 10K credits staked
     // Note: This precision is 1 credit on a TVL of 10M credits
