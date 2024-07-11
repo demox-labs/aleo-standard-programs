@@ -46,9 +46,10 @@ program multi_token_support_program_v1.aleo {
   mapping authorized_balances: field => Balance; // hash(token_id, account) => Balance
   mapping allowances: field => u128; // hash(token_id, account, spender) => Allowance
 
-  // mapping struct_balances: TokenOwner => Balance;
-  // mapping struct_authorized_balances: TokenOwner => Balance;
-  // mapping struct_allowances: Allowance => u128;
+  const MINTER_ROLE: u8 = 1u8;
+  const BURNER_ROLE: u8 = 2u8;
+  const SUPPLY_MANAGER_ROLE: u8 = 3u8;
+  mapping roles: field => u8; // hash(token_id, account) => role
 
   // -------------------------
   // Called by token admins
@@ -139,6 +140,58 @@ program multi_token_support_program_v1.aleo {
     };
   }
 
+  async transition set_role(
+    public token_id: field,
+    public account: address,
+    public role: u8
+  ) -> Future {
+    assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+    return finalize_set_role(token_id, account, role, self.caller);
+  }
+
+  async function finalize_set_role(
+    token_id: field,
+    account: address,
+    role: u8,
+    caller: address
+  ) {
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(caller, token.admin);
+
+    let role_owner: TokenOwner = TokenOwner {
+      account: account,
+      token_id: token_id
+    };
+    let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+
+    roles.set(role_owner_hash, role);
+  }
+
+  async transition remove_role(
+    public token_id: field,
+    public account: address
+  ) -> Future {
+    assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+    return finalize_remove_role(token_id, account, self.caller);
+  }
+
+  async function finalize_remove_role(
+    token_id: field,
+    account: address,
+    caller: address
+  ) {
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert_eq(caller, token.admin);
+
+    let role_owner: TokenOwner = TokenOwner {
+      account: account,
+      token_id: token_id
+    };
+    let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+
+    roles.remove(role_owner_hash);
+  }
+
   async transition mint_public(
     public token_id: field,
     public recipient: address,
@@ -154,12 +207,22 @@ program multi_token_support_program_v1.aleo {
     recipient: address,
     amount: u128,
     authorized_until: u32,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == MINTER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: u128 = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
@@ -231,12 +294,22 @@ program multi_token_support_program_v1.aleo {
     amount: u128,
     external_authorization_required: bool,
     authorized_until: u32,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == MINTER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: u128 = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
@@ -260,7 +333,7 @@ program multi_token_support_program_v1.aleo {
   }
 
   async transition burn_public(
-    public token_id: field,
+    public token_id: field, // Note: changed from TokenOwner to token_id and owner separately
     public owner: address,
     public amount: u128
   ) -> Future {
@@ -277,12 +350,22 @@ program multi_token_support_program_v1.aleo {
   async function finalize_burn_public(
     owner: TokenOwner,
     amount: u128,
-    token_admin: address
+    caller: address
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: owner.token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply - amount >= 0
     let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
 
     // Get the locked balance for the recipient
@@ -333,7 +416,10 @@ program multi_token_support_program_v1.aleo {
     registered_tokens.set(owner.token_id, new_metadata);
   }
 
-  async transition burn_private(input_record: Token, public amount: u128) -> (Token, Future) {
+  async transition burn_private(
+    input_record: Token,
+    public amount: u128
+  ) -> (Token, Future) {
     assert(input_record.token_id != CREDITS_RESERVED_TOKEN_ID);
     let output_record: Token = Token {
         owner: input_record.owner,
@@ -345,11 +431,25 @@ program multi_token_support_program_v1.aleo {
     return (output_record, finalize_burn_private(input_record.token_id, amount, self.caller));
   }
 
-  async function finalize_burn_private(token_id: field, amount: u128, token_admin: address) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+  async function finalize_burn_private(
+    token_id: field,
+    amount: u128,
+    caller: address
+  ) {
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = registered_tokens.get(token_id);
-    assert_eq(token.admin, token_admin);
+    let is_admin: bool = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = TokenOwner {
+        account: caller,
+        token_id: token_id
+      };
+      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+      let role: u8 = roles.get(role_owner_hash);
+      assert(role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply - amount >= 0
     let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
 
     // Update the token supply
