@@ -7,6 +7,7 @@ program pondo_token.aleo {
   async transition initialize_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
+    // add comments for the ascii characters these u128s represent
     let name: u128 = 345466889327u128;
     let symbol: u128 = 1347306575u128;
     let decimals: u8 = 6u8;
@@ -29,6 +30,7 @@ program pondo_token.aleo {
   }
 
   async transition burn_public(public burner: address, public amount: u64) -> Future {
+    // Is anyone able to burn anyone else's tokens? Should we add a self.caller == burner check?
     let f0: Future = multi_token_support_program_v1.aleo/burn_public(PONDO_TOKEN_ID, burner, amount as u128);
     return finalize_burn_public(f0);
   }
