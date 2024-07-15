@@ -9,8 +9,8 @@ program pondo_staked_aleo_token.aleo {
   async transition register_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    let name: u128 = 1480444737813606060884u128;
-    let symbol: u128 = 482131854671u128;
+    let name: u128 = 1631421259099656974472467909989204u128; // "Pondo Aleo LST" ascii encoded
+    let symbol: u128 = 482131854671u128; // "pALEO" ascii encoded
     let decimals: u8 = 6u8;
     let max_supply: u128 = 1_000_000_000_000_000u128;
     let external_authorization_required: bool = false;
@@ -31,6 +31,7 @@ program pondo_staked_aleo_token.aleo {
   ) -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
+    // Mint the pALEO tokens to the receiver, with u32::MAX as the expiration time
     let f0: Future = multi_token_support_program_v1.aleo/mint_public(PALEO_TOKEN_ID, receiver, amount as u128, 4294967295u32);
     return finalize_mint_public(f0);
   }

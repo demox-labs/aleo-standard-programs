@@ -10,6 +10,7 @@ import { multi_token_support_programProgram } from "./multi_token_support_progra
 import { creditsProgram } from "./credits";
 
 import assert from "assert";
+import { block } from "../PNDO/ChainEmulator";
 // interfaces
 export interface withdrawal_state {
   microcredits: bigint;
@@ -96,7 +97,8 @@ export class pondo_core_protocolProgram {
     pondo_staked_aleo_tokenContract: pondo_staked_aleo_tokenProgram,
     pondo_oracleContract: pondo_oracleProgram,
     multi_token_support_program_v1Contract: multi_token_support_programProgram,
-    creditsContract: creditsProgram
+    creditsContract: creditsProgram,
+    block?: block
   ) {
     // constructor body
     this.pondo_delegator5 = pondo_delegator5Contract;
@@ -110,6 +112,9 @@ export class pondo_core_protocolProgram {
     this.multi_token_support_program_v1 =
       multi_token_support_program_v1Contract;
     this.credits = creditsContract;
+    if (block) {
+      this.block = block;
+    }
   }
 
   //program pondo_core_protocol.aleo {
@@ -330,7 +335,9 @@ export class pondo_core_protocolProgram {
     let total_paleo_minted: bigint =
       this.multi_token_support_program_v1.registered_tokens.get(
         this.PALEO_TOKEN_ID
-      )!.supply + current_owed_commission;
+      )!.supply +
+      current_owed_commission -
+      expected_paleo_mint;
 
     let rewards: bigint =
       total_delegated > currently_delegated
@@ -517,7 +524,9 @@ export class pondo_core_protocolProgram {
     let total_paleo_minted: bigint =
       this.multi_token_support_program_v1.registered_tokens.get(
         this.PALEO_TOKEN_ID
-      )!.supply + current_owed_commission;
+      )!.supply +
+      current_owed_commission -
+      expected_paleo_mint;
 
     let rewards: bigint =
       total_delegated > currently_delegated

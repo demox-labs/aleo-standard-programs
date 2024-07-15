@@ -1,6 +1,10 @@
-import assert from 'assert';
-import { arc_0038Program, withdrawal_state } from '../../contracts/arc_0038';
-import { MICROCREDITS_TO_CREDITS, bond_state, creditsProgram } from '../../contracts/credits';
+import assert from "assert";
+import { arc_0038Program, withdrawal_state } from "../contracts/arc_0038";
+import {
+  MICROCREDITS_TO_CREDITS,
+  bond_state,
+  creditsProgram,
+} from "../contracts/credits";
 
 export interface blockEvent {
   height: bigint;
@@ -20,7 +24,7 @@ export enum TransitionType {
   Deposit,
   WithdrawPublic,
   CreateWithdrawClaim,
-  ClaimWithdrawPublic
+  ClaimWithdrawPublic,
 }
 
 export interface Transition {
@@ -56,7 +60,10 @@ export class StateMachine {
     if (this.verboseStartHeight === undefined) {
       return;
     }
-    if (height >= this.verboseStartHeight && (!this.verboseEndHeight || height <= this.verboseEndHeight)) {
+    if (
+      height >= this.verboseStartHeight &&
+      (!this.verboseEndHeight || height <= this.verboseEndHeight)
+    ) {
       this.verbose = true;
     } else {
       this.verbose = false;
@@ -96,7 +103,7 @@ export class StateMachine {
 
   runTransitions(
     transitions: Transition[],
-    title: string = '',
+    title: string = "",
     verboseStartHeight?: bigint | number,
     verboseEndHeight?: bigint | number
   ) {
@@ -119,7 +126,9 @@ export class StateMachine {
     for (let i = 0; i <= lastBlock; i++) {
       // Run transitions for this block
       if (blockToTransition.has(this.block.height)) {
-        blockToTransition.get(this.block.height)?.forEach((transition) => this.runTransition(transition));
+        blockToTransition
+          .get(this.block.height)
+          ?.forEach((transition) => this.runTransition(transition));
       }
 
       this.updateVerboseForHeight(this.block.height);
@@ -145,7 +154,10 @@ export class StateMachine {
         let failed = false;
         this.arc0038.caller = transition.caller;
         try {
-          this.arc0038.initialize(transition.commission!, transition.validator!);
+          this.arc0038.initialize(
+            transition.commission!,
+            transition.validator!
+          );
         } catch (e: any) {
           failed = true;
           if (!transition.shouldFail) {
@@ -158,7 +170,10 @@ export class StateMachine {
         failed = false;
         this.arc0038.caller = transition.caller;
         try {
-          this.arc0038.initial_deposit(transition.amount!, transition.validator!);
+          this.arc0038.initial_deposit(
+            transition.amount!,
+            transition.validator!
+          );
         } catch (e: any) {
           failed = true;
           if (!transition.shouldFail) {
@@ -275,7 +290,9 @@ export class StateMachine {
         failed = false;
         this.arc0038.caller = transition.caller;
         try {
-          const userShares = this.arc0038.delegator_shares.get(transition.caller)!;
+          const userShares = this.arc0038.delegator_shares.get(
+            transition.caller
+          )!;
           const sharesDecimal = transition.sharesPercent! * Number(userShares);
           const sharesToWithdraw = BigInt(Math.floor(sharesDecimal));
           // console.log(`shares to withdraw: ${sharesToWithdraw}`)
@@ -292,7 +309,9 @@ export class StateMachine {
         failed = false;
         this.arc0038.caller = transition.caller;
         try {
-          const userShares = this.arc0038.delegator_shares.get(transition.caller)!;
+          const userShares = this.arc0038.delegator_shares.get(
+            transition.caller
+          )!;
           const sharesDecimal = transition.sharesPercent! * Number(userShares);
           const sharesToWithdraw = BigInt(Math.floor(sharesDecimal));
           this.arc0038.create_withdraw_claim(sharesToWithdraw);
@@ -308,7 +327,10 @@ export class StateMachine {
         failed = false;
         this.arc0038.caller = transition.caller;
         try {
-          this.arc0038.claim_withdrawal_public(transition.recipient!, transition.amount!);
+          this.arc0038.claim_withdrawal_public(
+            transition.recipient!,
+            transition.amount!
+          );
         } catch (e: any) {
           failed = true;
           if (!transition.shouldFail) {
@@ -326,31 +348,72 @@ export class StateMachine {
   printBalances() {
     const protocol = this.arc0038.CORE_PROTOCOL;
     console.log(`--- START BLOCK ${this.block.height.toLocaleString()} ---`);
-    console.log(`total balance:        ${this.arc0038.total_balance.get(BigInt(0))?.toLocaleString() || '0'}`);
-    console.log(`bonded:               ${printBondState(this.credits.bonded.get(protocol))}`);
-    console.log(`balance in account:   ${this.credits.account.get(protocol)?.toLocaleString() || '0'}`);
-    console.log(`pending deposits:     ${this.arc0038.pending_deposits.get(BigInt(0))?.toLocaleString() || '0'}`);
-    console.log(`pending withdrawals:  ${this.arc0038.pending_withdrawal.get(BigInt(0))?.toLocaleString() || '0'}, ${this.arc0038.pending_withdrawal.get(BigInt(1))?.toLocaleString() || '0'}`);
-    console.log(`total shares:         ${this.arc0038.total_shares.get(BigInt(0))?.toLocaleString() || '0'}`);
-    console.log('delegators:');
-    this.arc0038.delegator_shares.forEach((balance: bigint, account: string) => printBalanceLine(balance, account, ' shares'));
-    console.log('withdrawals:');
+    console.log(
+      `total balance:        ${
+        this.arc0038.total_balance.get(BigInt(0))?.toLocaleString() || "0"
+      }`
+    );
+    console.log(
+      `bonded:               ${printBondState(
+        this.credits.bonded.get(protocol)
+      )}`
+    );
+    console.log(
+      `balance in account:   ${
+        this.credits.account.get(protocol)?.toLocaleString() || "0"
+      }`
+    );
+    console.log(
+      `pending deposits:     ${
+        this.arc0038.pending_deposits.get(BigInt(0))?.toLocaleString() || "0"
+      }`
+    );
+    console.log(
+      `pending withdrawals:  ${
+        this.arc0038.pending_withdrawal.get(BigInt(0))?.toLocaleString() || "0"
+      }, ${
+        this.arc0038.pending_withdrawal.get(BigInt(1))?.toLocaleString() || "0"
+      }`
+    );
+    console.log(
+      `total shares:         ${
+        this.arc0038.total_shares.get(BigInt(0))?.toLocaleString() || "0"
+      }`
+    );
+    console.log("delegators:");
+    this.arc0038.delegator_shares.forEach((balance: bigint, account: string) =>
+      printBalanceLine(balance, account, " shares")
+    );
+    console.log("withdrawals:");
     this.arc0038.withdrawals.forEach(printWithdrawal);
     const unbonding = this.credits.unbonding.get(protocol);
-    console.log(`unbonding:            ${unbonding?.microcredits.toLocaleString() || '0'}, height: ${unbonding?.height.toLocaleString() || 'N/A'}`);
+    console.log(
+      `unbonding:            ${
+        unbonding?.microcredits.toLocaleString() || "0"
+      }, height: ${unbonding?.height.toLocaleString() || "N/A"}`
+    );
   }
 
   printBlockEnd() {
-    console.log('bonded after rewards: ' + printBondState(this.credits.bonded.get(this.arc0038.CORE_PROTOCOL)));
+    console.log(
+      "bonded after rewards: " +
+        printBondState(this.credits.bonded.get(this.arc0038.CORE_PROTOCOL))
+    );
     console.log(`--- END BLOCK ${this.block.height.toLocaleString()} ---`);
   }
 
   printCreditsBalances(delta: bigint = BigInt(0)) {
-    console.log('credits balances:');
-    this.credits.account.forEach((balance: bigint, account: string) => printBalanceLine(balance - delta, account));
+    console.log("credits balances:");
+    this.credits.account.forEach((balance: bigint, account: string) =>
+      printBalanceLine(balance - delta, account)
+    );
   }
 
-  test_deprecated(blockEvents: blockEvent[], title: string = 'Simple test', iterations: number = 5) {
+  test_deprecated(
+    blockEvents: blockEvent[],
+    title: string = "Simple test",
+    iterations: number = 5
+  ) {
     console.log(`Running ${title}...`);
     if (this.verbose) {
       console.log(`--- START BLOCK 0 ---`);
@@ -371,9 +434,13 @@ export class StateMachine {
   }
 }
 
-const printBalanceLine = (balance: bigint, account: string, suffix: string = '') => {
-  if (account === 'arc_0038.aleo') {
-    account = 'arc38';
+const printBalanceLine = (
+  balance: bigint,
+  account: string,
+  suffix: string = ""
+) => {
+  if (account === "arc_0038.aleo") {
+    account = "arc38";
   }
 
   console.log(`  ${account}:              ${balance.toLocaleString()}`);
@@ -381,12 +448,16 @@ const printBalanceLine = (balance: bigint, account: string, suffix: string = '')
 
 const printBondState = (bonded?: bond_state) => {
   if (!bonded) {
-    return '0';
+    return "0";
   }
 
-  return `${bonded.microcredits.toLocaleString()}, validator: ${bonded.validator}`;
+  return `${bonded.microcredits.toLocaleString()}, validator: ${
+    bonded.validator
+  }`;
 };
 
 const printWithdrawal = (withdrawal: withdrawal_state, delegator: string) => {
-  console.log(`  ${delegator}:              ${withdrawal.microcredits.toLocaleString()}, block: ${withdrawal.claim_block.toLocaleString()}`);
+  console.log(
+    `  ${delegator}:              ${withdrawal.microcredits.toLocaleString()}, block: ${withdrawal.claim_block.toLocaleString()}`
+  );
 };

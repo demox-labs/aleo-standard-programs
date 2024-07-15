@@ -21,7 +21,7 @@ program pondo_oracle.aleo {
   // The multiple for boosting
   // Note: Since the biggest difference a validator can go is from 0% to 40% of the tvl of pondo, we can use a multiple of 2
   // This makes boosting a validator cheaper but still more expensive than increasing normal yield ie decreasing commission
-  const BOOST_PRECISION: u128 = 1_000u128;
+  const BOOST_PRECISION: u128 = 10_000u128;
 
   // The data to store for each validator to calculate the return
   struct validator_datum {
@@ -84,16 +84,16 @@ program pondo_oracle.aleo {
     control_addresses.set(pondo_delegator5.aleo, false);
 
     delegator_allocation.set(0u8, [
-      370u128,
-      260u128,
-      160u128,
-      120u128,
-      90u128,
-      90u128,
-      90u128,
-      90u128,
-      90u128,
-      90u128
+      3700u128,
+      2600u128,
+      1600u128,
+      1200u128,
+      900u128,
+      900u128,
+      900u128,
+      900u128,
+      900u128,
+      900u128
     ]);
   }
 

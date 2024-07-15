@@ -12,8 +12,8 @@
     "get-program-addresses": "tsc ./util/getProgramAddresses.ts && node ./util/getPromgramAddresses.js",
     "convert-mtsp": "yarn tsx ./util/convertMTSP.ts",
     "convert-pondo": "yarn tsx ./util/convertPondoPrograms.ts",
-    "calculate-new-shares": "yarn tsx ./src/utils/ARC-0038/calculateNewShares.ts",
-    "calculate-withdrawal": "yarn tsx ./src/utils/ARC-0038/calculateWithdrawal.ts"
+    "calculate-new-shares": "yarn tsx ./src/ARC-0038/calculateNewShares.ts",
+    "calculate-withdrawal": "yarn tsx ./src/ARC-0038/calculateWithdrawal.ts"
   },
   "dependencies": {
     "@demox-labs/aleo-sdk-web": "0.3.29",

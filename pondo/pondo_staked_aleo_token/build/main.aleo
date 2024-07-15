@@ -23,7 +23,7 @@ struct TokenOwner:
 
 function register_token:
     assert.eq self.caller pondo_core_protocol.aleo;
-    call multi_token_support_program_v1.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842600field 1480444737813606060884u128 482131854671u128 6u8 1_000_000_000_000_000u128 false pondo_staked_aleo_token.aleo into r0;
+    call multi_token_support_program_v1.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842600field 1631421259099656974472467909989204u128 482131854671u128 6u8 1_000_000_000_000_000u128 false pondo_staked_aleo_token.aleo into r0;
     async register_token r0 into r1;
     output r1 as pondo_staked_aleo_token.aleo/register_token.future;
 

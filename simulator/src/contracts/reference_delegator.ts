@@ -1,7 +1,8 @@
-import { pondo_oracleProgram } from './pondo_oracle';
-import { creditsProgram } from './credits';
+import { pondo_oracleProgram } from "./pondo_oracle";
+import { creditsProgram } from "./credits";
 
-import assert from 'assert';
+import assert from "assert";
+import { block } from "../PNDO/ChainEmulator";
 // interfaces
 export class reference_delegatorProgram {
   signer: string = "not set";
@@ -16,14 +17,27 @@ export class reference_delegatorProgram {
   ADMIN = "aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt";
   pondo_oracle: pondo_oracleProgram;
   credits: creditsProgram;
+
+  adminAddress: string;
+  validatorAddress: string;
+  address: string;
+
   constructor(
     // constructor args
     pondo_oracleContract: pondo_oracleProgram,
     creditsContract: creditsProgram,
+    block: block,
+    admin?: string,
+    validator?: string,
+    name?: string
   ) {
     // constructor body
     this.pondo_oracle = pondo_oracleContract;
     this.credits = creditsContract;
+    this.block = block;
+    this.adminAddress = admin || this.ADMIN;
+    this.validatorAddress = validator || this.VALIDATOR;
+    this.address = `${name}.aleo` || "reference_delegator.aleo";
   }
 
   //program reference_delegator.aleo {// The address of the person who controls this program
@@ -32,28 +46,30 @@ export class reference_delegatorProgram {
 
   // A mapping to set a bit that the program has been initialized
 
-  initialize(
-  ) {
+  initialize() {
     // Ensure the admin is calling
-    assert(this.caller === this.ADMIN);
+    assert(this.caller === this.adminAddress);
 
     // Transfer 10K credits to the program
-    this.credits.caller = "reference_delegator.aleo";
-    this.credits.transfer_public_as_signer("reference_delegator.aleo", this.MIN_DELEGATION);
+    this.credits.caller = this.address;
+    this.credits.transfer_public_as_signer(this.address, this.MIN_DELEGATION);
 
     // Delegate those 10K credits to a validator
-    this.credits.caller = "reference_delegator.aleo";
-    this.credits.bond_public(this.VALIDATOR, "reference_delegator.aleo", this.MIN_DELEGATION);
+    this.credits.caller = this.address;
+    this.credits.bond_public(
+      this.validatorAddress,
+      this.address,
+      this.MIN_DELEGATION
+    );
 
     // Register the reference delegation with the pondo oracle
-    this.pondo_oracle.caller = "reference_delegator.aleo";
-    this.pondo_oracle.propose_delegator(this.VALIDATOR);
+    this.pondo_oracle.caller = this.address;
+    this.pondo_oracle.propose_delegator(this.validatorAddress);
 
     return this.finalize_initialize();
   }
 
-  finalize_initialize(
-  ) {
+  finalize_initialize() {
     // Await all of the cross program invocations
     // transfer_public_as_signer to this program
     // bond_public to the specified validator
@@ -69,53 +85,46 @@ export class reference_delegatorProgram {
 
   // In order to successfully call remove, the amount input must be enough to fully unbond the delegator
   // credits.aleo/bonded[reference_delegator.aleo].microcredits - 10K credits < amount <= credits.aleo/bonded[reference_delegator.aleo].microcredits
-  remove(
-    amount: bigint,
-  ) {
+  remove(amount: bigint) {
     // Ensure the admin is calling
-    assert(this.caller === this.ADMIN);
+    assert(this.caller === this.adminAddress);
 
     // Unbond_public
-    this.credits.caller = "reference_delegator.aleo";
-    this.credits.unbond_public("reference_delegator.aleo", amount);
+    this.credits.caller = this.address;
+    this.credits.unbond_public(this.address, amount);
 
     // Remove the reference delegator
-    this.pondo_oracle.caller = "reference_delegator.aleo";
+    this.pondo_oracle.caller = this.address;
     this.pondo_oracle.remove_delegator();
 
     return this.finalize_remove();
   }
 
-  finalize_remove(
-  ) {
+  finalize_remove() {
     // Await all of the cross program invocations
     // unbond_public
     // remove_reference_delegator
 
     // Assert that the delegator is fully unbonded
-    let still_bonded: boolean = this.credits.bonded.has("reference_delegator.aleo");
+    let still_bonded: boolean = this.credits.bonded.has(this.address);
     assert(still_bonded === false);
   }
 
   // In order to call this, someone has to call credits.aleo/claim_unbond_public
   // As it is a permissionless call, anyone can call it first
-  withdraw(
-    amount: bigint,
-  ) {
+  withdraw(amount: bigint) {
     // Transfer all of the balance to the admin
-    this.credits.caller = "reference_delegator.aleo";
+    this.credits.caller = this.address;
     this.credits.transfer_public(this.ADMIN, amount);
 
     return this.withdraw_balance();
   }
 
-  withdraw_balance(
-  ) {
+  withdraw_balance() {
     // Await the transfer_public
 
-
     // Ensure there's not remaining balance
-    let balance: bigint = this.credits.account.get("reference_delegator.aleo") || BigInt("0");
+    let balance: bigint = this.credits.account.get(this.address) || BigInt("0");
     assert(balance === BigInt("0"));
   }
 }

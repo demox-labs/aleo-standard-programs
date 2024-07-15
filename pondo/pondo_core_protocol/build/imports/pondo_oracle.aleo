@@ -75,7 +75,7 @@ finalize initialize:
     set false into control_addresses[pondo_delegator3.aleo];
     set false into control_addresses[pondo_delegator4.aleo];
     set false into control_addresses[pondo_delegator5.aleo];
-    cast  370u128 260u128 160u128 120u128 90u128 90u128 90u128 90u128 90u128 90u128 into r0 as [u128; 10u32];
+    cast  3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r0 as [u128; 10u32];
     set r0 into delegator_allocation[0u8];
 
 
@@ -263,10 +263,10 @@ finalize update_data:
     lt r36.block_height r50 into r55;
     is.eq r40.microcredits_yield_per_epoch 0u128 into r56;
     is.eq r36.microcredits_yield_per_epoch 0u128 into r57;
-    mul r36.boost 1_000u128 into r58;
+    mul r36.boost 10_000u128 into r58;
     div r58 r51[0u32] into r59;
     add r36.microcredits_yield_per_epoch r59 into r60;
-    mul r40.boost 1_000u128 into r61;
+    mul r40.boost 10_000u128 into r61;
     div r61 r51[0u32] into r62;
     add r40.microcredits_yield_per_epoch r62 into r63;
     gt r60 r63 into r64;
@@ -397,10 +397,10 @@ finalize update_data:
     lt r184.block_height r50 into r189;
     is.eq r41.microcredits_yield_per_epoch 0u128 into r190;
     is.eq r184.microcredits_yield_per_epoch 0u128 into r191;
-    mul r184.boost 1_000u128 into r192;
+    mul r184.boost 10_000u128 into r192;
     div r192 r51[1u32] into r193;
     add r184.microcredits_yield_per_epoch r193 into r194;
-    mul r41.boost 1_000u128 into r195;
+    mul r41.boost 10_000u128 into r195;
     div r195 r51[1u32] into r196;
     add r41.microcredits_yield_per_epoch r196 into r197;
     gt r194 r197 into r198;
@@ -531,10 +531,10 @@ finalize update_data:
     lt r318.block_height r50 into r323;
     is.eq r42.microcredits_yield_per_epoch 0u128 into r324;
     is.eq r318.microcredits_yield_per_epoch 0u128 into r325;
-    mul r318.boost 1_000u128 into r326;
+    mul r318.boost 10_000u128 into r326;
     div r326 r51[2u32] into r327;
     add r318.microcredits_yield_per_epoch r327 into r328;
-    mul r42.boost 1_000u128 into r329;
+    mul r42.boost 10_000u128 into r329;
     div r329 r51[2u32] into r330;
     add r42.microcredits_yield_per_epoch r330 into r331;
     gt r328 r331 into r332;
@@ -665,10 +665,10 @@ finalize update_data:
     lt r452.block_height r50 into r457;
     is.eq r43.microcredits_yield_per_epoch 0u128 into r458;
     is.eq r452.microcredits_yield_per_epoch 0u128 into r459;
-    mul r452.boost 1_000u128 into r460;
+    mul r452.boost 10_000u128 into r460;
     div r460 r51[3u32] into r461;
     add r452.microcredits_yield_per_epoch r461 into r462;
-    mul r43.boost 1_000u128 into r463;
+    mul r43.boost 10_000u128 into r463;
     div r463 r51[3u32] into r464;
     add r43.microcredits_yield_per_epoch r464 into r465;
     gt r462 r465 into r466;
@@ -799,10 +799,10 @@ finalize update_data:
     lt r586.block_height r50 into r591;
     is.eq r44.microcredits_yield_per_epoch 0u128 into r592;
     is.eq r586.microcredits_yield_per_epoch 0u128 into r593;
-    mul r586.boost 1_000u128 into r594;
+    mul r586.boost 10_000u128 into r594;
     div r594 r51[4u32] into r595;
     add r586.microcredits_yield_per_epoch r595 into r596;
-    mul r44.boost 1_000u128 into r597;
+    mul r44.boost 10_000u128 into r597;
     div r597 r51[4u32] into r598;
     add r44.microcredits_yield_per_epoch r598 into r599;
     gt r596 r599 into r600;
@@ -933,10 +933,10 @@ finalize update_data:
     lt r720.block_height r50 into r725;
     is.eq r45.microcredits_yield_per_epoch 0u128 into r726;
     is.eq r720.microcredits_yield_per_epoch 0u128 into r727;
-    mul r720.boost 1_000u128 into r728;
+    mul r720.boost 10_000u128 into r728;
     div r728 r51[5u32] into r729;
     add r720.microcredits_yield_per_epoch r729 into r730;
-    mul r45.boost 1_000u128 into r731;
+    mul r45.boost 10_000u128 into r731;
     div r731 r51[5u32] into r732;
     add r45.microcredits_yield_per_epoch r732 into r733;
     gt r730 r733 into r734;
@@ -1067,10 +1067,10 @@ finalize update_data:
     lt r854.block_height r50 into r859;
     is.eq r46.microcredits_yield_per_epoch 0u128 into r860;
     is.eq r854.microcredits_yield_per_epoch 0u128 into r861;
-    mul r854.boost 1_000u128 into r862;
+    mul r854.boost 10_000u128 into r862;
     div r862 r51[6u32] into r863;
     add r854.microcredits_yield_per_epoch r863 into r864;
-    mul r46.boost 1_000u128 into r865;
+    mul r46.boost 10_000u128 into r865;
     div r865 r51[6u32] into r866;
     add r46.microcredits_yield_per_epoch r866 into r867;
     gt r864 r867 into r868;
@@ -1201,10 +1201,10 @@ finalize update_data:
     lt r988.block_height r50 into r993;
     is.eq r47.microcredits_yield_per_epoch 0u128 into r994;
     is.eq r988.microcredits_yield_per_epoch 0u128 into r995;
-    mul r988.boost 1_000u128 into r996;
+    mul r988.boost 10_000u128 into r996;
     div r996 r51[7u32] into r997;
     add r988.microcredits_yield_per_epoch r997 into r998;
-    mul r47.boost 1_000u128 into r999;
+    mul r47.boost 10_000u128 into r999;
     div r999 r51[7u32] into r1000;
     add r47.microcredits_yield_per_epoch r1000 into r1001;
     gt r998 r1001 into r1002;
@@ -1335,10 +1335,10 @@ finalize update_data:
     lt r1122.block_height r50 into r1127;
     is.eq r48.microcredits_yield_per_epoch 0u128 into r1128;
     is.eq r1122.microcredits_yield_per_epoch 0u128 into r1129;
-    mul r1122.boost 1_000u128 into r1130;
+    mul r1122.boost 10_000u128 into r1130;
     div r1130 r51[8u32] into r1131;
     add r1122.microcredits_yield_per_epoch r1131 into r1132;
-    mul r48.boost 1_000u128 into r1133;
+    mul r48.boost 10_000u128 into r1133;
     div r1133 r51[8u32] into r1134;
     add r48.microcredits_yield_per_epoch r1134 into r1135;
     gt r1132 r1135 into r1136;
@@ -1469,10 +1469,10 @@ finalize update_data:
     lt r1256.block_height r50 into r1261;
     is.eq r49.microcredits_yield_per_epoch 0u128 into r1262;
     is.eq r1256.microcredits_yield_per_epoch 0u128 into r1263;
-    mul r1256.boost 1_000u128 into r1264;
+    mul r1256.boost 10_000u128 into r1264;
     div r1264 r51[9u32] into r1265;
     add r1256.microcredits_yield_per_epoch r1265 into r1266;
-    mul r49.boost 1_000u128 into r1267;
+    mul r49.boost 10_000u128 into r1267;
     div r1267 r51[9u32] into r1268;
     add r49.microcredits_yield_per_epoch r1268 into r1269;
     gt r1266 r1269 into r1270;
