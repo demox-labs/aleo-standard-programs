@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "typeRoots": [ "node_modules/@types" ],
+    "typeRoots": ["node_modules/@types"],
     "outDir": "dist"
   },
   "include": ["src", "util", "__tests__"],
@@ -24,7 +24,7 @@
     "esm": true,
     "compilerOptions": {
       "module": "CommonJS",
-      "moduleResolution": "NodeNext",
+      "moduleResolution": "NodeNext"
     }
-  },
+  }
 }
