@@ -11,10 +11,10 @@ export class OracleManager {
   oracle: oracle;
   referenceDelegators: referenceDelegator[] = [];
 
-  constructor(credits: credits, block: block) {
-    this.block = block;
+  constructor(credits: credits) {
+    this.block = credits.block;
     this.credits = credits;
-    this.oracle = new oracle(credits, block);
+    this.oracle = new oracle(credits);
   }
 
   createReferenceDelegator(): referenceDelegator {

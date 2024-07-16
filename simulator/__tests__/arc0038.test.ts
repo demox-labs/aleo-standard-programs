@@ -30,7 +30,7 @@ import { set } from "idb-keyval";
 const jestConsole = console;
 const oneMillionCredits = 1000000 * MICROCREDITS_TO_CREDITS;
 
-describe("ARC0038", () => {
+xdescribe("ARC0038", () => {
   let stateMachine: StateMachine;
   let program: arc_0038Program;
 

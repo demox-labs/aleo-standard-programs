@@ -12,7 +12,7 @@ export class reference_delegatorProgram {
   } = { height: BigInt(0) };
   // params
   initialized: Map<bigint, bigint> = new Map();
-  MIN_DELEGATION = BigInt("10_000_000_000");
+  MIN_DELEGATION = BigInt("10000000000");
   VALIDATOR = "aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt";
   ADMIN = "aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt";
   pondo_oracle: pondo_oracleProgram;

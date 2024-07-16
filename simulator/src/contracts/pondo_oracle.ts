@@ -1,4 +1,3 @@
-import { block } from "../PNDO/ChainEmulator";
 import { creditsProgram } from "./credits";
 
 import assert from "assert";
@@ -29,7 +28,7 @@ export class pondo_oracleProgram {
   caller: string = "not set";
   block: {
     height: bigint;
-  } = { height: BigInt(0) };
+  };
   // params
   delegator_allocation: Map<bigint, bigint[]> = new Map();
   control_addresses: Map<string, boolean> = new Map();
@@ -39,22 +38,21 @@ export class pondo_oracleProgram {
   top_validators: Map<bigint, string[]> = new Map();
   validator_data: Map<string, validator_datum> = new Map();
   delegator_to_validator: Map<string, string> = new Map();
-  BOOST_PRECISION = BigInt("1_000");
+  BOOST_PRECISION = BigInt("1000");
   MAX_COMMISSION = BigInt("50");
-  UPDATE_BLOCKS_DISALLOWED = BigInt("103_680");
-  BLOCKS_PER_EPOCH = BigInt("120_960");
-  PRECISION = BigInt("10_000_000_000");
+  UPDATE_BLOCKS_DISALLOWED = BigInt("103680");
+  BLOCKS_PER_EPOCH = BigInt("120960");
+  PRECISION = BigInt("10000000000");
   INITIAL_DELEGATOR_APPROVER_ADDRESS =
     "aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039";
   credits: creditsProgram;
   constructor(
     // constructor args
-    creditsContract: creditsProgram,
-    block: block
+    creditsContract: creditsProgram
   ) {
     // constructor body
     this.credits = creditsContract;
-    this.block = block;
+    this.block = creditsContract.block;
   }
 
   // TODO:

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from "assert";
 
 export const MINIMUM_BOND_POOL = BigInt(10000000000);
 export const MICROCREDITS_TO_CREDITS = 1000000;
@@ -28,7 +28,7 @@ export class creditsProgram {
   signer: string = "not set";
   block: {
     height: bigint;
-  } = { height: BigInt(0) };
+  };
   UNBONDING_PERIOD = BigInt("360");
   account: Map<string, bigint> = new Map();
   bonded: Map<string, bond_state> = new Map();
@@ -36,23 +36,21 @@ export class creditsProgram {
   committee: Map<string, committee_state> = new Map();
   withdraw: Map<string, string> = new Map();
 
-  transfer_public_to_private(
-    receiver: string,
-    amount: bigint,
-  ) {
+  constructor(block?: { height: bigint }) {
+    this.block = block || { height: BigInt(0) };
+  }
+
+  transfer_public_to_private(receiver: string, amount: bigint) {
     const receiverRecord: credits = {
-        owner: receiver,
-        microcredits: amount
-      };
+      owner: receiver,
+      microcredits: amount,
+    };
 
     this.finalize_transfer_public_to_private(this.caller, amount);
     return receiverRecord;
   }
 
-  finalize_transfer_public_to_private(
-    sender: string,
-    amount: bigint
-  ) {
+  finalize_transfer_public_to_private(sender: string, amount: bigint) {
     const senderBalance: bigint = this.account.get(sender)!;
     const newSenderBalance: bigint = senderBalance - amount;
     this.account.set(sender, newSenderBalance);
@@ -71,18 +69,11 @@ export class creditsProgram {
     return input_record;
   }
 
-  transfer_public(
-    recipient: string,
-    amount: bigint
-  ) {
+  transfer_public(recipient: string, amount: bigint) {
     this.finalize_transfer_public(this.caller, recipient, amount);
   }
 
-  finalize_transfer_public(
-    sender: string,
-    recipient: string,
-    amount: bigint
-  ) {
+  finalize_transfer_public(sender: string, recipient: string, amount: bigint) {
     const senderBalance: bigint = this.account.get(sender)!;
     const newSenderBalance: bigint = senderBalance - amount;
     assert(newSenderBalance >= BigInt(0), "insufficient balance");
@@ -93,18 +84,11 @@ export class creditsProgram {
     this.account.set(recipient, newRecipientBalance);
   }
 
-  transfer_public_as_signer(
-    recipient: string,
-    amount: bigint
-  ) {
+  transfer_public_as_signer(recipient: string, amount: bigint) {
     this.finalize_transfer_public(this.signer, recipient, amount);
   }
 
-  bond_public(
-    validator: string,
-    withdraw: string,
-    amount: bigint
-  ) {
+  bond_public(validator: string, withdraw: string, amount: bigint) {
     this.finalize_bond_public(this.caller, validator, withdraw, amount);
   }
 
@@ -115,32 +99,40 @@ export class creditsProgram {
     amount: bigint
   ) {
     assert(this.committee.has(validator));
-    const bonded: bond_state = this.bonded.get(delegator) || { microcredits: BigInt(0), validator: validator };
+    const bonded: bond_state = this.bonded.get(delegator) || {
+      microcredits: BigInt(0),
+      validator: validator,
+    };
     assert(bonded.validator === validator, "bonded to different validator");
-    assert(bonded.microcredits !== BigInt(0) || amount >= BigInt(MINIMUM_BOND_POOL), "minimum bond amount not met");
-    assert(bonded.microcredits === BigInt(0) || amount >= BigInt(1 * MICROCREDITS_TO_CREDITS), "must bond at least 1 credit");
+    assert(
+      bonded.microcredits !== BigInt(0) || amount >= BigInt(MINIMUM_BOND_POOL),
+      "minimum bond amount not met"
+    );
+    assert(
+      bonded.microcredits === BigInt(0) ||
+        amount >= BigInt(1 * MICROCREDITS_TO_CREDITS),
+      "must bond at least 1 credit"
+    );
 
     bonded.microcredits += amount;
     const newSenderBalance: bigint = this.account.get(delegator)! - amount;
-    this.bonded.set(delegator, bonded);assert(newSenderBalance >= BigInt(0), "insufficient balance");
+    this.bonded.set(delegator, bonded);
+    assert(newSenderBalance >= BigInt(0), "insufficient balance");
     this.account.set(delegator, newSenderBalance);
     if (this.withdraw.has(delegator)) {
-      assert(this.withdraw.get(delegator) === withdraw, "withdraw address mismatch");
+      assert(
+        this.withdraw.get(delegator) === withdraw,
+        "withdraw address mismatch"
+      );
     }
     this.withdraw.set(delegator, withdraw);
   }
 
-  unbond_public(
-    delegator: string,
-    amount: bigint
-  ) {
+  unbond_public(delegator: string, amount: bigint) {
     this.finalize_unbond_public(delegator, amount);
   }
 
-  finalize_unbond_public(
-    delegator: string,
-    amount: bigint
-  ) {
+  finalize_unbond_public(delegator: string, amount: bigint) {
     // TODO: assert that the caller is allowed to call unbond for the delegator
     const bonded: bond_state | undefined = this.bonded.get(delegator);
     assert(bonded !== undefined, "not bonded");
@@ -156,7 +148,10 @@ export class creditsProgram {
       this.bonded.set(delegator, bonded!);
     }
 
-    const unbonding: unbond_state = this.unbonding.get(delegator) || { microcredits: BigInt(0), height: this.block.height };
+    const unbonding: unbond_state = this.unbonding.get(delegator) || {
+      microcredits: BigInt(0),
+      height: this.block.height,
+    };
     unbonding.microcredits += unbondAmount;
     unbonding.height = this.block.height + this.UNBONDING_PERIOD;
     this.unbonding.set(delegator, unbonding);
@@ -166,12 +161,15 @@ export class creditsProgram {
     this.finalize_claim_unbond_public(delegator);
   }
 
-  finalize_claim_unbond_public(
-    delegator: string
-  ) {
+  finalize_claim_unbond_public(delegator: string) {
     const unbonding: unbond_state | undefined = this.unbonding.get(delegator);
     assert(unbonding !== undefined, "not unbonding");
-    assert(this.block.height >= unbonding!.height, `unbonding period has not passed ${this.block.height} ${unbonding!.height}`);
+    assert(
+      this.block.height >= unbonding!.height,
+      `unbonding period has not passed ${this.block.height} ${
+        unbonding!.height
+      }`
+    );
 
     const credits: bigint = unbonding!.microcredits;
     this.unbonding.delete(delegator);
