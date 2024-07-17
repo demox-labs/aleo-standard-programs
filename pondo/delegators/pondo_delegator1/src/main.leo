@@ -85,6 +85,7 @@ program pondo_delegator1.aleo {
   ) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
+    assert(new_commission <= MAX_COMMISSION);
 
     return finalize_set_validator(new_validator, new_commission);
   }
@@ -163,8 +164,8 @@ program pondo_delegator1.aleo {
     };
     let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(current_validator_state.validator, default_committee_state);
     // Check if the commission increased by more than the allowed amount
-    let commission_increased: bool = current_validator_state.commission > (validator_committee_state.commission + MAX_COMMISSION_INCREASE);
-    let commission_beyond_limit: bool = current_validator_state.commission > MAX_COMMISSION;
+    let commission_increased: bool = validator_committee_state.commission > (current_validator_state.commission + MAX_COMMISSION_INCREASE);
+    let commission_beyond_limit: bool = validator_committee_state.commission > MAX_COMMISSION;
 
     // If the commission changed, ban the validator, otherwise ensure the delegator is in the correct state
     if (commission_increased || commission_beyond_limit) {

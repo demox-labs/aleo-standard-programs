@@ -14,6 +14,7 @@ export interface validator_state {
 export class pondo_delegator1Program {
   signer: string = 'not set';
   caller: string = 'not set';
+  address: string;
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -30,6 +31,7 @@ export class pondo_delegator1Program {
   BOND_ALLOWED = BigInt('0');
   pondo_oracle: pondo_oracleProgram;
   credits: creditsProgram;
+
   constructor(
     // constructor args
     pondo_oracleContract: pondo_oracleProgram,
@@ -39,6 +41,7 @@ export class pondo_delegator1Program {
     this.pondo_oracle = pondo_oracleContract;
     this.credits = creditsContract;
     this.block = this.credits.block;
+    this.address = 'pondo_delegator1.aleo';
   }
   // The 'delegator' program.
 
@@ -98,6 +101,7 @@ export class pondo_delegator1Program {
   set_validator(new_validator: string, new_commission: bigint) {
     // Assert that the caller is the pondo core protocol
     assert(this.caller === 'pondo_core_protocol.aleo');
+    assert(new_commission <= this.MAX_COMMISSION);
 
     return this.finalize_set_validator(new_validator, new_commission);
   }
@@ -173,10 +177,10 @@ export class pondo_delegator1Program {
       default_committee_state;
     // Check if the commission increased by more than the allowed amount
     let commission_increased: boolean =
-      current_validator_state.commission >
-      validator_committee_state.commission + this.MAX_COMMISSION_INCREASE;
+      validator_committee_state.commission >
+      current_validator_state.commission + this.MAX_COMMISSION_INCREASE;
     let commission_beyond_limit: boolean =
-      current_validator_state.commission > this.MAX_COMMISSION;
+      validator_committee_state.commission > this.MAX_COMMISSION;
 
     // If the commission changed, ban the validator, otherwise ensure the delegator is in the correct state
     if (commission_increased || commission_beyond_limit) {

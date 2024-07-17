@@ -90,8 +90,10 @@ function set_validator:
     input r0 as address.public;
     input r1 as u8.public;
     assert.eq self.caller pondo_core_protocol.aleo;
-    async set_validator r0 r1 into r2;
-    output r2 as pondo_delegator4.aleo/set_validator.future;
+    lte r1 50u8 into r2;
+    assert.eq r2 true;
+    async set_validator r0 r1 into r3;
+    output r3 as pondo_delegator4.aleo/set_validator.future;
 
 finalize set_validator:
     input r0 as address.public;
@@ -145,9 +147,9 @@ finalize unbond:
     get validator_mapping[0u8] into r2;
     cast true 0u8 into r3 as committee_state;
     get.or_use credits.aleo/committee[r2.validator] r3 into r4;
-    add r4.commission 10u8 into r5;
-    gt r2.commission r5 into r6;
-    gt r2.commission 50u8 into r7;
+    add r2.commission 10u8 into r5;
+    gt r4.commission r5 into r6;
+    gt r4.commission 50u8 into r7;
     or r6 r7 into r8;
     branch.eq r8 false to end_then_0_4;
     set true into banned_validators[r2.validator];

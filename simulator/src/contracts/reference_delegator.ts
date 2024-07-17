@@ -125,6 +125,6 @@ export class reference_delegatorProgram {
 
     // Ensure there's not remaining balance
     let balance: bigint = this.credits.account.get(this.address) || BigInt("0");
-    assert(balance === BigInt("0"));
+    assert(balance === BigInt("0"), "remaining balance not empty");
   }
 }
