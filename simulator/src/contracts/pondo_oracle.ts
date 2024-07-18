@@ -1,6 +1,6 @@
-import { creditsProgram } from "./credits";
+import { creditsProgram } from './credits';
 
-import assert from "assert";
+import assert from 'assert';
 // interfaces
 export interface committee_state {
   is_open: boolean;
@@ -24,8 +24,8 @@ export interface validator_datum {
   boost: bigint;
 }
 export class pondo_oracleProgram {
-  signer: string = "not set";
-  caller: string = "not set";
+  signer: string = 'not set';
+  caller: string = 'not set';
   block: {
     height: bigint;
   };
@@ -38,13 +38,13 @@ export class pondo_oracleProgram {
   top_validators: Map<bigint, string[]> = new Map();
   validator_data: Map<string, validator_datum> = new Map();
   delegator_to_validator: Map<string, string> = new Map();
-  BOOST_PRECISION = BigInt("1000");
-  MAX_COMMISSION = BigInt("50");
-  UPDATE_BLOCKS_DISALLOWED = BigInt("103680");
-  BLOCKS_PER_EPOCH = BigInt("120960");
-  PRECISION = BigInt("10000000000");
+  BOOST_PRECISION = BigInt('1000');
+  MAX_COMMISSION = BigInt('50');
+  UPDATE_BLOCKS_DISALLOWED = BigInt('103680');
+  BLOCKS_PER_EPOCH = BigInt('120960');
+  PRECISION = BigInt('10000000000');
   INITIAL_DELEGATOR_APPROVER_ADDRESS =
-    "aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039";
+    'aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039';
   credits: creditsProgram;
   constructor(
     // constructor args
@@ -94,23 +94,23 @@ export class pondo_oracleProgram {
   finalize_initialize() {
     // Set the control addresses
     this.control_addresses.set(this.INITIAL_DELEGATOR_APPROVER_ADDRESS, true);
-    this.control_addresses.set("pondo_delegator1.aleo", false);
-    this.control_addresses.set("pondo_delegator2.aleo", false);
-    this.control_addresses.set("pondo_delegator3.aleo", false);
-    this.control_addresses.set("pondo_delegator4.aleo", false);
-    this.control_addresses.set("pondo_delegator5.aleo", false);
+    this.control_addresses.set('pondo_delegator1.aleo', false);
+    this.control_addresses.set('pondo_delegator2.aleo', false);
+    this.control_addresses.set('pondo_delegator3.aleo', false);
+    this.control_addresses.set('pondo_delegator4.aleo', false);
+    this.control_addresses.set('pondo_delegator5.aleo', false);
 
-    this.delegator_allocation.set(BigInt("0"), [
-      BigInt("370"),
-      BigInt("260"),
-      BigInt("160"),
-      BigInt("120"),
-      BigInt("90"),
-      BigInt("90"),
-      BigInt("90"),
-      BigInt("90"),
-      BigInt("90"),
-      BigInt("90"),
+    this.delegator_allocation.set(BigInt('0'), [
+      BigInt('370'),
+      BigInt('260'),
+      BigInt('160'),
+      BigInt('120'),
+      BigInt('90'),
+      BigInt('90'),
+      BigInt('90'),
+      BigInt('90'),
+      BigInt('90'),
+      BigInt('90'),
     ]);
   }
 
@@ -162,7 +162,7 @@ export class pondo_oracleProgram {
     let is_admin: boolean = this.control_addresses.get(caller)!;
     assert(is_admin);
 
-    this.delegator_allocation.set(BigInt("0"), multiple);
+    this.delegator_allocation.set(BigInt('0'), multiple);
   }
 
   // Called by the reference delegator program to establish that the reference delegator has been created
@@ -237,9 +237,9 @@ export class pondo_oracleProgram {
       validator: proposed_validator_address,
       block_height: this.block.height,
       bonded_microcredits: bonded.microcredits,
-      microcredits_yield_per_epoch: BigInt("0"),
+      microcredits_yield_per_epoch: BigInt('0'),
       commission: validator_committee_state.commission,
-      boost: BigInt("0"),
+      boost: BigInt('0'),
     };
     this.validator_data.set(delegator, initial_validator_datum);
   }
@@ -303,12 +303,12 @@ export class pondo_oracleProgram {
     // Get the boost amount for the validator
     let boost: validator_boost = this.validator_boosting.get(
       existing_validator_datum.validator
-    ) || { epoch: BigInt("0"), boost_amount: BigInt("0") };
+    ) || { epoch: BigInt('0'), boost_amount: BigInt('0') };
     let boost_amount: bigint =
-      boost.epoch == current_epoch ? boost.boost_amount : BigInt("0");
+      boost.epoch == current_epoch ? boost.boost_amount : BigInt('0');
     // Normalize the boost amount by the pondo tvl
     let current_pondo_tvl: bigint =
-      this.pondo_tvl.get(BigInt("0")) || BigInt("10000000000000000"); // use a high default, 10B credits
+      this.pondo_tvl.get(BigInt('0')) || BigInt('10000000000000000'); // use a high default, 10B credits
     // The normalized boost amount is the amount of boost per 10K credits staked
     // Note: This precision is 1 credit on a TVL of 10M credits
     let normalized_boost_amount: bigint =
@@ -319,10 +319,10 @@ export class pondo_oracleProgram {
     let previous_update_epoch: bigint =
       existing_validator_datum.block_height / this.BLOCKS_PER_EPOCH;
     let did_update_last_epoch: boolean =
-      previous_update_epoch + BigInt("1") == current_epoch;
+      previous_update_epoch + BigInt('1') == current_epoch;
     let new_microcredits_yield_per_epoch: bigint = did_update_last_epoch
       ? yield_per_epoch + normalized_boost_amount
-      : BigInt("0");
+      : BigInt('0');
 
     // Construct and save the new validator_datum for the delegator
     let new_validator_datum: validator_datum = {
@@ -338,29 +338,29 @@ export class pondo_oracleProgram {
 
     // Get the array of top validators
     let top_validators_addresses: string[] = this.top_validators.get(
-      BigInt("0")
+      BigInt('0')
     ) || [
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
     ];
     let default_validator_datum: validator_datum = {
       delegator:
-        "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
+        'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
       validator:
-        "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc",
-      block_height: BigInt("0"),
-      bonded_microcredits: BigInt("0"),
-      microcredits_yield_per_epoch: BigInt("0"),
-      commission: BigInt("0"),
-      boost: BigInt("0"),
+        'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      block_height: BigInt('0'),
+      bonded_microcredits: BigInt('0'),
+      microcredits_yield_per_epoch: BigInt('0'),
+      commission: BigInt('0'),
+      boost: BigInt('0'),
     };
 
     // Fetch all of the data for each validator
@@ -399,7 +399,7 @@ export class pondo_oracleProgram {
     let epoch_start_height: bigint = current_epoch * this.BLOCKS_PER_EPOCH;
 
     // Get the boost multiple
-    let allocations: bigint[] = this.delegator_allocation.get(BigInt("0"))!;
+    let allocations: bigint[] = this.delegator_allocation.get(BigInt('0'))!;
 
     // Perform swaps and drop the last element
     // The order of the this.inline_swap_validator_data is subtle but very important.
@@ -497,7 +497,7 @@ export class pondo_oracleProgram {
     ];
 
     // Set the new top 10
-    this.top_validators.set(BigInt("0"), new_top_10);
+    this.top_validators.set(BigInt('0'), new_top_10);
   }
 
   // Remove the reference delegator
@@ -530,47 +530,47 @@ export class pondo_oracleProgram {
 
     // Remove from the top 10 validators if there
     let top_validators_addresses: string[] = this.top_validators.get(
-      BigInt("0")
+      BigInt('0')
     )!;
     let new_validator_0: string =
       top_validators_addresses[0] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[0];
     let new_validator_1: string =
       top_validators_addresses[1] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[1];
     let new_validator_2: string =
       top_validators_addresses[2] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[2];
     let new_validator_3: string =
       top_validators_addresses[3] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[3];
     let new_validator_4: string =
       top_validators_addresses[4] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[4];
     let new_validator_5: string =
       top_validators_addresses[5] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[5];
     let new_validator_6: string =
       top_validators_addresses[6] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[6];
     let new_validator_7: string =
       top_validators_addresses[7] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[7];
     let new_validator_8: string =
       top_validators_addresses[8] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[8];
     let new_validator_9: string =
       top_validators_addresses[9] == delegator_address
-        ? "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+        ? 'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
         : top_validators_addresses[9];
 
     // Swap until 0group address is at the end of the array
@@ -623,7 +623,7 @@ export class pondo_oracleProgram {
       swap_result_8[0],
       swap_result_8[1],
     ];
-    this.top_validators.set(BigInt("0"), new_top_validators_addresses);
+    this.top_validators.set(BigInt('0'), new_top_validators_addresses);
   }
 
   // Pondo delegators can ban a validator
@@ -662,7 +662,7 @@ export class pondo_oracleProgram {
     // Default committee state of the validator
     let default_committee_state: committee_state = {
       is_open: false,
-      commission: this.MAX_COMMISSION + BigInt("1"),
+      commission: this.MAX_COMMISSION + BigInt('1'),
     };
     // Get the committee state of the validator
     let validator_committee_state: committee_state =
@@ -679,13 +679,13 @@ export class pondo_oracleProgram {
   // Set the pondo tvl from the core protocol
   // Used for boost pool normalization
   set_pondo_tvl(tvl: bigint) {
-    assert(this.caller === "pondo_core_protocol.aleo");
+    assert(this.caller === 'pondo_core_protocol.aleo');
 
     return this.finalize_set_pondo_tvl(tvl);
   }
 
   finalize_set_pondo_tvl(tvl: bigint) {
-    this.pondo_tvl.set(BigInt("0"), tvl);
+    this.pondo_tvl.set(BigInt('0'), tvl);
   }
 
   // Ban a validator as the withdrawal address of that validator
@@ -710,9 +710,10 @@ export class pondo_oracleProgram {
   // Boost a validator
   boost_validator(validator: string, boost_amount: bigint) {
     // Transfer credits to the pondo core protocol
-    this.credits.caller = "pondo_oracle.aleo";
+    this.credits.signer = this.caller;
+    this.credits.caller = 'pondo_oracle.aleo';
     this.credits.transfer_public_as_signer(
-      "pondo_core_protocol.aleo",
+      'pondo_core_protocol.aleo',
       boost_amount
     );
     return this.finalize_boost_validator(validator, boost_amount);
@@ -733,7 +734,7 @@ export class pondo_oracleProgram {
     // Get the current boosting for the validator
     let current_boost: validator_boost = this.validator_boosting.get(
       validator
-    ) || { epoch: BigInt("0"), boost_amount: BigInt("0") };
+    ) || { epoch: BigInt('0'), boost_amount: BigInt('0') };
 
     // If the boost is in the same epoch, add the boost amount
     let new_boost_amount: bigint =
@@ -785,10 +786,10 @@ export class pondo_oracleProgram {
     }
 
     // Handle the edge case of one of the yields being 0 as 0 is automatically used when the validator wasn't updated last epoch
-    if (datum_1.microcredits_yield_per_epoch == BigInt("0")) {
+    if (datum_1.microcredits_yield_per_epoch == BigInt('0')) {
       return [datum_0, datum_1, new_auto_swap];
     }
-    if (datum_0.microcredits_yield_per_epoch == BigInt("0")) {
+    if (datum_0.microcredits_yield_per_epoch == BigInt('0')) {
       return [datum_1, datum_0, new_auto_swap];
     }
 
@@ -824,7 +825,7 @@ export class pondo_oracleProgram {
   inline_swap_zero_group_address(address_0: string, address_1: string) {
     if (
       address_0 ==
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc'
     ) {
       return [address_1, address_0];
     } else {
