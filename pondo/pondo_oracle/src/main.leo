@@ -228,8 +228,8 @@ program pondo_oracle.aleo {
     assert_eq(is_banned, false);
 
     // Ensure the reference delegator is not already part of the reference delegators
-    let contains_validator_reference: bool = validator_data.contains(proposed_validator_address);
-    assert_eq(contains_validator_reference, false);
+    let delegator_already_added: bool = validator_data.contains(delegator);
+    assert_eq(delegator_already_added, false);
 
     // Get the commission from the committee state
     let validator_committee_state: committee_state = credits.aleo/committee.get(proposed_validator_address);

@@ -219,9 +219,8 @@ export class pondo_oracleProgram {
     assert(is_banned === false);
 
     // Ensure the reference delegator is not already part of the reference delegators
-    let contains_validator_reference: boolean = this.validator_data.has(
-      proposed_validator_address
-    );
+    let contains_validator_reference: boolean =
+      this.validator_data.has(delegator);
     assert(contains_validator_reference === false);
 
     // Get the commission from the committee state
