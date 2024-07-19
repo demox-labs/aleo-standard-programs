@@ -3,6 +3,13 @@ import {
   credits,
   oracle,
 } from '../../src/contracts/pondoProgramsIndex';
+import {
+  PORTION_1,
+  PORTION_2,
+  PORTION_3,
+  PORTION_4,
+  PORTION_5,
+} from '../../src/PNDO/constants';
 
 const ZERO_GROUP_ADDRESS =
   'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc';
@@ -18,16 +25,16 @@ describe('Pondo oracle tests', () => {
 
   it('initialize sets initial control addresses and delegator allocations', () => {
     const defaultDelegatorAllocation = [
-      coreProtocol.prototype.PORTION_1,
-      coreProtocol.prototype.PORTION_2,
-      coreProtocol.prototype.PORTION_3,
-      coreProtocol.prototype.PORTION_4,
-      coreProtocol.prototype.PORTION_5,
-      coreProtocol.prototype.PORTION_5,
-      coreProtocol.prototype.PORTION_5,
-      coreProtocol.prototype.PORTION_5,
-      coreProtocol.prototype.PORTION_5,
-      coreProtocol.prototype.PORTION_5,
+      PORTION_1,
+      PORTION_2,
+      PORTION_3,
+      PORTION_4,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
+      PORTION_5,
     ];
 
     oracleInstance.initialize();
@@ -572,6 +579,8 @@ describe('Pondo oracle tests', () => {
     isFirstEpoch: boolean = true
   ) => {
     creditsContract.account.set('validator', BigInt('10000'));
+    oracleInstance.signer = 'validator';
+    oracleInstance.caller = 'validator';
     if (isUpdatePeriod) {
       oracleInstance.block.height = oracleInstance.UPDATE_BLOCKS_DISALLOWED;
     } else {
@@ -592,7 +601,6 @@ describe('Pondo oracle tests', () => {
   it('boost validator cannot be called during the update period', () => {
     setUpBoostValidator(true, false);
 
-    oracleInstance.caller = 'validator';
     expect(() =>
       oracleInstance.boost_validator('validator', BigInt('10000'))
     ).toThrow();
@@ -601,7 +609,6 @@ describe('Pondo oracle tests', () => {
   it('boost validator adds new boost and transfers to core protocol', () => {
     setUpBoostValidator(false, false);
 
-    oracleInstance.caller = 'validator';
     oracleInstance.boost_validator('validator', BigInt('10000'));
     expect(oracleInstance.validator_boosting.get('validator')).toEqual({
       epoch: BigInt('0'),
@@ -618,7 +625,6 @@ describe('Pondo oracle tests', () => {
     (isFirstEpoch: boolean) => {
       setUpBoostValidator(false, true, isFirstEpoch);
 
-      oracleInstance.caller = 'validator';
       oracleInstance.boost_validator('validator', BigInt('10000'));
       expect(oracleInstance.validator_boosting.get('validator')).toEqual({
         epoch: isFirstEpoch ? BigInt('0') : BigInt('1'),
@@ -632,7 +638,6 @@ describe('Pondo oracle tests', () => {
 
     oracleInstance.block.height =
       oracleInstance.BLOCKS_PER_EPOCH * BigInt('2') + BigInt('5');
-    oracleInstance.caller = 'validator';
     oracleInstance.boost_validator('validator', BigInt('10000'));
     expect(oracleInstance.validator_boosting.get('validator')).toEqual({
       epoch: BigInt('2'),

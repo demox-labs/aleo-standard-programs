@@ -6,6 +6,33 @@ program pondo_token.aleo {
   const PONDO_FOUNDATION_ADDRESS: address = aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0;
   const PRECISION: u128 = 1_000_000u128;
 
+  // shadowed from multi_token_support_program_v1.aleo
+  struct TokenMetadata {
+    token_id: field,
+    name: u128,
+    symbol: u128,
+    decimals: u8,
+    supply: u128,
+    max_supply: u128,
+    admin: address,
+    external_authorization_required: bool,
+    external_authorization_party: address
+  }
+
+  // shadowed from multi_token_support_program_v1.aleo
+  struct TokenOwner {
+    account: address,
+    token_id: field
+  }
+
+  // shadowed from multi_token_support_program_v1.aleo
+  struct Balance {
+    token_id: field,
+    account: address,
+    balance: u128,
+    authorized_until: u32
+  }
+
   // The Pondo token is only minted once and the total supply is fixed.
   async transition initialize_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);

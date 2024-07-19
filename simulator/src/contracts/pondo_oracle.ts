@@ -26,9 +26,10 @@ export interface validator_datum {
 export class pondo_oracleProgram {
   signer: string = 'not set';
   caller: string = 'not set';
+  address: string = 'pondo_oracle.aleo';
   block: {
     height: bigint;
-  };
+  } = { height: BigInt(0) };
   // params
   delegator_allocation: Map<bigint, bigint[]> = new Map();
   control_addresses: Map<string, boolean> = new Map();
@@ -38,7 +39,7 @@ export class pondo_oracleProgram {
   top_validators: Map<bigint, string[]> = new Map();
   validator_data: Map<string, validator_datum> = new Map();
   delegator_to_validator: Map<string, string> = new Map();
-  BOOST_PRECISION = BigInt('1000');
+  BOOST_PRECISION = BigInt('10000');
   MAX_COMMISSION = BigInt('50');
   UPDATE_BLOCKS_DISALLOWED = BigInt('103680');
   BLOCKS_PER_EPOCH = BigInt('120960');
@@ -52,7 +53,6 @@ export class pondo_oracleProgram {
   ) {
     // constructor body
     this.credits = creditsContract;
-    this.block = creditsContract.block;
   }
 
   // TODO:
@@ -101,16 +101,28 @@ export class pondo_oracleProgram {
     this.control_addresses.set('pondo_delegator5.aleo', false);
 
     this.delegator_allocation.set(BigInt('0'), [
-      BigInt('370'),
-      BigInt('260'),
-      BigInt('160'),
-      BigInt('120'),
-      BigInt('90'),
-      BigInt('90'),
-      BigInt('90'),
-      BigInt('90'),
-      BigInt('90'),
-      BigInt('90'),
+      BigInt('3700'),
+      BigInt('2600'),
+      BigInt('1600'),
+      BigInt('1200'),
+      BigInt('900'),
+      BigInt('900'),
+      BigInt('900'),
+      BigInt('900'),
+      BigInt('900'),
+      BigInt('900'),
+    ]);
+    this.top_validators.set(BigInt('0'), [
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
     ]);
   }
 
@@ -219,9 +231,8 @@ export class pondo_oracleProgram {
     assert(is_banned === false);
 
     // Ensure the reference delegator is not already part of the reference delegators
-    let contains_validator_reference: boolean =
-      this.validator_data.has(delegator);
-    assert(contains_validator_reference === false);
+    let delegator_already_added: boolean = this.validator_data.has(delegator);
+    assert(delegator_already_added === false);
 
     // Get the commission from the committee state
     let validator_committee_state: committee_state = this.credits.committee.get(
@@ -338,18 +349,7 @@ export class pondo_oracleProgram {
     // Get the array of top validators
     let top_validators_addresses: string[] = this.top_validators.get(
       BigInt('0')
-    ) || [
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-      'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
-    ];
+    )!;
     let default_validator_datum: validator_datum = {
       delegator:
         'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
@@ -709,12 +709,14 @@ export class pondo_oracleProgram {
   // Boost a validator
   boost_validator(validator: string, boost_amount: bigint) {
     // Transfer credits to the pondo core protocol
-    this.credits.signer = this.caller;
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_oracle.aleo';
     this.credits.transfer_public_as_signer(
       'pondo_core_protocol.aleo',
       boost_amount
     );
+
     return this.finalize_boost_validator(validator, boost_amount);
   }
 

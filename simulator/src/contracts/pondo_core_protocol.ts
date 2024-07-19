@@ -10,7 +10,6 @@ import { multi_token_support_programProgram } from './multi_token_support_progra
 import { creditsProgram } from './credits';
 
 import assert from 'assert';
-import { block } from '../PNDO/ChainEmulator';
 // interfaces
 export interface withdrawal_state {
   microcredits: bigint;
@@ -40,6 +39,7 @@ export interface bond_state {
 export class pondo_core_protocolProgram {
   signer: string = 'not set';
   caller: string = 'not set';
+  address: string = 'pondo_core_protocol.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -49,33 +49,38 @@ export class pondo_core_protocolProgram {
   last_rebalance_epoch: Map<bigint, bigint> = new Map();
   owed_commission: Map<bigint, bigint> = new Map();
   balances: Map<bigint, bigint> = new Map();
+  CLAIMABLE_WITHDRAWALS = BigInt('2');
+  BONDED_WITHDRAWALS = BigInt('1');
+  DELEGATED_BALANCE = BigInt('0');
   protocol_state: Map<bigint, bigint> = new Map();
+  REBALANCING_STATE = BigInt('1');
+  NORMAL_STATE = BigInt('0');
+  PROTOCOL_STATE_KEY = BigInt('0');
   validator_set: Map<bigint, validator_state[]> = new Map();
+  NEXT_VALIDATOR_SET = BigInt('1');
+  CURRENT_VALIDATOR_SET = BigInt('0');
   TERMINAL = BigInt('4');
   UNBONDING = BigInt('3');
   UNBOND_ALLOWED = BigInt('2');
   UNBOND_NOT_ALLOWED = BigInt('1');
   BOND_ALLOWED = BigInt('0');
-  CLAIMABLE_WITHDRAWALS = BigInt('2');
-  BONDED_WITHDRAWALS = BigInt('1');
-  DELEGATED_BALANCE = BigInt('0');
   CREDITS_TOKEN_ID =
     '3443843282313283355522573239085696902919850365217539366784739393210722344986field';
   PALEO_TOKEN_ID =
     '1751493913335802797273486270793650302076377624243810059080883537084141842600field';
-  MIN_LIQUIDITY_PERCENT = BigInt('50');
-  MAX_LIQUIDITY = BigInt('1000000000000');
-  WITHDRAW_FEE = BigInt('30');
+  MIN_LIQUIDITY_PERCENT = BigInt('250');
+  MAX_GUARANTEED_LIQUIDITY = BigInt('250000000000');
+  INSTANT_WITHDRAW_FEE = BigInt('025');
   WITHDRAW_WAIT_MINIMUM = BigInt('43200');
-  PROTOCOL_FEE = BigInt('100');
+  PROTOCOL_FEE = BigInt('1000');
   REBALANCE_PERIOD = BigInt('17280');
   BLOCKS_PER_EPOCH = BigInt('120960');
-  PORTION_5 = BigInt('90');
-  PORTION_4 = BigInt('120');
-  PORTION_3 = BigInt('160');
-  PORTION_2 = BigInt('260');
-  PORTION_1 = BigInt('370');
-  PRECISION_UNSIGNED = BigInt('1000');
+  PORTION_5 = BigInt('900');
+  PORTION_4 = BigInt('1200');
+  PORTION_3 = BigInt('1600');
+  PORTION_2 = BigInt('2600');
+  PORTION_1 = BigInt('3700');
+  PRECISION_UNSIGNED = BigInt('10000');
   pondo_delegator5: pondo_delegator5Program;
   pondo_delegator4: pondo_delegator4Program;
   pondo_delegator3: pondo_delegator3Program;
@@ -84,7 +89,7 @@ export class pondo_core_protocolProgram {
   pondo_token: pondo_tokenProgram;
   pondo_staked_aleo_token: pondo_staked_aleo_tokenProgram;
   pondo_oracle: pondo_oracleProgram;
-  multi_token_support_program_v1: multi_token_support_programProgram;
+  multi_token_support_program: multi_token_support_programProgram;
   credits: creditsProgram;
   constructor(
     // constructor args
@@ -96,9 +101,8 @@ export class pondo_core_protocolProgram {
     pondo_tokenContract: pondo_tokenProgram,
     pondo_staked_aleo_tokenContract: pondo_staked_aleo_tokenProgram,
     pondo_oracleContract: pondo_oracleProgram,
-    multi_token_support_program_v1Contract: multi_token_support_programProgram,
-    creditsContract: creditsProgram,
-    block?: block
+    multi_token_support_programContract: multi_token_support_programProgram,
+    creditsContract: creditsProgram
   ) {
     // constructor body
     this.pondo_delegator5 = pondo_delegator5Contract;
@@ -109,18 +113,12 @@ export class pondo_core_protocolProgram {
     this.pondo_token = pondo_tokenContract;
     this.pondo_staked_aleo_token = pondo_staked_aleo_tokenContract;
     this.pondo_oracle = pondo_oracleContract;
-    this.multi_token_support_program_v1 =
-      multi_token_support_program_v1Contract;
+    this.multi_token_support_program = multi_token_support_programContract;
     this.credits = creditsContract;
-    if (block) {
-      this.block = block;
-    }
   }
 
   //program pondo_core_protocol.aleo {
   // The number of blocks in an epoch
-
-  // Keys for the balances metadata mapping
 
   // Delegator states
 
@@ -151,10 +149,19 @@ export class pondo_core_protocolProgram {
   // u32 -> batch number (batch height / BLOCKS_PER_EPOCH) -> total amount of aleo reserved for withdrawals in this batch
   // withdrawals are processed at the start of the next epoch i.e. batch 0u32 is processed at the start of epoch 1u32
 
-  initialize() {
+  initialize(transfer_amount: bigint) {
+    // Assert that the transfer amount is at least 100 microcredits, to ensure there is no division by zero
+    assert(transfer_amount >= BigInt('100'));
+
+    // Transfer ALEO to the protocol
+    this.credits.caller = 'pondo_core_protocol.aleo';
+    this.credits.transfer_public_as_signer(this.address, transfer_amount);
+
     // Initialize pALEO and PNDO tokens
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.register_token();
+    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
+    this.pondo_staked_aleo_token.mint_public(transfer_amount, this.signer);
     this.pondo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_token.initialize_token();
 
@@ -178,7 +185,7 @@ export class pondo_core_protocolProgram {
     this.balances.set(this.BONDED_WITHDRAWALS, BigInt('0'));
     this.balances.set(this.CLAIMABLE_WITHDRAWALS, BigInt('0'));
     this.owed_commission.set(BigInt('0'), BigInt('0'));
-    this.protocol_state.set(BigInt('0'), BigInt('0'));
+    this.protocol_state.set(this.PROTOCOL_STATE_KEY, this.NORMAL_STATE);
 
     let top_validators: string[] = this.pondo_oracle.top_validators.get(
       BigInt('0')
@@ -217,7 +224,7 @@ export class pondo_core_protocolProgram {
       { validator: top_validators[3], commission: validator4_commission },
       { validator: top_validators[4], commission: validator5_commission },
     ];
-    this.validator_set.set(BigInt('1'), next_validator_set);
+    this.validator_set.set(this.NEXT_VALIDATOR_SET, next_validator_set);
   }
 
   // -------------------
@@ -231,28 +238,23 @@ export class pondo_core_protocolProgram {
   ) {
     // Transfer ALEO to pool
     this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public_as_signer(
-      'pondo_core_protocol.aleo',
-      credits_deposit
-    );
+    this.credits.transfer_public_as_signer(this.address, credits_deposit);
     // Mint pALEO to depositor
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.signer);
 
     return this.finalize_deposit_public_as_signer(
       credits_deposit,
-      expected_paleo_mint,
-      referrer
+      expected_paleo_mint
     );
   }
 
   finalize_deposit_public_as_signer(
     credits_deposit: bigint,
-    expected_paleo_mint: bigint,
-    referrer: string
+    expected_paleo_mint: bigint
   ) {
     let base_bond_state: bond_state = {
-      validator: 'pondo_core_protocol.aleo',
+      validator: this.address,
       microcredits: BigInt('0'),
     };
     let delegator1_bonded: bigint =
@@ -332,8 +334,8 @@ export class pondo_core_protocolProgram {
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
-    let total_paleo_minted: bigint =
-      this.multi_token_support_program_v1.registered_tokens.get(
+    let total_paleo_pool: bigint =
+      this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
       current_owed_commission -
@@ -350,13 +352,15 @@ export class pondo_core_protocolProgram {
     currently_delegated += rewards - new_commission;
 
     let core_protocol_account: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
-    let current_state: bigint = this.protocol_state.get(BigInt('0'))!;
+    let current_state: bigint = this.protocol_state.get(
+      this.PROTOCOL_STATE_KEY
+    )!;
     let deposit_pool: bigint =
-      current_state == BigInt('0')
+      current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
         : core_protocol_account -
           currently_delegated -
@@ -366,14 +370,14 @@ export class pondo_core_protocolProgram {
       currently_delegated,
       deposit_pool,
       new_commission,
-      total_paleo_minted
+      total_paleo_pool
     );
     this.owed_commission.set(
       BigInt('0'),
       current_owed_commission + new_commission_paleo
     );
 
-    total_paleo_minted += new_commission_paleo;
+    total_paleo_pool += new_commission_paleo;
     currently_delegated += new_commission;
     // Update bonded pool balance with latest rewards
     this.balances.set(this.DELEGATED_BALANCE, currently_delegated);
@@ -383,7 +387,7 @@ export class pondo_core_protocolProgram {
       currently_delegated,
       deposit_pool,
       credits_deposit,
-      total_paleo_minted
+      total_paleo_pool
     );
     assert(paleo_for_deposit >= BigInt('1'));
     assert(paleo_for_deposit >= expected_paleo_mint);
@@ -417,31 +421,26 @@ export class pondo_core_protocolProgram {
     referrer: string
   ) {
     // Transfer ALEO to pool
-    this.multi_token_support_program_v1.caller = 'pondo_core_protocol.aleo';
-    this.multi_token_support_program_v1.transfer_from_public(
+    this.multi_token_support_program.caller = 'pondo_core_protocol.aleo';
+    this.multi_token_support_program.transfer_from_public(
       this.CREDITS_TOKEN_ID,
       this.caller,
-      'pondo_core_protocol.aleo',
+      this.address,
       credits_deposit
     );
     // Mint pALEO to depositor
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.caller);
 
-    return this.finalize_deposit_public(
-      credits_deposit,
-      expected_paleo_mint,
-      referrer
-    );
+    return this.finalize_deposit_public(credits_deposit, expected_paleo_mint);
   }
 
   finalize_deposit_public(
     credits_deposit: bigint,
-    expected_paleo_mint: bigint,
-    referrer: string
+    expected_paleo_mint: bigint
   ) {
     let base_bond_state: bond_state = {
-      validator: 'pondo_core_protocol.aleo',
+      validator: this.address,
       microcredits: BigInt('0'),
     };
     let delegator1_bonded: bigint =
@@ -521,8 +520,8 @@ export class pondo_core_protocolProgram {
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
-    let total_paleo_minted: bigint =
-      this.multi_token_support_program_v1.registered_tokens.get(
+    let total_paleo_pool: bigint =
+      this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
       current_owed_commission -
@@ -539,30 +538,32 @@ export class pondo_core_protocolProgram {
     currently_delegated += rewards - new_commission;
 
     let core_protocol_account: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
-    let current_state: bigint = this.protocol_state.get(BigInt('0'))!;
+    let current_state: bigint = this.protocol_state.get(
+      this.PROTOCOL_STATE_KEY
+    )!;
     let deposit_pool: bigint =
-      current_state == BigInt('0')
+      current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
         : core_protocol_account -
           currently_delegated -
-          reserved_for_withdrawal -
-          credits_deposit; // if the protocol is rebalancing, the full balance is in the account
+          credits_deposit -
+          reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
     let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
       currently_delegated,
       deposit_pool,
       new_commission,
-      total_paleo_minted
+      total_paleo_pool
     );
     this.owed_commission.set(
       BigInt('0'),
       current_owed_commission + new_commission_paleo
     );
 
-    total_paleo_minted += new_commission_paleo;
+    total_paleo_pool += new_commission_paleo;
     currently_delegated += new_commission;
     // Update bonded pool balance with latest rewards
     this.balances.set(this.DELEGATED_BALANCE, currently_delegated);
@@ -572,7 +573,7 @@ export class pondo_core_protocolProgram {
       currently_delegated,
       deposit_pool,
       credits_deposit,
-      total_paleo_minted
+      total_paleo_pool
     );
     assert(paleo_for_deposit >= BigInt('1'));
     assert(paleo_for_deposit >= expected_paleo_mint);
@@ -603,7 +604,7 @@ export class pondo_core_protocolProgram {
       this.DELEGATED_BALANCE
     )!;
     let account_balance: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
@@ -654,7 +655,9 @@ export class pondo_core_protocolProgram {
     let min_liquidity: bigint =
       (total_balance * this.MIN_LIQUIDITY_PERCENT) / this.PRECISION_UNSIGNED;
     let optimal_liquidity: bigint =
-      min_liquidity > this.MAX_LIQUIDITY ? this.MAX_LIQUIDITY : min_liquidity;
+      min_liquidity > this.MAX_GUARANTEED_LIQUIDITY
+        ? this.MAX_GUARANTEED_LIQUIDITY
+        : min_liquidity;
     return optimal_liquidity;
   }
 
@@ -685,8 +688,10 @@ export class pondo_core_protocolProgram {
     caller: string
   ) {
     // Block instant withdrawals during a rebalance
-    let current_state: bigint = this.protocol_state.get(BigInt('0'))!;
-    assert(current_state == BigInt('0'));
+    let current_state: bigint = this.protocol_state.get(
+      this.PROTOCOL_STATE_KEY
+    )!;
+    assert(current_state == this.NORMAL_STATE);
 
     // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: boolean = this.withdrawals.has(caller);
@@ -694,7 +699,7 @@ export class pondo_core_protocolProgram {
 
     // Calculate new delegated balance
     let base_bond_state: bond_state = {
-      validator: 'pondo_core_protocol.aleo',
+      validator: this.address,
       microcredits: BigInt('0'),
     };
     let delegator1_bonded: bigint =
@@ -778,7 +783,7 @@ export class pondo_core_protocolProgram {
       BigInt('0')
     )!;
     let paleo_minted_post_burn: bigint =
-      this.multi_token_support_program_v1.registered_tokens.get(
+      this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission;
     let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
@@ -794,7 +799,7 @@ export class pondo_core_protocolProgram {
     currently_delegated += rewards - new_commission;
 
     let core_protocol_account: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
@@ -832,7 +837,7 @@ export class pondo_core_protocolProgram {
 
   inline_calculate_withdraw_fee(paleo_burn_amount: bigint) {
     let fee_calc: bigint =
-      (paleo_burn_amount * this.WITHDRAW_FEE) / this.PRECISION_UNSIGNED;
+      (paleo_burn_amount * this.INSTANT_WITHDRAW_FEE) / this.PRECISION_UNSIGNED;
     let fee: bigint = fee_calc;
     return fee;
   }
@@ -851,7 +856,7 @@ export class pondo_core_protocolProgram {
 
     // Calculate commission owed
     let base_bond_state: bond_state = {
-      validator: 'pondo_core_protocol.aleo',
+      validator: this.address,
       microcredits: BigInt('0'),
     };
     let delegator1_bonded: bigint =
@@ -935,7 +940,7 @@ export class pondo_core_protocolProgram {
       BigInt('0')
     )!;
     let paleo_minted_post_burn: bigint =
-      this.multi_token_support_program_v1.registered_tokens.get(
+      this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission;
     let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
@@ -951,13 +956,15 @@ export class pondo_core_protocolProgram {
     currently_delegated += rewards - new_commission;
 
     let core_protocol_account: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
-    let current_state: bigint = this.protocol_state.get(BigInt('0'))!;
+    let current_state: bigint = this.protocol_state.get(
+      this.PROTOCOL_STATE_KEY
+    )!;
     let deposit_pool: bigint =
-      current_state == BigInt('0')
+      current_state == this.NORMAL_STATE
         ? core_protocol_account - reserved_for_withdrawal
         : core_protocol_account - currently_delegated - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
@@ -1129,7 +1136,7 @@ export class pondo_core_protocolProgram {
       { validator: top_validators[3], commission: validator4_commission },
       { validator: top_validators[4], commission: validator5_commission },
     ];
-    this.validator_set.set(BigInt('1'), next_validator_set);
+    this.validator_set.set(this.NEXT_VALIDATOR_SET, next_validator_set);
   }
 
   rebalance_retrieve_credits(
@@ -1175,7 +1182,7 @@ export class pondo_core_protocolProgram {
     )!;
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
     let total_paleo_minted: bigint =
-      this.multi_token_support_program_v1.registered_tokens.get(
+      this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
       current_owed_commission -
@@ -1194,7 +1201,7 @@ export class pondo_core_protocolProgram {
     // Update balances and owed commission
     // At this point, all credits have been transferred to the core protocol, but there may still be commission owed
     let core_protocol_account: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
@@ -1235,7 +1242,7 @@ export class pondo_core_protocolProgram {
     );
 
     // Update protocol state
-    this.protocol_state.set(BigInt('0'), BigInt('1'));
+    this.protocol_state.set(this.PROTOCOL_STATE_KEY, this.REBALANCING_STATE);
   }
 
   rebalance_redistribute(
@@ -1289,10 +1296,10 @@ export class pondo_core_protocolProgram {
   ) {
     // Check that the new validator set is correct
     let next_validator_set: validator_state[] = this.validator_set.get(
-      BigInt('1')
+      this.NEXT_VALIDATOR_SET
     )!;
-    this.validator_set.set(BigInt('0'), next_validator_set);
-    this.validator_set.delete(BigInt('1'));
+    this.validator_set.set(this.CURRENT_VALIDATOR_SET, next_validator_set);
+    this.validator_set.delete(this.NEXT_VALIDATOR_SET);
     for (let i: number = 0; i < 5; i++) {
       assert(validators[i] == next_validator_set[i]);
     }
@@ -1335,7 +1342,7 @@ export class pondo_core_protocolProgram {
 
     // Check that there's still enough account balance left for pending withdrawals
     let account_balance: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
@@ -1349,7 +1356,7 @@ export class pondo_core_protocolProgram {
     this.last_rebalance_epoch.set(BigInt('0'), current_epoch);
 
     // Update protocol state
-    this.protocol_state.set(BigInt('0'), BigInt('0'));
+    this.protocol_state.set(this.PROTOCOL_STATE_KEY, this.NORMAL_STATE);
   }
 
   // A crank to set the oracle tvl
@@ -1374,7 +1381,7 @@ export class pondo_core_protocolProgram {
       this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
     // Get all of the bonded balances
     let default_bond_state: bond_state = {
-      validator: 'pondo_core_protocol.aleo',
+      validator: this.address,
       microcredits: BigInt('0'),
     };
     let delegator1_bonded: bigint =
@@ -1414,7 +1421,7 @@ export class pondo_core_protocolProgram {
       default_unbond_state?.microcredits;
     // Get the core protocol balance
     let core_protocol_balance: bigint =
-      this.credits.account.get('pondo_core_protocol.aleo') || BigInt('0');
+      this.credits.account.get(this.address) || BigInt('0');
 
     // Calculate the total tvl
     let total_tvl: bigint =
@@ -1442,9 +1449,3 @@ export class pondo_core_protocolProgram {
     );
   }
 }
-
-pondo_core_protocolProgram.prototype.PORTION_5 = BigInt('90');
-pondo_core_protocolProgram.prototype.PORTION_4 = BigInt('120');
-pondo_core_protocolProgram.prototype.PORTION_3 = BigInt('160');
-pondo_core_protocolProgram.prototype.PORTION_2 = BigInt('260');
-pondo_core_protocolProgram.prototype.PORTION_1 = BigInt('370');
