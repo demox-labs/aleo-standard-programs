@@ -282,6 +282,24 @@ describe('Pondo oracle tests', () => {
     expect(() => oracleInstance.add_delegator('reference delegator')).toThrow();
   });
 
+  const setupUpdateData = (
+    hasExistingData: boolean,
+    notBanned: boolean,
+    isUpdatePeriod: boolean,
+    isNewData: boolean,
+    bonded: boolean,
+    inCommittee: boolean,
+    isOpen: boolean,
+    validCommission: boolean
+  ) => {
+    // existing data
+    // banned
+    // update period
+    // hasn't update this epoch
+    // has valid committee state
+    // is bonded
+  };
+
   const setUpRemoveDelegator = (
     outsideUpdatePeriod: boolean,
     hasReferenceDelegator: boolean,
@@ -502,7 +520,7 @@ describe('Pondo oracle tests', () => {
     setUpBanValidator(true, BigInt('40'), true, false);
 
     oracleInstance.caller = 'validator';
-    //expect(() => oracleInstance.ban_validator('reference delegator')).toThrow(); // bug with .get not enforcing presence
+    expect(() => oracleInstance.ban_validator('reference delegator')).toThrow();
   });
 
   it('ban validator, validator closed, succeeds', () => {

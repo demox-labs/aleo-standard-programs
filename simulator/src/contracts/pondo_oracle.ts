@@ -53,6 +53,7 @@ export class pondo_oracleProgram {
   ) {
     // constructor body
     this.credits = creditsContract;
+    this.block = this.credits.block;
   }
 
   // TODO:
@@ -133,6 +134,7 @@ export class pondo_oracleProgram {
   finalize_add_control_address(control_address: string, caller: string) {
     // Ensure the caller is an admin
     let is_admin: boolean = this.control_addresses.get(caller)!;
+    assert(is_admin !== undefined);
     assert(is_admin);
 
     this.control_addresses.set(control_address, false);
@@ -145,6 +147,7 @@ export class pondo_oracleProgram {
   finalize_remove_control_address(control_address: string, caller: string) {
     // Ensure the caller is an admin
     let is_admin: boolean = this.control_addresses.get(caller)!;
+    assert(is_admin !== undefined);
     assert(is_admin);
 
     this.control_addresses.delete(control_address);
@@ -157,6 +160,7 @@ export class pondo_oracleProgram {
   finalize_update_admin(new_admin: string, caller: string) {
     // Ensure the caller is an admin
     let is_admin: boolean = this.control_addresses.get(caller)!;
+    assert(is_admin !== undefined);
     assert(is_admin);
 
     // Set the new admin
@@ -172,6 +176,7 @@ export class pondo_oracleProgram {
   finalize_update_delegator_allocations(multiple: bigint[], caller: string) {
     // Ensure the caller is an admin
     let is_admin: boolean = this.control_addresses.get(caller)!;
+    assert(is_admin !== undefined);
     assert(is_admin);
 
     this.delegator_allocation.set(BigInt('0'), multiple);
@@ -207,6 +212,7 @@ export class pondo_oracleProgram {
   finalize_add_delegator(delegator: string, caller: string) {
     // Ensure the caller is a admin address
     let is_admin: boolean = this.control_addresses.get(caller)!;
+    assert(is_admin !== undefined);
     assert(is_admin);
 
     // Check that proposed_reference_delegator contains the reference delegator
@@ -216,12 +222,15 @@ export class pondo_oracleProgram {
 
     // Ensure the withdrawal address is the same program address
     let withdraw_address: string = this.credits.withdraw.get(delegator)!;
+    assert(withdraw_address !== undefined);
     assert(withdraw_address === delegator);
 
     // Get the validator address and ensure the delegator is bonded to the validator
     let proposed_validator_address: string =
       this.delegator_to_validator.get(delegator)!;
+    assert(proposed_validator_address !== undefined);
     let bonded: bond_state = this.credits.bonded.get(delegator)!;
+    assert(bonded !== undefined);
     assert(bonded.validator === proposed_validator_address);
 
     // Ensure the validator isn't banned
@@ -238,6 +247,7 @@ export class pondo_oracleProgram {
     let validator_committee_state: committee_state = this.credits.committee.get(
       proposed_validator_address
     )!;
+    assert(validator_committee_state !== undefined);
     assert(validator_committee_state.is_open);
     assert(validator_committee_state.commission < this.MAX_COMMISSION);
 
@@ -264,6 +274,7 @@ export class pondo_oracleProgram {
     // Get the existing data, fails if the reference delegator isn't there
     let existing_validator_datum: validator_datum =
       this.validator_data.get(delegator)!;
+    assert(existing_validator_datum !== undefined);
 
     // Ensure the validator isn't banned
     let is_banned: boolean = this.banned_validators.has(
@@ -286,6 +297,7 @@ export class pondo_oracleProgram {
     let validator_committee_state: committee_state = this.credits.committee.get(
       existing_validator_datum.validator
     )!;
+    assert(validator_committee_state !== undefined);
     // Ensure the commission is less than MAX_COMMISSION
     assert(validator_committee_state.commission < this.MAX_COMMISSION);
     // Ensure the validator is open
@@ -293,6 +305,7 @@ export class pondo_oracleProgram {
 
     // Get the bonded state of the delegator
     let bonded: bond_state = this.credits.bonded.get(delegator)!;
+    assert(bonded !== undefined);
 
     // Get the current epoch
     let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
@@ -651,6 +664,7 @@ export class pondo_oracleProgram {
     // Get the validator address
     let validator: string =
       this.delegator_to_validator.get(reference_delegator)!;
+    assert(validator !== undefined);
 
     // Check if the height is within the update window
     let epoch_blocks: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
@@ -695,6 +709,7 @@ export class pondo_oracleProgram {
   finalize_ban_self(validator: string, caller: string) {
     // Ensure the caller is the withdrawal address of the validator
     let withdraw_address: string = this.credits.withdraw.get(validator)!;
+    assert(withdraw_address !== undefined);
     assert(withdraw_address === caller);
 
     // Assert that the validator is in the committee, will fail

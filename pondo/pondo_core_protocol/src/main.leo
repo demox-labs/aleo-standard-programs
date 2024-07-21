@@ -108,8 +108,8 @@ program pondo_core_protocol.aleo {
   mapping withdrawal_batches: u32 => u64;
 
   async transition initialize(transfer_amount: u64) -> Future {
-    // Assert that the transfer amount is at least 100 microcredits, to ensure there is no division by zero
-    assert(transfer_amount >= 100u64);
+    // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
+    assert(transfer_amount >= 102u64);
 
     // Transfer ALEO to the protocol
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, transfer_amount);
@@ -171,18 +171,27 @@ program pondo_core_protocol.aleo {
         aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
       ]
     );
-    let validator1_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[0u8]).commission;
-    let validator2_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[1u8]).commission;
-    let validator3_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[2u8]).commission;
-    let validator4_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[3u8]).commission;
-    let validator5_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[4u8]).commission;
+    let default_datum: validator_datum = validator_datum {
+      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      block_height: 0u32,
+      bonded_microcredits: 0u64,
+      microcredits_yield_per_epoch: 0u128,
+      commission: 0u8,
+      boost: 0u128
+    };
+    let validator1: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[0u8], default_datum);
+    let validator2: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[1u8], default_datum);
+    let validator3: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[2u8], default_datum);
+    let validator4: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[3u8], default_datum);
+    let validator5: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[4u8], default_datum);
 
     let next_validator_set: [validator_state; 5] = [
-      validator_state { validator: top_validators[0u8], commission: validator1_commission },
-      validator_state { validator: top_validators[1u8], commission: validator2_commission },
-      validator_state { validator: top_validators[2u8], commission: validator3_commission },
-      validator_state { validator: top_validators[3u8], commission: validator4_commission },
-      validator_state { validator: top_validators[4u8], commission: validator5_commission }
+      validator_state { validator: validator1.validator, commission: validator1.commission },
+      validator_state { validator: validator2.validator, commission: validator2.commission },
+      validator_state { validator: validator3.validator, commission: validator3.commission },
+      validator_state { validator: validator4.validator, commission: validator4.commission },
+      validator_state { validator: validator5.validator, commission: validator5.commission }
     ];
     validator_set.set(NEXT_VALIDATOR_SET, next_validator_set);
   }
@@ -298,20 +307,23 @@ program pondo_core_protocol.aleo {
   ) -> Future {
     // Transfer ALEO to pool
     let f0: Future = multi_token_support_program_v1.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
+    let f1: Future = multi_token_support_program_v1.aleo/withdraw_credits_public(credits_deposit);
     // Mint pALEO to depositor
-    let f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
+    let f2: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
 
-    return finalize_deposit_public(f0, f1, credits_deposit, expected_paleo_mint);
+    return finalize_deposit_public(f0, f1, f2, credits_deposit, expected_paleo_mint);
   }
 
   async function finalize_deposit_public(
     public f0: Future,
     public f1: Future,
+    public f2: Future,
     public credits_deposit: u64,
     public expected_paleo_mint: u64
   ) {
     f0.await();
     f1.await();
+    f2.await();
 
     let base_bond_state: bond_state = bond_state {
       validator: self.address,
@@ -374,7 +386,6 @@ program pondo_core_protocol.aleo {
   }
 
   async transition distribute_deposits(
-    public validators: [address; 5],
     public transfer_amounts: [u64; 5]
   ) -> Future {
     // Transfer to each delegator
@@ -384,7 +395,7 @@ program pondo_core_protocol.aleo {
     let f3: Future = credits.aleo/transfer_public(pondo_delegator4.aleo, transfer_amounts[3u8]);
     let f4: Future = credits.aleo/transfer_public(pondo_delegator5.aleo, transfer_amounts[4u8]);
 
-    return finalize_distribute_deposits(f0, f1, f2, f3, f4, validators, transfer_amounts);
+    return finalize_distribute_deposits(f0, f1, f2, f3, f4);
   }
 
   async function finalize_distribute_deposits(
@@ -392,9 +403,7 @@ program pondo_core_protocol.aleo {
     f1: Future,
     f2: Future,
     f3: Future,
-    f4: Future,
-    validators: [address; 5],
-    transfer_amounts: [u64; 5]
+    f4: Future
   ) {
     f0.await();
     f1.await();
@@ -745,18 +754,18 @@ program pondo_core_protocol.aleo {
       commission: 0u8,
       boost: 0u128
     };
-    let validator1_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[0u8]).commission;
-    let validator2_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[1u8]).commission;
-    let validator3_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[2u8]).commission;
-    let validator4_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[3u8]).commission;
-    let validator5_commission: u8 = pondo_oracle.aleo/validator_data.get(top_validators[4u8]).commission;
+    let validator1: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[0u8], default_datum);
+    let validator2: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[1u8], default_datum);
+    let validator3: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[2u8], default_datum);
+    let validator4: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[3u8], default_datum);
+    let validator5: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[4u8], default_datum);
 
     let next_validator_set: [validator_state; 5] = [
-      validator_state { validator: top_validators[0u8], commission: validator1_commission },
-      validator_state { validator: top_validators[1u8], commission: validator2_commission },
-      validator_state { validator: top_validators[2u8], commission: validator3_commission },
-      validator_state { validator: top_validators[3u8], commission: validator4_commission },
-      validator_state { validator: top_validators[4u8], commission: validator5_commission }
+      validator_state { validator: validator1.validator, commission: validator1.commission },
+      validator_state { validator: validator2.validator, commission: validator2.commission },
+      validator_state { validator: validator3.validator, commission: validator3.commission },
+      validator_state { validator: validator4.validator, commission: validator4.commission },
+      validator_state { validator: validator5.validator, commission: validator5.commission }
     ];
     validator_set.set(NEXT_VALIDATOR_SET, next_validator_set);
   }
@@ -879,7 +888,7 @@ program pondo_core_protocol.aleo {
     validator_set.set(CURRENT_VALIDATOR_SET, next_validator_set);
     validator_set.remove(NEXT_VALIDATOR_SET);
     for i: u8 in 0u8..5u8 {
-      assert(validators[i] == next_validator_set[i]);
+      assert(validators[i].validator == next_validator_set[i].validator && validators[i].commission == next_validator_set[i].commission);
     }
     // Check that each validator has the correct portion of credits
     let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(
@@ -919,6 +928,9 @@ program pondo_core_protocol.aleo {
     // Update last rebalance epoch
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     last_rebalance_epoch.set(0u8, current_epoch);
+
+    // Update delegated balance
+    balances.set(DELEGATED_BALANCE, total_credits);
 
     // Update protocol state
     protocol_state.set(PROTOCOL_STATE_KEY, NORMAL_STATE);

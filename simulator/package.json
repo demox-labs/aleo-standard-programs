@@ -10,6 +10,7 @@
     "test": "yarn jest",
     "test-watch": "yarn jest --watch",
     "clean": "rm -rf node_modules",
+    "calculate-new-shares": "yarn tsx ./src/ARC-0038/calculateNewShares.ts",
     "convert-mtsp": "yarn tsx ./util/convertMTSP.ts",
     "convert-pondo": "yarn tsx ./util/convertPondoPrograms.ts",
     "test pondo": "yarn jest --testPathPattern='/pondo'",

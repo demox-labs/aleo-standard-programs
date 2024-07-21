@@ -271,7 +271,7 @@ const generalConvert = (
   leoLine = replaceSelfAddress(leoLine);
   leoLine = replaceForLoop(leoLine);
   leoLine = replaceArrayAccess(leoLine);
-  leoLine = replaceHashFieldToToString(leoLine);
+  leoLine = replaceHashFieldToStringify(leoLine);
   leoLine = removeInterfaceAssignment(leoLine);
   leoLine = replaceMapping(leoLine);
   leoLine = replaceCalls(leoLine, programAddress);
@@ -319,15 +319,15 @@ const replaceSelfAddress = (leoLine: string): string => {
   return leoLine.replace('self.address', 'this.address');
 };
 
-const replaceHashFieldToToString = (leoLine: string): string => {
+const replaceHashFieldToStringify = (leoLine: string): string => {
   //BHP256::hash_to_field(approve)
   // Regular expression to match "BHP256::hash_to_field(variableName);"
   const regex = /BHP256::hash_to_field\((\w+)\)/;
 
-  // Replace the matched pattern with "variableName.toString();"
+  // Replace the matched pattern with "JSON.stringify(variableName);"
   return leoLine.replace(
     regex,
-    (match, variableName) => `${variableName}.toString()`
+    (match, variableName) => `JSON.stringify(${variableName})`
   );
 };
 
@@ -418,6 +418,15 @@ const replaceMapping = (leoLine: string): string => {
       get,
       (match, mappingName, keyName) => `this.${mappingName}.get(${keyName})!`
     );
+
+    // Regex to match the pattern "let <name>: <type> = <initialization>" with a complex type
+    const assignmentRegex = /let (\w+):\s*([\w\.\/]+|\[.+\]|\(.+\))\s*=\s*(.+)/;
+    const assignmentMatch = leoLine.match(assignmentRegex);
+    if (assignmentMatch) {
+      const [, name, type, initialization] = assignmentMatch;
+      // Assuming convertType is a function you have that converts types
+      leoLine = leoLine.concat(`\n${TAB}assert(${name} !== undefined);`);
+    }
   }
 
   const remove = /(\w+)\.remove\((\w+.*\w+)\)/;
@@ -813,7 +822,12 @@ const convertImports = (leoLine: string, tsCode: string): string => {
   const constructorBodyKey = '// constructor body\n';
   const constructorBodyLocation =
     tsCode.indexOf(constructorBodyKey) + constructorBodyKey.length;
-  const tsProgramAssignment = `${TAB}${TAB}this.${programName} = ${programName}Contract;\n`;
+  let tsProgramAssignment = `${TAB}${TAB}this.${programName} = ${programName}Contract;\n`;
+  if (programName === 'credits') {
+    tsProgramAssignment = tsProgramAssignment.concat(
+      `${TAB}${TAB}this.block = this.credits.block;\n`
+    );
+  }
   tsCode =
     tsCode.slice(0, constructorBodyLocation) +
     tsProgramAssignment +

@@ -1,14 +1,15 @@
-import { credits, PNDO, MTSP } from "../../src/contracts/pondoProgramsIndex";
+import { credits, PNDO, MTSP } from '../../src/contracts/pondoProgramsIndex';
 
-describe("Pondo token tests", () => {
-  let credits: credits;
+describe('Pondo token tests', () => {
+  let creditsInstance: credits;
   let mtsp: MTSP;
   let pondo: PNDO;
 
   beforeEach(() => {
-    mtsp = new MTSP(credits);
+    creditsInstance = new credits();
+    mtsp = new MTSP(creditsInstance);
     pondo = new PNDO(mtsp);
   });
 
-  it("", () => {});
+  it('', () => {});
 });

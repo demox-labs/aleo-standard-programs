@@ -115,6 +115,7 @@ export class pondo_core_protocolProgram {
     this.pondo_oracle = pondo_oracleContract;
     this.multi_token_support_program = multi_token_support_programContract;
     this.credits = creditsContract;
+    this.block = this.credits.block;
   }
 
   //program pondo_core_protocol.aleo {
@@ -150,30 +151,48 @@ export class pondo_core_protocolProgram {
   // withdrawals are processed at the start of the next epoch i.e. batch 0u32 is processed at the start of epoch 1u32
 
   initialize(transfer_amount: bigint) {
-    // Assert that the transfer amount is at least 100 microcredits, to ensure there is no division by zero
-    assert(transfer_amount >= BigInt('100'));
+    // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
+    assert(transfer_amount >= BigInt('102'));
 
     // Transfer ALEO to the protocol
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public_as_signer(this.address, transfer_amount);
 
     // Initialize pALEO and PNDO tokens
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.register_token();
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(transfer_amount, this.signer);
+
+    this.pondo_token.signer = this.signer;
     this.pondo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_token.initialize_token();
 
     // Initialize delegators
+
+    this.pondo_delegator1.signer = this.signer;
     this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator1.initialize();
+
+    this.pondo_delegator2.signer = this.signer;
     this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator2.initialize();
+
+    this.pondo_delegator3.signer = this.signer;
     this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator3.initialize();
+
+    this.pondo_delegator4.signer = this.signer;
     this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator4.initialize();
+
+    this.pondo_delegator5.signer = this.signer;
     this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator5.initialize();
 
@@ -201,28 +220,34 @@ export class pondo_core_protocolProgram {
       'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
       'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
     ];
-    let validator1_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[0]
-    )!.commission;
-    let validator2_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[1]
-    )!.commission;
-    let validator3_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[2]
-    )!.commission;
-    let validator4_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[3]
-    )!.commission;
-    let validator5_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[4]
-    )!.commission;
+    let default_datum: validator_datum = {
+      delegator:
+        'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      validator:
+        'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
+      block_height: BigInt('0'),
+      bonded_microcredits: BigInt('0'),
+      microcredits_yield_per_epoch: BigInt('0'),
+      commission: BigInt('0'),
+      boost: BigInt('0'),
+    };
+    let validator1: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[0]) || default_datum;
+    let validator2: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[1]) || default_datum;
+    let validator3: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[2]) || default_datum;
+    let validator4: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[3]) || default_datum;
+    let validator5: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[4]) || default_datum;
 
     let next_validator_set: validator_state[] = [
-      { validator: top_validators[0], commission: validator1_commission },
-      { validator: top_validators[1], commission: validator2_commission },
-      { validator: top_validators[2], commission: validator3_commission },
-      { validator: top_validators[3], commission: validator4_commission },
-      { validator: top_validators[4], commission: validator5_commission },
+      { validator: validator1.validator, commission: validator1.commission },
+      { validator: validator2.validator, commission: validator2.commission },
+      { validator: validator3.validator, commission: validator3.commission },
+      { validator: validator4.validator, commission: validator4.commission },
+      { validator: validator5.validator, commission: validator5.commission },
     ];
     this.validator_set.set(this.NEXT_VALIDATOR_SET, next_validator_set);
   }
@@ -237,9 +262,14 @@ export class pondo_core_protocolProgram {
     referrer: string
   ) {
     // Transfer ALEO to pool
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public_as_signer(this.address, credits_deposit);
+
     // Mint pALEO to depositor
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.signer);
 
@@ -325,21 +355,25 @@ export class pondo_core_protocolProgram {
     let bonded_withdrawals: bigint = this.balances.get(
       this.BONDED_WITHDRAWALS
     )!;
+    assert(bonded_withdrawals !== undefined);
     let total_delegated: bigint =
       total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
     let currently_delegated: bigint = this.balances.get(
       this.DELEGATED_BALANCE
     )!;
+    assert(currently_delegated !== undefined);
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
+    assert(current_owed_commission !== undefined);
     let total_paleo_pool: bigint =
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
       current_owed_commission -
       expected_paleo_mint;
+    assert(total_paleo_pool !== undefined);
 
     let rewards: bigint =
       total_delegated > currently_delegated
@@ -356,9 +390,11 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let current_state: bigint = this.protocol_state.get(
       this.PROTOCOL_STATE_KEY
     )!;
+    assert(current_state !== undefined);
     let deposit_pool: bigint =
       current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
@@ -421,6 +457,8 @@ export class pondo_core_protocolProgram {
     referrer: string
   ) {
     // Transfer ALEO to pool
+
+    this.multi_token_support_program.signer = this.signer;
     this.multi_token_support_program.caller = 'pondo_core_protocol.aleo';
     this.multi_token_support_program.transfer_from_public(
       this.CREDITS_TOKEN_ID,
@@ -428,7 +466,14 @@ export class pondo_core_protocolProgram {
       this.address,
       credits_deposit
     );
+
+    this.multi_token_support_program.signer = this.signer;
+    this.multi_token_support_program.caller = 'pondo_core_protocol.aleo';
+    this.multi_token_support_program.withdraw_credits_public(credits_deposit);
+
     // Mint pALEO to depositor
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.caller);
 
@@ -511,21 +556,25 @@ export class pondo_core_protocolProgram {
     let bonded_withdrawals: bigint = this.balances.get(
       this.BONDED_WITHDRAWALS
     )!;
+    assert(bonded_withdrawals !== undefined);
     let total_delegated: bigint =
       total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
     let currently_delegated: bigint = this.balances.get(
       this.DELEGATED_BALANCE
     )!;
+    assert(currently_delegated !== undefined);
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
+    assert(current_owed_commission !== undefined);
     let total_paleo_pool: bigint =
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
       current_owed_commission -
       expected_paleo_mint;
+    assert(total_paleo_pool !== undefined);
 
     let rewards: bigint =
       total_delegated > currently_delegated
@@ -542,9 +591,11 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let current_state: bigint = this.protocol_state.get(
       this.PROTOCOL_STATE_KEY
     )!;
+    assert(current_state !== undefined);
     let deposit_pool: bigint =
       current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
@@ -579,35 +630,44 @@ export class pondo_core_protocolProgram {
     assert(paleo_for_deposit >= expected_paleo_mint);
   }
 
-  distribute_deposits(validators: string[], transfer_amounts: bigint[]) {
+  distribute_deposits(transfer_amounts: bigint[]) {
     // Transfer to each delegator
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator1.aleo', transfer_amounts[0]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator2.aleo', transfer_amounts[1]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator3.aleo', transfer_amounts[2]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator4.aleo', transfer_amounts[3]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator5.aleo', transfer_amounts[4]);
 
-    return this.finalize_distribute_deposits(validators, transfer_amounts);
+    return this.finalize_distribute_deposits();
   }
 
-  finalize_distribute_deposits(
-    validators: string[],
-    transfer_amounts: bigint[]
-  ) {
+  finalize_distribute_deposits() {
     // Confirm that there are enough credits left for the liquidity pool
     let currently_delegated: bigint = this.balances.get(
       this.DELEGATED_BALANCE
     )!;
+    assert(currently_delegated !== undefined);
     let account_balance: bigint =
       this.credits.account.get(this.address) || BigInt('0');
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let liquidity_pool: bigint = account_balance - reserved_for_withdrawal;
     let optimal_liquidity: bigint =
       this.inline_calculate_optimal_liquidity(currently_delegated);
@@ -617,18 +677,23 @@ export class pondo_core_protocolProgram {
     let delegator1_state: bigint = this.pondo_delegator1.state_mapping.get(
       BigInt('0')
     )!;
+    assert(delegator1_state !== undefined);
     let delegator2_state: bigint = this.pondo_delegator2.state_mapping.get(
       BigInt('0')
     )!;
+    assert(delegator2_state !== undefined);
     let delegator3_state: bigint = this.pondo_delegator3.state_mapping.get(
       BigInt('0')
     )!;
+    assert(delegator3_state !== undefined);
     let delegator4_state: bigint = this.pondo_delegator4.state_mapping.get(
       BigInt('0')
     )!;
+    assert(delegator4_state !== undefined);
     let delegator5_state: bigint = this.pondo_delegator5.state_mapping.get(
       BigInt('0')
     )!;
+    assert(delegator5_state !== undefined);
     assert(
       delegator1_state == this.BOND_ALLOWED ||
         delegator1_state == this.UNBOND_NOT_ALLOWED
@@ -670,8 +735,12 @@ export class pondo_core_protocolProgram {
     withdrawal_credits: bigint
   ) {
     // Burn pALEO for withdrawal
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.burn_public(paleo_burn_amount, this.caller);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public(this.caller, withdrawal_credits);
 
@@ -691,6 +760,7 @@ export class pondo_core_protocolProgram {
     let current_state: bigint = this.protocol_state.get(
       this.PROTOCOL_STATE_KEY
     )!;
+    assert(current_state !== undefined);
     assert(current_state == this.NORMAL_STATE);
 
     // Assert that the caller does not have a pending withdrawal
@@ -770,6 +840,7 @@ export class pondo_core_protocolProgram {
     let bonded_withdrawals: bigint = this.balances.get(
       this.BONDED_WITHDRAWALS
     )!;
+    assert(bonded_withdrawals !== undefined);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
     let total_delegated: bigint =
       total_bonded + total_account + total_unbonding - bonded_withdrawals;
@@ -779,13 +850,16 @@ export class pondo_core_protocolProgram {
     let currently_delegated: bigint = this.balances.get(
       this.DELEGATED_BALANCE
     )!;
+    assert(currently_delegated !== undefined);
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
+    assert(current_owed_commission !== undefined);
     let paleo_minted_post_burn: bigint =
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission;
+    assert(paleo_minted_post_burn !== undefined);
     let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
 
     let rewards: bigint =
@@ -803,6 +877,7 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let deposit_pool: bigint =
       core_protocol_account - reserved_for_withdrawal + withdrawal_credits;
     // Update owed commission balance
@@ -844,8 +919,11 @@ export class pondo_core_protocolProgram {
 
   withdraw_public(paleo_burn_amount: bigint) {
     // Burn pALEO for withdrawal
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.burn_public(paleo_burn_amount, this.caller);
+
     return this.finalize_withdraw_public(paleo_burn_amount, this.caller);
   }
 
@@ -927,6 +1005,7 @@ export class pondo_core_protocolProgram {
     let bonded_withdrawals: bigint = this.balances.get(
       this.BONDED_WITHDRAWALS
     )!;
+    assert(bonded_withdrawals !== undefined);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
     let total_delegated: bigint =
       total_bonded + total_account + total_unbonding - bonded_withdrawals;
@@ -936,13 +1015,16 @@ export class pondo_core_protocolProgram {
     let currently_delegated: bigint = this.balances.get(
       this.DELEGATED_BALANCE
     )!;
+    assert(currently_delegated !== undefined);
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
+    assert(current_owed_commission !== undefined);
     let paleo_minted_post_burn: bigint =
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission;
+    assert(paleo_minted_post_burn !== undefined);
     let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
 
     let rewards: bigint =
@@ -960,9 +1042,11 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let current_state: bigint = this.protocol_state.get(
       this.PROTOCOL_STATE_KEY
     )!;
+    assert(current_state !== undefined);
     let deposit_pool: bigint =
       current_state == this.NORMAL_STATE
         ? core_protocol_account - reserved_for_withdrawal
@@ -1024,6 +1108,8 @@ export class pondo_core_protocolProgram {
 
   claim_withdrawal_public(owner: string, amount: bigint) {
     // Transfer to the owner
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public(owner, amount);
 
@@ -1033,6 +1119,7 @@ export class pondo_core_protocolProgram {
   finalize_claim_withdrawal_public(owner: string, amount: bigint) {
     // Update withdrawal state
     let withdrawal: withdrawal_state = this.withdrawals.get(owner)!;
+    assert(withdrawal !== undefined);
     assert(withdrawal.claim_block < this.block.height);
 
     // Update withrawal mapping
@@ -1050,6 +1137,7 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     this.balances.set(
       this.CLAIMABLE_WITHDRAWALS,
       reserved_for_withdrawal - amount
@@ -1061,14 +1149,23 @@ export class pondo_core_protocolProgram {
   // -------------------
 
   prep_rebalance() {
+    this.pondo_delegator1.signer = this.signer;
     this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator1.set_state(this.UNBOND_ALLOWED);
+
+    this.pondo_delegator2.signer = this.signer;
     this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator2.set_state(this.UNBOND_ALLOWED);
+
+    this.pondo_delegator3.signer = this.signer;
     this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator3.set_state(this.UNBOND_ALLOWED);
+
+    this.pondo_delegator4.signer = this.signer;
     this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator4.set_state(this.UNBOND_ALLOWED);
+
+    this.pondo_delegator5.signer = this.signer;
     this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator5.set_state(this.UNBOND_ALLOWED);
 
@@ -1113,28 +1210,23 @@ export class pondo_core_protocolProgram {
       commission: BigInt('0'),
       boost: BigInt('0'),
     };
-    let validator1_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[0]
-    )!.commission;
-    let validator2_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[1]
-    )!.commission;
-    let validator3_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[2]
-    )!.commission;
-    let validator4_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[3]
-    )!.commission;
-    let validator5_commission: bigint = this.pondo_oracle.validator_data.get(
-      top_validators[4]
-    )!.commission;
+    let validator1: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[0]) || default_datum;
+    let validator2: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[1]) || default_datum;
+    let validator3: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[2]) || default_datum;
+    let validator4: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[3]) || default_datum;
+    let validator5: validator_datum =
+      this.pondo_oracle.validator_data.get(top_validators[4]) || default_datum;
 
     let next_validator_set: validator_state[] = [
-      { validator: top_validators[0], commission: validator1_commission },
-      { validator: top_validators[1], commission: validator2_commission },
-      { validator: top_validators[2], commission: validator3_commission },
-      { validator: top_validators[3], commission: validator4_commission },
-      { validator: top_validators[4], commission: validator5_commission },
+      { validator: validator1.validator, commission: validator1.commission },
+      { validator: validator2.validator, commission: validator2.commission },
+      { validator: validator3.validator, commission: validator3.commission },
+      { validator: validator4.validator, commission: validator4.commission },
+      { validator: validator5.validator, commission: validator5.commission },
     ];
     this.validator_set.set(this.NEXT_VALIDATOR_SET, next_validator_set);
   }
@@ -1143,16 +1235,27 @@ export class pondo_core_protocolProgram {
     transfer_amounts: bigint[],
     commission_mint: bigint
   ) {
+    this.pondo_delegator1.signer = this.signer;
     this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator1.transfer_to_core_protocol(transfer_amounts[0]);
+
+    this.pondo_delegator2.signer = this.signer;
     this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator2.transfer_to_core_protocol(transfer_amounts[1]);
+
+    this.pondo_delegator3.signer = this.signer;
     this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator3.transfer_to_core_protocol(transfer_amounts[2]);
+
+    this.pondo_delegator4.signer = this.signer;
     this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator4.transfer_to_core_protocol(transfer_amounts[3]);
+
+    this.pondo_delegator5.signer = this.signer;
     this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator5.transfer_to_core_protocol(transfer_amounts[4]);
+
+    this.pondo_staked_aleo_token.signer = this.signer;
     this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
     this.pondo_staked_aleo_token.mint_public(
       commission_mint,
@@ -1176,10 +1279,12 @@ export class pondo_core_protocolProgram {
       transfer_amounts[3] +
       transfer_amounts[4];
     let current_balance: bigint = this.balances.get(this.DELEGATED_BALANCE)!;
+    assert(current_balance !== undefined);
 
     let current_owed_commission: bigint = this.owed_commission.get(
       BigInt('0')
     )!;
+    assert(current_owed_commission !== undefined);
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
     let total_paleo_minted: bigint =
       this.multi_token_support_program.registered_tokens.get(
@@ -1187,6 +1292,7 @@ export class pondo_core_protocolProgram {
       )!.supply +
       current_owed_commission -
       commission_mint;
+    assert(total_paleo_minted !== undefined);
 
     let rewards: bigint =
       full_balance > current_balance
@@ -1205,6 +1311,7 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let deposit_pool: bigint =
       core_protocol_account - full_balance - reserved_for_withdrawal;
 
@@ -1236,6 +1343,7 @@ export class pondo_core_protocolProgram {
     let bonded_withdrawals: bigint = this.balances.get(
       this.BONDED_WITHDRAWALS
     )!;
+    assert(bonded_withdrawals !== undefined);
     this.balances.set(
       this.BONDED_WITHDRAWALS,
       bonded_withdrawals - current_withdrawal_batch
@@ -1250,37 +1358,56 @@ export class pondo_core_protocolProgram {
     transfer_amounts: bigint[]
   ) {
     // Transfer to each delegator and set validator
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator1.aleo', transfer_amounts[0]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator2.aleo', transfer_amounts[1]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator3.aleo', transfer_amounts[2]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator4.aleo', transfer_amounts[3]);
+
+    this.credits.signer = this.signer;
     this.credits.caller = 'pondo_core_protocol.aleo';
     this.credits.transfer_public('pondo_delegator5.aleo', transfer_amounts[4]);
 
+    this.pondo_delegator1.signer = this.signer;
     this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator1.set_validator(
       validators[0].validator,
       validators[0].commission
     );
+
+    this.pondo_delegator2.signer = this.signer;
     this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator2.set_validator(
       validators[1].validator,
       validators[1].commission
     );
+
+    this.pondo_delegator3.signer = this.signer;
     this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator3.set_validator(
       validators[2].validator,
       validators[2].commission
     );
+
+    this.pondo_delegator4.signer = this.signer;
     this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator4.set_validator(
       validators[3].validator,
       validators[3].commission
     );
+
+    this.pondo_delegator5.signer = this.signer;
     this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
     this.pondo_delegator5.set_validator(
       validators[4].validator,
@@ -1301,7 +1428,10 @@ export class pondo_core_protocolProgram {
     this.validator_set.set(this.CURRENT_VALIDATOR_SET, next_validator_set);
     this.validator_set.delete(this.NEXT_VALIDATOR_SET);
     for (let i: number = 0; i < 5; i++) {
-      assert(validators[i] == next_validator_set[i]);
+      assert(
+        validators[i].validator == next_validator_set[i].validator &&
+          validators[i].commission == next_validator_set[i].commission
+      );
     }
     // Check that each validator has the correct portion of credits
     let delegator_allocation: bigint[] =
@@ -1346,6 +1476,7 @@ export class pondo_core_protocolProgram {
     let reserved_for_withdrawal: bigint = this.balances.get(
       this.CLAIMABLE_WITHDRAWALS
     )!;
+    assert(reserved_for_withdrawal !== undefined);
     let liquidity_pool: bigint = account_balance - reserved_for_withdrawal;
     let optimal_liquidity: bigint =
       this.inline_calculate_optimal_liquidity(total_credits_128);
@@ -1355,14 +1486,19 @@ export class pondo_core_protocolProgram {
     let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
     this.last_rebalance_epoch.set(BigInt('0'), current_epoch);
 
+    // Update delegated balance
+    this.balances.set(this.DELEGATED_BALANCE, total_credits);
+
     // Update protocol state
     this.protocol_state.set(this.PROTOCOL_STATE_KEY, this.NORMAL_STATE);
   }
 
   // A crank to set the oracle tvl
   set_oracle_tvl(tvl: bigint) {
+    this.pondo_oracle.signer = this.signer;
     this.pondo_oracle.caller = 'pondo_core_protocol.aleo';
     this.pondo_oracle.set_pondo_tvl(tvl);
+
     return this.finalize_set_oracle_tvl(tvl);
   }
 
