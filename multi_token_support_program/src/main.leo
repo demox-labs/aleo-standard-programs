@@ -495,36 +495,49 @@ program multi_token_support_program_v1.aleo {
   ) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == external_authorization_party);
+    assert(caller == token.external_authorization_party);
 
-    // Get the balance for the recipient
-    let balance_key: field = BHP256::hash_to_field(owner);
-    let balance: Balance = balances.get(balance_key);
-    // Update the balance, and check that the balance >= 0
-    let new_balance: Balance = Balance {
-      token_id: owner.token_id,
-      account: owner.account,
-      balance: balance.balance - amount,
-      authorized_until: balance.authorized_until
-    };
-    balances.set(balance_key, new_balance);
-
-    // Move balance to authorized_balances
-    let default_balance: Balance = Balance {
+     let default_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
       balance: 0u128,
-      authorized_until: authorized_until
+      authorized_until: 0u32
     };
+    let balance_key: field = BHP256::hash_to_field(owner);
+    // Get the locked balance for the recipient
+    let locked_balance: Balance = balances.get_or_use(balance_key, default_balance);
+    // Get the authorized balance for the recipient
     let authorized_balance: Balance = authorized_balances.get_or_use(balance_key, default_balance);
-    let new_authorized_balance: Balance = Balance {
+    // Check if the authorized balance is expired
+    let authorized_balance_expired: bool = authorized_balance.authorized_until < block.height;
+    // If the authorized balance is expired, treat is as part of the locked balance
+    let actual_locked_balance: u128 = authorized_balance_expired
+      ? locked_balance.balance + authorized_balance.balance
+      : locked_balance.balance;
+    let actual_authorized_balance: u128 = authorized_balance_expired
+      ? 0u128
+      : authorized_balance.balance;
+    // Move the amount from the locked balance to the authorized balance
+    let new_locked_balance: u128 = actual_locked_balance - amount;
+    let new_authorized_balance: u128 = actual_authorized_balance + amount;
+
+    // Update the authorized balance with the incremented amount and new expiration
+    let new_authorized_balance_struct: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
-      balance: authorized_balance.balance + amount,
+      balance: new_authorized_balance,
       authorized_until: authorized_until
     };
-    authorized_balances.set(balance_key, new_authorized_balance);
+    authorized_balances.set(balance_key, new_authorized_balance_struct);
+
+    // Update the locked balance
+    let new_locked_balance_struct: Balance = Balance {
+      token_id: owner.token_id,
+      account: owner.account,
+      balance: new_locked_balance,
+      authorized_until: locked_balance.authorized_until
+    };
+    balances.set(balance_key, new_locked_balance_struct);
   }
 
   async transition prehook_private(input_record: Token, amount: u128, authorized_until: u32) -> (Token, Token, Future) {
