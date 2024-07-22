@@ -357,8 +357,7 @@ program multi_token_support_program_v1.aleo {
   ) {
     // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
-    let is_admin: bool = caller == token.admin;
-    if (!is_admin) {
+    if (caller != token.admin) {
       let role_owner: TokenOwner = TokenOwner {
         account: caller,
         token_id: owner.token_id
@@ -368,10 +367,21 @@ program multi_token_support_program_v1.aleo {
       assert(role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
     }
 
-    // Check that the token supply - amount >= 0
-    let new_supply: u128 = token.supply - amount; // underflow will be caught by the VM
+    // Update the token supply
+    let new_metadata: TokenMetadata = TokenMetadata {
+      token_id: token.token_id,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      supply: token.supply - amount, // underflow will be caught by the VM
+      max_supply: token.max_supply,
+      admin: token.admin,
+      external_authorization_required: token.external_authorization_required,
+      external_authorization_party: token.external_authorization_party
+    };
+    registered_tokens.set(owner.token_id, new_metadata);
 
-    // Get the locked balance for the recipient
+    // Get the authorized balance for the recipient
     let default_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
@@ -379,45 +389,43 @@ program multi_token_support_program_v1.aleo {
       authorized_until: 0u32
     };
     let balance_key: field = BHP256::hash_to_field(owner);
-    let balance: Balance = balances.get_or_use(balance_key, default_balance);
-    let remaining_after_burn: i128 = balance.balance as i128 - amount as i128;
-    // Burn from locked balance
-    let new_locked_balance_as_i128: i128 = remaining_after_burn >= 0i128 ? remaining_after_burn : 0i128;
-    let new_locked_balance: u128 = new_locked_balance_as_i128 as u128;
-    let new_balance: Balance = Balance {
-      token_id: owner.token_id,
-      account: owner.account,
-      balance: new_locked_balance,
-      authorized_until: balance.authorized_until
-    };
-    balances.set(balance_key, new_balance);
-
-    // Burn from authorized balance
-    if (remaining_after_burn < 0i128) {
-      let remaining_burn_balance: u128 = amount - balance.balance;
-      let authorized_balance: Balance = authorized_balances.get(balance_key);
-      let new_authorized_balance: Balance = Balance {
+    let authorized_balance: Balance = authorized_balances.get_or_use(balance_key, default_balance);
+    // Check if the authorized balance is enough to burn
+    if (authorized_balance.balance > 0u128) {
+      // Burn from authorized balance
+      if (authorized_balance.balance > amount) {
+        let new_authorized_balance: Balance = Balance {
+          token_id: owner.token_id,
+          account: owner.account,
+          balance: authorized_balance.balance - amount,
+          authorized_until: authorized_balance.authorized_until
+        };
+        authorized_balances.set(balance_key, new_authorized_balance);
+        return; // Done burning
+      } else {
+        authorized_balances.remove(balance_key);
+        let left_to_burn: u128 = amount - authorized_balance.balance;
+        // Burn remainder from locked balance
+        let locked_balance: Balance = balances.get(balance_key);
+        let new_locked_balance: Balance = Balance {
+          token_id: owner.token_id,
+          account: owner.account,
+          balance: locked_balance.balance - left_to_burn,
+          authorized_until: locked_balance.authorized_until
+        };
+        balances.set(balance_key, new_locked_balance);
+      }
+    } else {
+      // Otherwise burn directly from locked balance
+      let locked_balance: Balance = balances.get(balance_key);
+      let new_locked_balance: Balance = Balance {
         token_id: owner.token_id,
         account: owner.account,
-        balance: authorized_balance.balance - remaining_burn_balance,
-        authorized_until: authorized_balance.authorized_until
+        balance: locked_balance.balance - amount,
+        authorized_until: locked_balance.authorized_until
       };
-      authorized_balances.set(balance_key, new_authorized_balance);
+      balances.set(balance_key, new_locked_balance);
     }
-
-    // Update the token supply
-    let new_metadata: TokenMetadata = TokenMetadata {
-      token_id: owner.token_id,
-      name: token.name,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      supply: new_supply,
-      max_supply: token.max_supply,
-      admin: token.admin,
-      external_authorization_required: token.external_authorization_required,
-      external_authorization_party: token.external_authorization_party
-    };
-    registered_tokens.set(owner.token_id, new_metadata);
   }
 
   async transition burn_private(
