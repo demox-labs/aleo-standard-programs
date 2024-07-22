@@ -561,8 +561,7 @@ program multi_token_support_program_v1.aleo {
   async function finalize_prehook_private(token_id: field, caller: address) {
     // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(token_id);
-    let external_authorization_party: address = token.external_authorization_party;
-    assert(caller == external_authorization_party);
+    assert(caller == token.external_authorization_party);
   }
 
   // -------------------------
@@ -713,16 +712,16 @@ program multi_token_support_program_v1.aleo {
     return finalize_approve_public(token_id, spender, amount, self.caller);
   }
 
-  async function finalize_approve_public(token_id: field, spender: address, amount: u128, owner: address) {
+  async function finalize_approve_public(
+    token_id: field,
+    spender: address,
+    amount: u128,
+    owner: address
+  ) {
     let owner_key: TokenOwner = TokenOwner {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
-    let has_locked_balance: bool = balances.contains(owner_key_hash);
-    let has_authorized_balance: bool = authorized_balances.contains(owner_key_hash);
-    // Confirm that the caller has a balance in the token
-    assert(has_locked_balance || has_authorized_balance);
 
     let allowance: Allowance = Allowance {
       account: owner,
@@ -756,7 +755,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Decrease the allowance amount
     allowances.set(allowance_key, current_allowance - amount);
   }
