@@ -569,6 +569,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balance for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -601,7 +604,7 @@ program multi_token_support_program_v1.aleo {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
 
     // Update recipient balance
@@ -634,6 +637,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balance for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -666,7 +672,7 @@ program multi_token_support_program_v1.aleo {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
 
     // Update recipient balance
@@ -757,7 +763,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Decrease the allowance by the amount being spent
     allowances.set(allowance_key, current_allowance - amount);
 
@@ -768,8 +773,9 @@ program multi_token_support_program_v1.aleo {
     };
     let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
-    assert_eq(owner, balance.account);
-    assert(balance.balance >= amount);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token.external_authorization_required);
 
     // Update the balance for the owner
     let new_balance: Balance = Balance {
@@ -802,7 +808,7 @@ program multi_token_support_program_v1.aleo {
       token_id: token_id,
       account: recipient,
       balance: recipient_balance.balance + amount,
-      authorized_until: balance.authorized_until
+      authorized_until: recipient_balance.authorized_until
     };
     // Update the balance of the recipient
     if (authorization_required) {
@@ -847,6 +853,9 @@ program multi_token_support_program_v1.aleo {
     // Get stored balances for the owner
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
     let balance: Balance = authorized_balances.get(sender_key_hash);
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token_metadata: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token_metadata.external_authorization_required);
     // Update the balance
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -894,7 +903,6 @@ program multi_token_support_program_v1.aleo {
     };
     let allowance_key: field = BHP256::hash_to_field(allowance);
     let current_allowance: u128 = allowances.get(allowance_key);
-    assert(current_allowance >= amount);
     // Update the allowance
     allowances.set(allowance_key, current_allowance - amount);
 
@@ -905,9 +913,9 @@ program multi_token_support_program_v1.aleo {
     };
     let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
-    assert_eq(owner, balance.account);
-    assert(balance.balance >= amount);
-
+    // Assert that the balance authorization is not expired or that the token does not require authorization
+    let token_metadata: TokenMetadata = registered_tokens.get(token_id);
+    assert(block.height <= balance.authorized_until || !token_metadata.external_authorization_required);
     // Update the balance for the owner
     let new_balance: Balance = Balance {
       token_id: token_id,
@@ -964,10 +972,25 @@ program multi_token_support_program_v1.aleo {
       authorized_until: input_record.authorized_until
     };
 
-    return (updated_record, finalize_transfer_private_to_public(input_record.token_id, recipient, amount));
+    return (updated_record,
+      finalize_transfer_private_to_public(
+        input_record.token_id,
+        recipient,
+        amount,
+        input_record.authorized_until,
+        input_record.external_authorization_required
+    ));
   }
 
-  async function finalize_transfer_private_to_public(token_id: field, recipient: address, amount: u128) {
+  async function finalize_transfer_private_to_public(
+    token_id: field,
+    recipient: address,
+    amount: u128,
+    record_authorized_until: u32,
+    external_authorization_required: bool
+  ) {
+    // Assert that the record authorization is not expired
+    assert(block.height <= record_authorized_until || !external_authorization_required);
     // Get or create the balance for the recipient
     let recipient_key: TokenOwner = TokenOwner {
       account: recipient,
