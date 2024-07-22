@@ -287,12 +287,11 @@ program multi_token_support_program_v1.aleo {
       authorized_until: authorized_until
     };
 
-    return (token, finalize_mint_private(token_id, recipient, amount, external_authorization_required, authorized_until, self.caller));
+    return (token, finalize_mint_private(token_id, amount, external_authorization_required, authorized_until, self.caller));
   }
 
   async function finalize_mint_private(
     token_id: field,
-    recipient: address,
     amount: u128,
     external_authorization_required: bool,
     authorized_until: u32,
@@ -318,6 +317,7 @@ program multi_token_support_program_v1.aleo {
     // Check that whether the token is authorized or not matches the authorized parameter
     let authorization_required: bool = token.external_authorization_required;
     assert_eq(authorization_required, external_authorization_required);
+    assert(authorized_until == 0u32 || !authorization_required);
 
     // Update the token supply
     let new_metadata: TokenMetadata = TokenMetadata {
