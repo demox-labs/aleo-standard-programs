@@ -68,9 +68,9 @@ program multi_token_support_program_v1.aleo {
       decimals: 6u8,
       supply: 1_500_000_000_000_000u128,
       max_supply: 1_500_000_000_000_000u128,
-      admin: multi_token_support_program_v1.aleo,
+      admin: self.address,
       external_authorization_required: false,
-      external_authorization_party: multi_token_support_program_v1.aleo
+      external_authorization_party: self.address
     };
 
     registered_tokens.set(CREDITS_RESERVED_TOKEN_ID, credits_reserved_token);
@@ -240,7 +240,9 @@ program multi_token_support_program_v1.aleo {
     };
     let authorization_required: bool = token.external_authorization_required;
     // Get the locked balance if authorization is required, otherwise get the authorized balance
-    let balance: Balance = authorization_required ? balances.get_or_use(balance_key, default_balance) : authorized_balances.get_or_use(balance_key, default_balance);
+    let balance: Balance = authorization_required
+      ? balances.get_or_use(balance_key, default_balance)
+      : authorized_balances.get_or_use(balance_key, default_balance);
     let new_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -333,7 +335,7 @@ program multi_token_support_program_v1.aleo {
   }
 
   async transition burn_public(
-    public token_id: field, // Note: changed from TokenOwner to token_id and owner separately
+    public token_id: field,
     public owner: address,
     public amount: u128
   ) -> Future {
@@ -379,7 +381,8 @@ program multi_token_support_program_v1.aleo {
     let balance: Balance = balances.get_or_use(balance_key, default_balance);
     let remaining_after_burn: i128 = balance.balance as i128 - amount as i128;
     // Burn from locked balance
-    let new_locked_balance: u128 = remaining_after_burn >= 0i128 ? remaining_after_burn as u128 : 0u128;
+    let new_locked_balance_as_i128: i128 = remaining_after_burn >= 0i128 ? remaining_after_burn : 0i128;
+    let new_locked_balance: u128 = new_locked_balance_as_i128 as u128;
     let new_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
@@ -591,7 +594,9 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -654,7 +659,9 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -683,7 +690,7 @@ program multi_token_support_program_v1.aleo {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let has_locked_balance: bool = balances.contains(owner_key_hash);
     let has_authorized_balance: bool = authorized_balances.contains(owner_key_hash);
     // Confirm that the caller has a balance in the token
@@ -759,7 +766,7 @@ program multi_token_support_program_v1.aleo {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
     assert_eq(owner, balance.account);
     assert(balance.balance >= amount);
@@ -788,7 +795,9 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -894,7 +903,7 @@ program multi_token_support_program_v1.aleo {
       account: owner,
       token_id: token_id
     };
-    let owner_key_hash: field = BHP256::hash_to_field(owner);
+    let owner_key_hash: field = BHP256::hash_to_field(owner_key);
     let balance: Balance = authorized_balances.get(owner_key_hash);
     assert_eq(owner, balance.account);
     assert(balance.balance >= amount);
@@ -974,7 +983,9 @@ program multi_token_support_program_v1.aleo {
       balance: 0u128,
       authorized_until: default_expiration
     };
-    let recipient_balance: Balance = authorization_required ? balances.get_or_use(recipient_balance_key, default_balance) : authorized_balances.get_or_use(recipient_balance_key, default_balance);
+    let recipient_balance: Balance = authorization_required
+      ? balances.get_or_use(recipient_balance_key, default_balance)
+      : authorized_balances.get_or_use(recipient_balance_key, default_balance);
     let new_recipient_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,
@@ -996,7 +1007,7 @@ program multi_token_support_program_v1.aleo {
   async transition deposit_credits_public(
     public amount: u64
   ) -> Future {
-    let f0: Future = credits.aleo/transfer_public_as_signer(multi_token_support_program_v1.aleo, amount);
+    let f0: Future = credits.aleo/transfer_public_as_signer(self.address, amount);
     return finalize_deposit_credits_public(f0, amount as u128, self.caller);
   }
 
@@ -1034,7 +1045,7 @@ program multi_token_support_program_v1.aleo {
     input_record: credits.aleo/credits,
     amount: u64
   ) -> (credits.aleo/credits, Token, Future) {
-    let transfer_output: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, multi_token_support_program_v1.aleo, amount);
+    let transfer_output: (credits.aleo/credits, Future) = credits.aleo/transfer_private_to_public(input_record, self.address, amount);
     let token: Token = Token {
       owner: input_record.owner,
       amount: amount as u128,

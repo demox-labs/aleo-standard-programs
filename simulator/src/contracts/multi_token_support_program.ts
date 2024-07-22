@@ -20,13 +20,13 @@ export interface TokenOwner {
 }
 export interface TokenMetadata {
   token_id: string;
-  name: bigint; // ASCII text represented in bits, and the u128 value of the bitstring;
-  symbol: bigint; // ASCII text represented in bits, and the u128 value of the bitstring;
+  name: bigint;
+  symbol: bigint;
   decimals: bigint;
   supply: bigint;
   max_supply: bigint;
   admin: string;
-  external_authorization_required: boolean; // whether or not this token requires authorization from an external program before transferring;
+  external_authorization_required: boolean;
   external_authorization_party: string;
 }
 export interface Token {
@@ -44,6 +44,10 @@ export class multi_token_support_programProgram {
     height: bigint;
   } = { height: BigInt(0) };
   // params
+  roles: Map<string, bigint> = new Map();
+  SUPPLY_MANAGER_ROLE = BigInt('3');
+  BURNER_ROLE = BigInt('2');
+  MINTER_ROLE = BigInt('1');
   allowances: Map<string, bigint> = new Map();
   authorized_balances: Map<string, Balance> = new Map();
   balances: Map<string, Balance> = new Map();
@@ -63,10 +67,6 @@ export class multi_token_support_programProgram {
   // The 'mtsp' program.
   //program multi_token_support_program.aleo {
 
-  // mapping struct_balances: TokenOwner => Balance;
-  // mapping struct_authorized_balances: TokenOwner => Balance;
-  // mapping struct_allowances: Allowance => u128;
-
   // -------------------------
   // Called by token admins
   // -------------------------
@@ -84,7 +84,7 @@ export class multi_token_support_programProgram {
       decimals: BigInt('6'),
       supply: BigInt('1500000000000000'),
       max_supply: BigInt('1500000000000000'),
-      admin: 'multi_token_support_program.aleo',
+      admin: this.address,
       external_authorization_required: false,
       external_authorization_party: this.address,
     };
@@ -165,6 +165,49 @@ export class multi_token_support_programProgram {
     };
   }
 
+  set_role(token_id: string, account: string, role: bigint) {
+    assert(token_id != this.CREDITS_RESERVED_TOKEN_ID);
+    return this.finalize_set_role(token_id, account, role, this.caller);
+  }
+
+  finalize_set_role(
+    token_id: string,
+    account: string,
+    role: bigint,
+    caller: string
+  ) {
+    let token: TokenMetadata = this.registered_tokens.get(token_id)!;
+    assert(token !== undefined);
+    assert(caller === token.admin);
+
+    let role_owner: TokenOwner = {
+      account: account,
+      token_id: token_id,
+    };
+    let role_owner_hash: string = JSON.stringify(role_owner);
+
+    this.roles.set(role_owner_hash, role);
+  }
+
+  remove_role(token_id: string, account: string) {
+    assert(token_id != this.CREDITS_RESERVED_TOKEN_ID);
+    return this.finalize_remove_role(token_id, account, this.caller);
+  }
+
+  finalize_remove_role(token_id: string, account: string, caller: string) {
+    let token: TokenMetadata = this.registered_tokens.get(token_id)!;
+    assert(token !== undefined);
+    assert(caller === token.admin);
+
+    let role_owner: TokenOwner = {
+      account: account,
+      token_id: token_id,
+    };
+    let role_owner_hash: string = JSON.stringify(role_owner);
+
+    this.roles.delete(role_owner_hash);
+  }
+
   mint_public(
     token_id: string,
     recipient: string,
@@ -186,13 +229,24 @@ export class multi_token_support_programProgram {
     recipient: string,
     amount: bigint,
     authorized_until: bigint,
-    token_admin: string
+    caller: string
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = this.registered_tokens.get(token_id)!;
     assert(token !== undefined);
-    assert(token.admin === token_admin);
+    let is_admin: boolean = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = {
+        account: caller,
+        token_id: token_id,
+      };
+      let role_owner_hash: string = JSON.stringify(role_owner);
+      let role: bigint = this.roles.get(role_owner_hash)!;
+      assert(role !== undefined);
+      assert(role == this.MINTER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: bigint = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
@@ -276,13 +330,24 @@ export class multi_token_support_programProgram {
     amount: bigint,
     external_authorization_required: boolean,
     authorized_until: bigint,
-    token_admin: string
+    caller: string
   ) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply + amount <= max_supply
+    // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = this.registered_tokens.get(token_id)!;
     assert(token !== undefined);
-    assert(token.admin === token_admin);
+    let is_admin: boolean = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = {
+        account: caller,
+        token_id: token_id,
+      };
+      let role_owner_hash: string = JSON.stringify(role_owner);
+      let role: bigint = this.roles.get(role_owner_hash)!;
+      assert(role !== undefined);
+      assert(role == this.MINTER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply + amount <= max_supply
     let new_supply: bigint = token.supply + amount;
     assert(new_supply <= token.max_supply);
 
@@ -316,12 +381,23 @@ export class multi_token_support_programProgram {
     return this.finalize_burn_public(token_owner, amount, this.caller);
   }
 
-  finalize_burn_public(owner: TokenOwner, amount: bigint, token_admin: string) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+  finalize_burn_public(owner: TokenOwner, amount: bigint, caller: string) {
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = this.registered_tokens.get(owner.token_id)!;
     assert(token !== undefined);
-    assert(token.admin === token_admin);
+    let is_admin: boolean = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = {
+        account: caller,
+        token_id: owner.token_id,
+      };
+      let role_owner_hash: string = JSON.stringify(role_owner);
+      let role: bigint = this.roles.get(role_owner_hash)!;
+      assert(role !== undefined);
+      assert(role == this.BURNER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply - amount >= 0
     let new_supply: bigint = token.supply - amount; // underflow will be caught by the VM
 
     // Get the locked balance for the recipient
@@ -335,8 +411,9 @@ export class multi_token_support_programProgram {
     let balance: Balance = this.balances.get(balance_key) || default_balance;
     let remaining_after_burn: bigint = balance.balance - amount;
     // Burn from locked balance
-    let new_locked_balance: bigint =
+    let new_locked_balance_as_i128: bigint =
       remaining_after_burn >= BigInt('0') ? remaining_after_burn : BigInt('0');
+    let new_locked_balance: bigint = new_locked_balance_as_i128;
     let new_balance: Balance = {
       token_id: owner.token_id,
       account: owner.account,
@@ -391,12 +468,23 @@ export class multi_token_support_programProgram {
     ];
   }
 
-  finalize_burn_private(token_id: string, amount: bigint, token_admin: string) {
-    // Check that the token exists, and that the caller is the token admin
-    // Check that the token supply - amount >= 0
+  finalize_burn_private(token_id: string, amount: bigint, caller: string) {
+    // Check that the token exists, and that the caller has permission to burn
     let token: TokenMetadata = this.registered_tokens.get(token_id)!;
     assert(token !== undefined);
-    assert(token.admin === token_admin);
+    let is_admin: boolean = caller == token.admin;
+    if (!is_admin) {
+      let role_owner: TokenOwner = {
+        account: caller,
+        token_id: token_id,
+      };
+      let role_owner_hash: string = JSON.stringify(role_owner);
+      let role: bigint = this.roles.get(role_owner_hash)!;
+      assert(role !== undefined);
+      assert(role == this.BURNER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
+    }
+
+    // Check that the token supply - amount >= 0
     let new_supply: bigint = token.supply - amount; // underflow will be caught by the VM
 
     // Update the token supply
@@ -935,7 +1023,7 @@ export class multi_token_support_programProgram {
       account: owner,
       token_id: token_id,
     };
-    let owner_key_hash: string = JSON.stringify(owner);
+    let owner_key_hash: string = JSON.stringify(owner_key);
     let balance: Balance = this.authorized_balances.get(owner_key_hash)!;
     assert(balance !== undefined);
     assert(owner === balance.account);
@@ -1069,10 +1157,7 @@ export class multi_token_support_programProgram {
   deposit_credits_public(amount: bigint) {
     this.credits.signer = this.signer;
     this.credits.caller = 'multi_token_support_program.aleo';
-    this.credits.transfer_public_as_signer(
-      'multi_token_support_program.aleo',
-      amount
-    );
+    this.credits.transfer_public_as_signer(this.address, amount);
 
     return this.finalize_deposit_credits_public(amount, this.caller);
   }
@@ -1108,7 +1193,7 @@ export class multi_token_support_programProgram {
     this.credits.caller = 'multi_token_support_program.aleo';
     let transfer_output: credits = this.credits.transfer_private_to_public(
       input_record,
-      'multi_token_support_program.aleo',
+      this.address,
       amount
     );
 
