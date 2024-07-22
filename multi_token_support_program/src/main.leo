@@ -138,6 +138,7 @@ program multi_token_support_program_v1.aleo {
       external_authorization_required: token.external_authorization_required,
       external_authorization_party: external_authorization_party
     };
+    registered_tokens.set(token_id, new_metadata);
   }
 
   async transition set_role(
