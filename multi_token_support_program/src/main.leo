@@ -1031,24 +1031,24 @@ program multi_token_support_program_v1.aleo {
     public amount: u64
   ) -> Future {
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, amount);
-    return finalize_deposit_credits_public(f0, amount as u128, self.caller);
+    return finalize_deposit_credits_public(f0, amount as u128, self.signer);
   }
 
   async function finalize_deposit_credits_public(
     f0: Future,
     amount: u128,
-    caller: address
+    signer: address
   ) {
     f0.await();
-    // Get or create a credits balance for the caller
+    // Get or create a credits balance for the signer
     let balance_key: TokenOwner = TokenOwner {
-      account: caller,
+      account: signer,
       token_id: CREDITS_RESERVED_TOKEN_ID
     };
     let balance_key_hash: field = BHP256::hash_to_field(balance_key);
     let default_balance: Balance = Balance {
       token_id: CREDITS_RESERVED_TOKEN_ID,
-      account: caller,
+      account: signer,
       balance: 0u128,
       authorized_until: 4294967295u32
     };
@@ -1056,7 +1056,7 @@ program multi_token_support_program_v1.aleo {
     // Increment the balance by the amount deposited
     let new_balance: Balance = Balance {
       token_id: CREDITS_RESERVED_TOKEN_ID,
-      account: caller,
+      account: signer,
       balance: balance.balance + amount,
       authorized_until: balance.authorized_until
     };
