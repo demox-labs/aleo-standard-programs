@@ -13,7 +13,7 @@ const args = process.argv.slice(2);
 
 const coreProtocol = ['/pondo_core_protocol'];
 
-const oracle = ['/pondo_oracle' /*'/reference_delegator'*/];
+const oracle = [/*'/pondo_oracle',*/ '/reference_delegator'];
 
 const delegators = [
   '/delegators/pondo_delegator1',

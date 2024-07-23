@@ -287,126 +287,180 @@ export class pondo_core_protocolProgram {
       validator: this.address,
       microcredits: BigInt('0'),
     };
-    let delegator1_bonded: bigint =
+    let delegator1_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator2_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator2_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator3_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator3_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator4_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator4_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator5_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator5_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
+        base_bond_state?.microcredits
+    );
 
     let base_unbond_state: unbond_state = {
       microcredits: BigInt('0'),
       height: BigInt('0'),
     };
-    let delegator1_unbonding: bigint =
+    let delegator1_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator2_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator2_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator3_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator3_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator4_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator4_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator5_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator5_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
+        base_unbond_state?.microcredits
+    );
 
-    let delegator1_account: bigint =
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0');
-    let delegator2_account: bigint =
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0');
-    let delegator3_account: bigint =
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0');
-    let delegator4_account: bigint =
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0');
-    let delegator5_account: bigint =
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
+    let delegator1_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+    );
+    let delegator2_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+    );
+    let delegator3_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+    );
+    let delegator4_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+    );
+    let delegator5_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+    );
 
-    let total_bonded: bigint =
+    let total_bonded: bigint = BigInt.asUintN(
+      64,
       delegator1_bonded +
-      delegator2_bonded +
-      delegator3_bonded +
-      delegator4_bonded +
-      delegator5_bonded;
-    let total_account: bigint =
+        delegator2_bonded +
+        delegator3_bonded +
+        delegator4_bonded +
+        delegator5_bonded
+    );
+    let total_account: bigint = BigInt.asUintN(
+      64,
       delegator1_account +
-      delegator2_account +
-      delegator3_account +
-      delegator4_account +
-      delegator5_account;
-    let total_unbonding: bigint =
+        delegator2_account +
+        delegator3_account +
+        delegator4_account +
+        delegator5_account
+    );
+    let total_unbonding: bigint = BigInt.asUintN(
+      64,
       delegator1_unbonding +
-      delegator2_unbonding +
-      delegator3_unbonding +
-      delegator4_unbonding +
-      delegator5_unbonding;
-    let bonded_withdrawals: bigint = this.balances.get(
-      this.BONDED_WITHDRAWALS
-    )!;
+        delegator2_unbonding +
+        delegator3_unbonding +
+        delegator4_unbonding +
+        delegator5_unbonding
+    );
+    let bonded_withdrawals: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.BONDED_WITHDRAWALS)!
+    );
     assert(bonded_withdrawals !== undefined);
-    let total_delegated: bigint =
-      total_bonded + total_account + total_unbonding - bonded_withdrawals;
+    let total_delegated: bigint = BigInt.asIntN(
+      64,
+      total_bonded + total_account + total_unbonding - bonded_withdrawals
+    );
 
-    let currently_delegated: bigint = this.balances.get(
-      this.DELEGATED_BALANCE
-    )!;
+    let currently_delegated: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(currently_delegated !== undefined);
-    let current_owed_commission: bigint = this.owed_commission.get(
-      BigInt('0')
-    )!;
+    let current_owed_commission: bigint = BigInt.asUintN(
+      64,
+      this.owed_commission.get(BigInt('0'))!
+    );
     assert(current_owed_commission !== undefined);
-    let total_paleo_pool: bigint =
+    let total_paleo_pool: bigint = BigInt.asUintN(
+      128,
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
-      current_owed_commission -
-      expected_paleo_mint;
+        current_owed_commission -
+        expected_paleo_mint
+    );
     assert(total_paleo_pool !== undefined);
 
-    let rewards: bigint =
+    let rewards: bigint = BigInt.asIntN(
+      64,
       total_delegated > currently_delegated
         ? total_delegated - currently_delegated
-        : BigInt('0');
-    let new_commission: bigint = this.inline_get_commission(
-      rewards,
-      this.PROTOCOL_FEE
+        : BigInt('0')
+    );
+    let new_commission: bigint = BigInt.asUintN(
+      64,
+      this.inline_get_commission(rewards, this.PROTOCOL_FEE)
     );
     currently_delegated += rewards - new_commission;
 
-    let core_protocol_account: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let core_protocol_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let current_state: bigint = this.protocol_state.get(
-      this.PROTOCOL_STATE_KEY
-    )!;
+    let current_state: bigint = BigInt.asUintN(
+      8,
+      this.protocol_state.get(this.PROTOCOL_STATE_KEY)!
+    );
     assert(current_state !== undefined);
-    let deposit_pool: bigint =
+    let deposit_pool: bigint = BigInt.asUintN(
+      64,
       current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
         : core_protocol_account -
-          currently_delegated -
-          credits_deposit -
-          reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
-    let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      new_commission,
-      total_paleo_pool
+            currently_delegated -
+            credits_deposit -
+            reserved_for_withdrawal
+    ); // if the protocol is rebalancing, the full balance is in the account
+    let new_commission_paleo: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        new_commission,
+        total_paleo_pool
+      )
     );
     this.owed_commission.set(
       BigInt('0'),
@@ -419,20 +473,25 @@ export class pondo_core_protocolProgram {
     this.balances.set(this.DELEGATED_BALANCE, currently_delegated);
 
     // Calculate mint for deposit
-    let paleo_for_deposit: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      credits_deposit,
-      total_paleo_pool
+    let paleo_for_deposit: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        credits_deposit,
+        total_paleo_pool
+      )
     );
     assert(paleo_for_deposit >= BigInt('1'));
     assert(paleo_for_deposit >= expected_paleo_mint);
   }
 
   inline_get_commission(rewards: bigint, commission_rate: bigint) {
-    let commission: bigint =
-      (rewards * commission_rate) / this.PRECISION_UNSIGNED;
-    let commission_64: bigint = commission;
+    let commission: bigint = BigInt.asUintN(
+      128,
+      (rewards * commission_rate) / this.PRECISION_UNSIGNED
+    );
+    let commission_64: bigint = BigInt.asUintN(64, commission);
     return commission_64;
   }
 
@@ -442,11 +501,16 @@ export class pondo_core_protocolProgram {
     deposit: bigint,
     paleo: bigint
   ) {
-    let full_balance: bigint = bonded_balance + existing_deposit_pool;
-    let new_total_paleo: bigint =
-      (paleo * (full_balance + deposit)) / full_balance;
-    let diff: bigint = new_total_paleo - paleo;
-    let paleo_to_mint: bigint = diff;
+    let full_balance: bigint = BigInt.asUintN(
+      128,
+      bonded_balance + existing_deposit_pool
+    );
+    let new_total_paleo: bigint = BigInt.asUintN(
+      128,
+      (paleo * (full_balance + deposit)) / full_balance
+    );
+    let diff: bigint = BigInt.asUintN(128, new_total_paleo - paleo);
+    let paleo_to_mint: bigint = BigInt.asUintN(64, diff);
     return paleo_to_mint;
   }
 
@@ -488,126 +552,180 @@ export class pondo_core_protocolProgram {
       validator: this.address,
       microcredits: BigInt('0'),
     };
-    let delegator1_bonded: bigint =
+    let delegator1_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator2_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator2_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator3_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator3_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator4_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator4_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator5_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator5_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
+        base_bond_state?.microcredits
+    );
 
     let base_unbond_state: unbond_state = {
       microcredits: BigInt('0'),
       height: BigInt('0'),
     };
-    let delegator1_unbonding: bigint =
+    let delegator1_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator2_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator2_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator3_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator3_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator4_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator4_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator5_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator5_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
+        base_unbond_state?.microcredits
+    );
 
-    let delegator1_account: bigint =
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0');
-    let delegator2_account: bigint =
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0');
-    let delegator3_account: bigint =
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0');
-    let delegator4_account: bigint =
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0');
-    let delegator5_account: bigint =
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
+    let delegator1_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+    );
+    let delegator2_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+    );
+    let delegator3_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+    );
+    let delegator4_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+    );
+    let delegator5_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+    );
 
-    let total_bonded: bigint =
+    let total_bonded: bigint = BigInt.asUintN(
+      64,
       delegator1_bonded +
-      delegator2_bonded +
-      delegator3_bonded +
-      delegator4_bonded +
-      delegator5_bonded;
-    let total_account: bigint =
+        delegator2_bonded +
+        delegator3_bonded +
+        delegator4_bonded +
+        delegator5_bonded
+    );
+    let total_account: bigint = BigInt.asUintN(
+      64,
       delegator1_account +
-      delegator2_account +
-      delegator3_account +
-      delegator4_account +
-      delegator5_account;
-    let total_unbonding: bigint =
+        delegator2_account +
+        delegator3_account +
+        delegator4_account +
+        delegator5_account
+    );
+    let total_unbonding: bigint = BigInt.asUintN(
+      64,
       delegator1_unbonding +
-      delegator2_unbonding +
-      delegator3_unbonding +
-      delegator4_unbonding +
-      delegator5_unbonding;
-    let bonded_withdrawals: bigint = this.balances.get(
-      this.BONDED_WITHDRAWALS
-    )!;
+        delegator2_unbonding +
+        delegator3_unbonding +
+        delegator4_unbonding +
+        delegator5_unbonding
+    );
+    let bonded_withdrawals: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.BONDED_WITHDRAWALS)!
+    );
     assert(bonded_withdrawals !== undefined);
-    let total_delegated: bigint =
-      total_bonded + total_account + total_unbonding - bonded_withdrawals;
+    let total_delegated: bigint = BigInt.asIntN(
+      64,
+      total_bonded + total_account + total_unbonding - bonded_withdrawals
+    );
 
-    let currently_delegated: bigint = this.balances.get(
-      this.DELEGATED_BALANCE
-    )!;
+    let currently_delegated: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(currently_delegated !== undefined);
-    let current_owed_commission: bigint = this.owed_commission.get(
-      BigInt('0')
-    )!;
+    let current_owed_commission: bigint = BigInt.asUintN(
+      64,
+      this.owed_commission.get(BigInt('0'))!
+    );
     assert(current_owed_commission !== undefined);
-    let total_paleo_pool: bigint =
+    let total_paleo_pool: bigint = BigInt.asUintN(
+      128,
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
-      current_owed_commission -
-      expected_paleo_mint;
+        current_owed_commission -
+        expected_paleo_mint
+    );
     assert(total_paleo_pool !== undefined);
 
-    let rewards: bigint =
+    let rewards: bigint = BigInt.asIntN(
+      64,
       total_delegated > currently_delegated
         ? total_delegated - currently_delegated
-        : BigInt('0');
-    let new_commission: bigint = this.inline_get_commission(
-      rewards,
-      this.PROTOCOL_FEE
+        : BigInt('0')
+    );
+    let new_commission: bigint = BigInt.asUintN(
+      64,
+      this.inline_get_commission(rewards, this.PROTOCOL_FEE)
     );
     currently_delegated += rewards - new_commission;
 
-    let core_protocol_account: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let core_protocol_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let current_state: bigint = this.protocol_state.get(
-      this.PROTOCOL_STATE_KEY
-    )!;
+    let current_state: bigint = BigInt.asUintN(
+      8,
+      this.protocol_state.get(this.PROTOCOL_STATE_KEY)!
+    );
     assert(current_state !== undefined);
-    let deposit_pool: bigint =
+    let deposit_pool: bigint = BigInt.asUintN(
+      64,
       current_state == this.NORMAL_STATE
         ? core_protocol_account - credits_deposit - reserved_for_withdrawal
         : core_protocol_account -
-          currently_delegated -
-          credits_deposit -
-          reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
-    let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      new_commission,
-      total_paleo_pool
+            currently_delegated -
+            credits_deposit -
+            reserved_for_withdrawal
+    ); // if the protocol is rebalancing, the full balance is in the account
+    let new_commission_paleo: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        new_commission,
+        total_paleo_pool
+      )
     );
     this.owed_commission.set(
       BigInt('0'),
@@ -620,11 +738,14 @@ export class pondo_core_protocolProgram {
     this.balances.set(this.DELEGATED_BALANCE, currently_delegated);
 
     // Calculate mint for deposit
-    let paleo_for_deposit: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      credits_deposit,
-      total_paleo_pool
+    let paleo_for_deposit: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        credits_deposit,
+        total_paleo_pool
+      )
     );
     assert(paleo_for_deposit >= BigInt('1'));
     assert(paleo_for_deposit >= expected_paleo_mint);
@@ -658,41 +779,55 @@ export class pondo_core_protocolProgram {
 
   finalize_distribute_deposits() {
     // Confirm that there are enough credits left for the liquidity pool
-    let currently_delegated: bigint = this.balances.get(
-      this.DELEGATED_BALANCE
-    )!;
+    let currently_delegated: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(currently_delegated !== undefined);
-    let account_balance: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let account_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let liquidity_pool: bigint = account_balance - reserved_for_withdrawal;
-    let optimal_liquidity: bigint =
-      this.inline_calculate_optimal_liquidity(currently_delegated);
+    let liquidity_pool: bigint = BigInt.asUintN(
+      64,
+      account_balance - reserved_for_withdrawal
+    );
+    let optimal_liquidity: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_optimal_liquidity(currently_delegated)
+    );
     assert(liquidity_pool >= optimal_liquidity);
 
     // Confirm each delegator is already bonded and in the correct state
-    let delegator1_state: bigint = this.pondo_delegator1.state_mapping.get(
-      BigInt('0')
-    )!;
+    let delegator1_state: bigint = BigInt.asUintN(
+      8,
+      this.pondo_delegator1.state_mapping.get(BigInt('0'))!
+    );
     assert(delegator1_state !== undefined);
-    let delegator2_state: bigint = this.pondo_delegator2.state_mapping.get(
-      BigInt('0')
-    )!;
+    let delegator2_state: bigint = BigInt.asUintN(
+      8,
+      this.pondo_delegator2.state_mapping.get(BigInt('0'))!
+    );
     assert(delegator2_state !== undefined);
-    let delegator3_state: bigint = this.pondo_delegator3.state_mapping.get(
-      BigInt('0')
-    )!;
+    let delegator3_state: bigint = BigInt.asUintN(
+      8,
+      this.pondo_delegator3.state_mapping.get(BigInt('0'))!
+    );
     assert(delegator3_state !== undefined);
-    let delegator4_state: bigint = this.pondo_delegator4.state_mapping.get(
-      BigInt('0')
-    )!;
+    let delegator4_state: bigint = BigInt.asUintN(
+      8,
+      this.pondo_delegator4.state_mapping.get(BigInt('0'))!
+    );
     assert(delegator4_state !== undefined);
-    let delegator5_state: bigint = this.pondo_delegator5.state_mapping.get(
-      BigInt('0')
-    )!;
+    let delegator5_state: bigint = BigInt.asUintN(
+      8,
+      this.pondo_delegator5.state_mapping.get(BigInt('0'))!
+    );
     assert(delegator5_state !== undefined);
     assert(
       delegator1_state == this.BOND_ALLOWED ||
@@ -717,12 +852,16 @@ export class pondo_core_protocolProgram {
   }
 
   inline_calculate_optimal_liquidity(total_balance: bigint) {
-    let min_liquidity: bigint =
-      (total_balance * this.MIN_LIQUIDITY_PERCENT) / this.PRECISION_UNSIGNED;
-    let optimal_liquidity: bigint =
+    let min_liquidity: bigint = BigInt.asUintN(
+      128,
+      (total_balance * this.MIN_LIQUIDITY_PERCENT) / this.PRECISION_UNSIGNED
+    );
+    let optimal_liquidity: bigint = BigInt.asUintN(
+      64,
       min_liquidity > this.MAX_GUARANTEED_LIQUIDITY
         ? this.MAX_GUARANTEED_LIQUIDITY
-        : min_liquidity;
+        : min_liquidity
+    );
     return optimal_liquidity;
   }
 
@@ -757,9 +896,10 @@ export class pondo_core_protocolProgram {
     caller: string
   ) {
     // Block instant withdrawals during a rebalance
-    let current_state: bigint = this.protocol_state.get(
-      this.PROTOCOL_STATE_KEY
-    )!;
+    let current_state: bigint = BigInt.asUintN(
+      8,
+      this.protocol_state.get(this.PROTOCOL_STATE_KEY)!
+    );
     assert(current_state !== undefined);
     assert(current_state == this.NORMAL_STATE);
 
@@ -772,134 +912,200 @@ export class pondo_core_protocolProgram {
       validator: this.address,
       microcredits: BigInt('0'),
     };
-    let delegator1_bonded: bigint =
+    let delegator1_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator2_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator2_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator3_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator3_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator4_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator4_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator5_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator5_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
+        base_bond_state?.microcredits
+    );
 
     let base_unbond_state: unbond_state = {
       microcredits: BigInt('0'),
       height: BigInt('0'),
     };
-    let delegator1_unbonding: bigint =
+    let delegator1_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator2_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator2_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator3_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator3_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator4_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator4_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator5_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator5_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
+        base_unbond_state?.microcredits
+    );
 
-    let delegator1_account: bigint =
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0');
-    let delegator2_account: bigint =
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0');
-    let delegator3_account: bigint =
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0');
-    let delegator4_account: bigint =
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0');
-    let delegator5_account: bigint =
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
+    let delegator1_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+    );
+    let delegator2_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+    );
+    let delegator3_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+    );
+    let delegator4_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+    );
+    let delegator5_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+    );
 
-    let total_bonded: bigint =
+    let total_bonded: bigint = BigInt.asUintN(
+      64,
       delegator1_bonded +
-      delegator2_bonded +
-      delegator3_bonded +
-      delegator4_bonded +
-      delegator5_bonded;
-    let total_account: bigint =
+        delegator2_bonded +
+        delegator3_bonded +
+        delegator4_bonded +
+        delegator5_bonded
+    );
+    let total_account: bigint = BigInt.asUintN(
+      64,
       delegator1_account +
-      delegator2_account +
-      delegator3_account +
-      delegator4_account +
-      delegator5_account;
-    let total_unbonding: bigint =
+        delegator2_account +
+        delegator3_account +
+        delegator4_account +
+        delegator5_account
+    );
+    let total_unbonding: bigint = BigInt.asUintN(
+      64,
       delegator1_unbonding +
-      delegator2_unbonding +
-      delegator3_unbonding +
-      delegator4_unbonding +
-      delegator5_unbonding;
-    let bonded_withdrawals: bigint = this.balances.get(
-      this.BONDED_WITHDRAWALS
-    )!;
+        delegator2_unbonding +
+        delegator3_unbonding +
+        delegator4_unbonding +
+        delegator5_unbonding
+    );
+    let bonded_withdrawals: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.BONDED_WITHDRAWALS)!
+    );
     assert(bonded_withdrawals !== undefined);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
-    let total_delegated: bigint =
-      total_bonded + total_account + total_unbonding - bonded_withdrawals;
+    let total_delegated: bigint = BigInt.asIntN(
+      64,
+      total_bonded + total_account + total_unbonding - bonded_withdrawals
+    );
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: bigint = this.balances.get(
-      this.DELEGATED_BALANCE
-    )!;
+    let currently_delegated: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(currently_delegated !== undefined);
-    let current_owed_commission: bigint = this.owed_commission.get(
-      BigInt('0')
-    )!;
+    let current_owed_commission: bigint = BigInt.asUintN(
+      64,
+      this.owed_commission.get(BigInt('0'))!
+    );
     assert(current_owed_commission !== undefined);
-    let paleo_minted_post_burn: bigint =
+    let paleo_minted_post_burn: bigint = BigInt.asUintN(
+      128,
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
-      )!.supply + current_owed_commission;
+      )!.supply + current_owed_commission
+    );
     assert(paleo_minted_post_burn !== undefined);
-    let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
+    let total_paleo_minted: bigint = BigInt.asUintN(
+      128,
+      paleo_minted_post_burn + paleo_burn_amount
+    );
 
-    let rewards: bigint =
+    let rewards: bigint = BigInt.asIntN(
+      64,
       total_delegated > currently_delegated
         ? total_delegated - currently_delegated
-        : BigInt('0');
-    let new_commission: bigint = this.inline_get_commission(
-      rewards,
-      this.PROTOCOL_FEE
+        : BigInt('0')
+    );
+    let new_commission: bigint = BigInt.asUintN(
+      64,
+      this.inline_get_commission(rewards, this.PROTOCOL_FEE)
     );
     currently_delegated += rewards - new_commission;
 
-    let core_protocol_account: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let core_protocol_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let deposit_pool: bigint =
-      core_protocol_account - reserved_for_withdrawal + withdrawal_credits;
+    let deposit_pool: bigint = BigInt.asUintN(
+      64,
+      core_protocol_account - reserved_for_withdrawal + withdrawal_credits
+    );
     // Update owed commission balance
-    let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      new_commission,
-      total_paleo_minted
+    let new_commission_paleo: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        new_commission,
+        total_paleo_minted
+      )
     );
     current_owed_commission += new_commission_paleo;
     total_paleo_minted += new_commission_paleo;
     currently_delegated += new_commission;
 
     // Calculate full pool size
-    let full_pool: bigint = currently_delegated + deposit_pool;
+    let full_pool: bigint = BigInt.asUintN(
+      128,
+      currently_delegated + deposit_pool
+    );
 
     // Calculate credits value of burned pALEO
-    let withdrawal_fee: bigint =
-      this.inline_calculate_withdraw_fee(paleo_burn_amount);
-    let net_burn_amount: bigint = paleo_burn_amount - withdrawal_fee;
-    let withdrawal_calculation: bigint =
-      (net_burn_amount * full_pool) / total_paleo_minted;
+    let withdrawal_fee: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_withdraw_fee(paleo_burn_amount)
+    );
+    let net_burn_amount: bigint = BigInt.asUintN(
+      64,
+      paleo_burn_amount - withdrawal_fee
+    );
+    let withdrawal_calculation: bigint = BigInt.asUintN(
+      128,
+      (net_burn_amount * full_pool) / total_paleo_minted
+    );
     // Assert that the withdrawal amount was at most the calculated amount
     assert(withdrawal_credits <= withdrawal_calculation);
 
@@ -911,9 +1117,11 @@ export class pondo_core_protocolProgram {
   }
 
   inline_calculate_withdraw_fee(paleo_burn_amount: bigint) {
-    let fee_calc: bigint =
-      (paleo_burn_amount * this.INSTANT_WITHDRAW_FEE) / this.PRECISION_UNSIGNED;
-    let fee: bigint = fee_calc;
+    let fee_calc: bigint = BigInt.asUintN(
+      128,
+      (paleo_burn_amount * this.INSTANT_WITHDRAW_FEE) / this.PRECISION_UNSIGNED
+    );
+    let fee: bigint = BigInt.asUintN(64, fee_calc);
     return fee;
   }
 
@@ -937,126 +1145,183 @@ export class pondo_core_protocolProgram {
       validator: this.address,
       microcredits: BigInt('0'),
     };
-    let delegator1_bonded: bigint =
+    let delegator1_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator2_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator2_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator3_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator3_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator4_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator4_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
-    let delegator5_bonded: bigint =
+        base_bond_state?.microcredits
+    );
+    let delegator5_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
-      base_bond_state?.microcredits;
+        base_bond_state?.microcredits
+    );
 
     let base_unbond_state: unbond_state = {
       microcredits: BigInt('0'),
       height: BigInt('0'),
     };
-    let delegator1_unbonding: bigint =
+    let delegator1_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator2_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator2_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator3_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator3_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator4_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator4_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
-    let delegator5_unbonding: bigint =
+        base_unbond_state?.microcredits
+    );
+    let delegator5_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
-      base_unbond_state?.microcredits;
+        base_unbond_state?.microcredits
+    );
 
-    let delegator1_account: bigint =
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0');
-    let delegator2_account: bigint =
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0');
-    let delegator3_account: bigint =
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0');
-    let delegator4_account: bigint =
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0');
-    let delegator5_account: bigint =
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
+    let delegator1_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+    );
+    let delegator2_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+    );
+    let delegator3_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+    );
+    let delegator4_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+    );
+    let delegator5_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+    );
 
-    let total_bonded: bigint =
+    let total_bonded: bigint = BigInt.asUintN(
+      64,
       delegator1_bonded +
-      delegator2_bonded +
-      delegator3_bonded +
-      delegator4_bonded +
-      delegator5_bonded;
-    let total_account: bigint =
+        delegator2_bonded +
+        delegator3_bonded +
+        delegator4_bonded +
+        delegator5_bonded
+    );
+    let total_account: bigint = BigInt.asUintN(
+      64,
       delegator1_account +
-      delegator2_account +
-      delegator3_account +
-      delegator4_account +
-      delegator5_account;
-    let total_unbonding: bigint =
+        delegator2_account +
+        delegator3_account +
+        delegator4_account +
+        delegator5_account
+    );
+    let total_unbonding: bigint = BigInt.asUintN(
+      64,
       delegator1_unbonding +
-      delegator2_unbonding +
-      delegator3_unbonding +
-      delegator4_unbonding +
-      delegator5_unbonding;
-    let bonded_withdrawals: bigint = this.balances.get(
-      this.BONDED_WITHDRAWALS
-    )!;
+        delegator2_unbonding +
+        delegator3_unbonding +
+        delegator4_unbonding +
+        delegator5_unbonding
+    );
+    let bonded_withdrawals: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.BONDED_WITHDRAWALS)!
+    );
     assert(bonded_withdrawals !== undefined);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
-    let total_delegated: bigint =
-      total_bonded + total_account + total_unbonding - bonded_withdrawals;
+    let total_delegated: bigint = BigInt.asIntN(
+      64,
+      total_bonded + total_account + total_unbonding - bonded_withdrawals
+    );
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: bigint = this.balances.get(
-      this.DELEGATED_BALANCE
-    )!;
+    let currently_delegated: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(currently_delegated !== undefined);
-    let current_owed_commission: bigint = this.owed_commission.get(
-      BigInt('0')
-    )!;
+    let current_owed_commission: bigint = BigInt.asUintN(
+      64,
+      this.owed_commission.get(BigInt('0'))!
+    );
     assert(current_owed_commission !== undefined);
-    let paleo_minted_post_burn: bigint =
+    let paleo_minted_post_burn: bigint = BigInt.asUintN(
+      128,
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
-      )!.supply + current_owed_commission;
+      )!.supply + current_owed_commission
+    );
     assert(paleo_minted_post_burn !== undefined);
-    let total_paleo_minted: bigint = paleo_minted_post_burn + paleo_burn_amount;
+    let total_paleo_minted: bigint = BigInt.asUintN(
+      128,
+      paleo_minted_post_burn + paleo_burn_amount
+    );
 
-    let rewards: bigint =
+    let rewards: bigint = BigInt.asIntN(
+      64,
       total_delegated > currently_delegated
         ? total_delegated - currently_delegated
-        : BigInt('0');
-    let new_commission: bigint = this.inline_get_commission(
-      rewards,
-      this.PROTOCOL_FEE
+        : BigInt('0')
+    );
+    let new_commission: bigint = BigInt.asUintN(
+      64,
+      this.inline_get_commission(rewards, this.PROTOCOL_FEE)
     );
     currently_delegated += rewards - new_commission;
 
-    let core_protocol_account: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let core_protocol_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let current_state: bigint = this.protocol_state.get(
-      this.PROTOCOL_STATE_KEY
-    )!;
+    let current_state: bigint = BigInt.asUintN(
+      8,
+      this.protocol_state.get(this.PROTOCOL_STATE_KEY)!
+    );
     assert(current_state !== undefined);
-    let deposit_pool: bigint =
+    let deposit_pool: bigint = BigInt.asUintN(
+      64,
       current_state == this.NORMAL_STATE
         ? core_protocol_account - reserved_for_withdrawal
-        : core_protocol_account - currently_delegated - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
+        : core_protocol_account - currently_delegated - reserved_for_withdrawal
+    ); // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
-    let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
-      currently_delegated,
-      deposit_pool,
-      new_commission,
-      total_paleo_minted
+    let new_commission_paleo: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        currently_delegated,
+        deposit_pool,
+        new_commission,
+        total_paleo_minted
+      )
     );
     this.owed_commission.set(
       BigInt('0'),
@@ -1066,12 +1331,17 @@ export class pondo_core_protocolProgram {
     currently_delegated += new_commission;
 
     // Calculate full pool size
-    let full_pool: bigint = currently_delegated + deposit_pool;
+    let full_pool: bigint = BigInt.asUintN(
+      128,
+      currently_delegated + deposit_pool
+    );
 
     // Calculate credits value of burned pALEO
-    let withdrawal_calculation: bigint =
-      (paleo_burn_amount * full_pool) / total_paleo_minted;
-    let withdrawal: bigint = withdrawal_calculation;
+    let withdrawal_calculation: bigint = BigInt.asUintN(
+      128,
+      (paleo_burn_amount * full_pool) / total_paleo_minted
+    );
+    let withdrawal: bigint = BigInt.asUintN(64, withdrawal_calculation);
 
     // Update bonded withdrawals
     this.balances.set(this.BONDED_WITHDRAWALS, bonded_withdrawals + withdrawal);
@@ -1089,19 +1359,29 @@ export class pondo_core_protocolProgram {
     };
     this.withdrawals.set(caller, withdrawal_state_value);
     // Update total for batch
-    let batch_total: bigint =
-      this.withdrawal_batches.get(batch_height[0]) || BigInt('0');
+    let batch_total: bigint = BigInt.asUintN(
+      64,
+      this.withdrawal_batches.get(batch_height[0]) || BigInt('0')
+    );
     this.withdrawal_batches.set(batch_height[0], batch_total + withdrawal);
   }
 
   inline_get_withdrawal_batch(height: bigint) {
-    let min_block_height: bigint = height + this.WITHDRAW_WAIT_MINIMUM;
-    let withdrawal_batch: bigint = min_block_height / this.BLOCKS_PER_EPOCH;
+    let min_block_height: bigint = BigInt.asUintN(
+      32,
+      height + this.WITHDRAW_WAIT_MINIMUM
+    );
+    let withdrawal_batch: bigint = BigInt.asUintN(
+      32,
+      min_block_height / this.BLOCKS_PER_EPOCH
+    );
     // Withdrawals are processed at the start of the next epoch
-    let claim_block: bigint =
+    let claim_block: bigint = BigInt.asUintN(
+      32,
       (withdrawal_batch + BigInt('1')) * this.BLOCKS_PER_EPOCH +
-      this.REBALANCE_PERIOD +
-      BigInt('1');
+        this.REBALANCE_PERIOD +
+        BigInt('1')
+    );
 
     return [withdrawal_batch, claim_block];
   }
@@ -1134,9 +1414,10 @@ export class pondo_core_protocolProgram {
     }
 
     // Update balance reserved for withdrawal
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
     this.balances.set(
       this.CLAIMABLE_WITHDRAWALS,
@@ -1151,23 +1432,23 @@ export class pondo_core_protocolProgram {
   prep_rebalance() {
     this.pondo_delegator1.signer = this.signer;
     this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator1.set_state(this.UNBOND_ALLOWED);
+    this.pondo_delegator1.prep_rebalance();
 
     this.pondo_delegator2.signer = this.signer;
     this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator2.set_state(this.UNBOND_ALLOWED);
+    this.pondo_delegator2.prep_rebalance();
 
     this.pondo_delegator3.signer = this.signer;
     this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator3.set_state(this.UNBOND_ALLOWED);
+    this.pondo_delegator3.prep_rebalance();
 
     this.pondo_delegator4.signer = this.signer;
     this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator4.set_state(this.UNBOND_ALLOWED);
+    this.pondo_delegator4.prep_rebalance();
 
     this.pondo_delegator5.signer = this.signer;
     this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator5.set_state(this.UNBOND_ALLOWED);
+    this.pondo_delegator5.prep_rebalance();
 
     return this.finalize_prep_rebalance();
   }
@@ -1175,11 +1456,22 @@ export class pondo_core_protocolProgram {
   finalize_prep_rebalance() {
     // Confirm that rebalancing is allowed
     // Rebalance is allowed during the first day of a new epoch
-    let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
-    let last_rebalance: bigint =
-      this.last_rebalance_epoch.get(BigInt('0')) || BigInt('4294967295');
+    let current_epoch: bigint = BigInt.asUintN(
+      32,
+      this.block.height / this.BLOCKS_PER_EPOCH
+    );
+    let last_rebalance: bigint = BigInt.asUintN(
+      32,
+      this.last_rebalance_epoch.get(BigInt('0')) || BigInt('4294967295')
+    );
+    // Update last rebalance epoch
     assert(current_epoch > last_rebalance);
-    let blocks_into_epoch: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
+    this.last_rebalance_epoch.set(BigInt('0'), current_epoch);
+
+    let blocks_into_epoch: bigint = BigInt.asUintN(
+      32,
+      this.block.height % this.BLOCKS_PER_EPOCH
+    );
     assert(
       blocks_into_epoch < this.REBALANCE_PERIOD ||
         last_rebalance == BigInt('4294967295')
@@ -1272,54 +1564,72 @@ export class pondo_core_protocolProgram {
     transfer_amounts: bigint[],
     commission_mint: bigint
   ) {
-    let full_balance: bigint =
+    let full_balance: bigint = BigInt.asUintN(
+      64,
       transfer_amounts[0] +
-      transfer_amounts[1] +
-      transfer_amounts[2] +
-      transfer_amounts[3] +
-      transfer_amounts[4];
-    let current_balance: bigint = this.balances.get(this.DELEGATED_BALANCE)!;
+        transfer_amounts[1] +
+        transfer_amounts[2] +
+        transfer_amounts[3] +
+        transfer_amounts[4]
+    );
+    let current_balance: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.DELEGATED_BALANCE)!
+    );
     assert(current_balance !== undefined);
 
-    let current_owed_commission: bigint = this.owed_commission.get(
-      BigInt('0')
-    )!;
+    let current_owed_commission: bigint = BigInt.asUintN(
+      64,
+      this.owed_commission.get(BigInt('0'))!
+    );
     assert(current_owed_commission !== undefined);
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
-    let total_paleo_minted: bigint =
+    let total_paleo_minted: bigint = BigInt.asUintN(
+      128,
       this.multi_token_support_program.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
-      current_owed_commission -
-      commission_mint;
+        current_owed_commission -
+        commission_mint
+    );
     assert(total_paleo_minted !== undefined);
 
-    let rewards: bigint =
+    let rewards: bigint = BigInt.asIntN(
+      64,
       full_balance > current_balance
         ? full_balance - current_balance
-        : BigInt('0');
-    let new_commission: bigint = this.inline_get_commission(
-      rewards,
-      this.PROTOCOL_FEE
+        : BigInt('0')
+    );
+    let new_commission: bigint = BigInt.asUintN(
+      64,
+      this.inline_get_commission(rewards, this.PROTOCOL_FEE)
     );
     current_balance += rewards - new_commission;
 
     // Update balances and owed commission
     // At this point, all credits have been transferred to the core protocol, but there may still be commission owed
-    let core_protocol_account: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let core_protocol_account: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let deposit_pool: bigint =
-      core_protocol_account - full_balance - reserved_for_withdrawal;
+    let deposit_pool: bigint = BigInt.asUintN(
+      64,
+      core_protocol_account - full_balance - reserved_for_withdrawal
+    );
 
-    let new_commission_paleo: bigint = this.inline_calculate_new_paleo(
-      current_balance,
-      deposit_pool,
-      new_commission,
-      total_paleo_minted
+    let new_commission_paleo: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_new_paleo(
+        current_balance,
+        deposit_pool,
+        new_commission,
+        total_paleo_minted
+      )
     );
     // New owed commission is whatever commission is left after the new commission mint, plus what we may have earned between calling the function and now
     this.owed_commission.set(
@@ -1330,19 +1640,25 @@ export class pondo_core_protocolProgram {
     this.balances.set(this.DELEGATED_BALANCE, current_balance + new_commission);
 
     // Move bonded withdrawals to available to claim
-    let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
+    let current_epoch: bigint = BigInt.asUintN(
+      32,
+      this.block.height / this.BLOCKS_PER_EPOCH
+    );
     //  Process withdrawals from the previous epoch
-    let current_withdrawal_batch: bigint =
-      this.withdrawal_batches.get(current_epoch - BigInt('1')) || BigInt('0');
+    let current_withdrawal_batch: bigint = BigInt.asUintN(
+      64,
+      this.withdrawal_batches.get(current_epoch - BigInt('1')) || BigInt('0')
+    );
     this.balances.set(
       this.CLAIMABLE_WITHDRAWALS,
       reserved_for_withdrawal + current_withdrawal_batch
     );
 
     // Update bonded withdrawals
-    let bonded_withdrawals: bigint = this.balances.get(
-      this.BONDED_WITHDRAWALS
-    )!;
+    let bonded_withdrawals: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.BONDED_WITHDRAWALS)!
+    );
     assert(bonded_withdrawals !== undefined);
     this.balances.set(
       this.BONDED_WITHDRAWALS,
@@ -1447,23 +1763,35 @@ export class pondo_core_protocolProgram {
         this.PORTION_5,
         this.PORTION_5,
       ];
-    let total_credits: bigint =
+    let total_credits: bigint = BigInt.asUintN(
+      64,
       transfer_amounts[0] +
-      transfer_amounts[1] +
-      transfer_amounts[2] +
-      transfer_amounts[3] +
-      transfer_amounts[4];
-    let total_credits_128: bigint = total_credits;
-    let validator1_portion: bigint =
-      (transfer_amounts[0] * this.PRECISION_UNSIGNED) / total_credits_128;
-    let validator2_portion: bigint =
-      (transfer_amounts[1] * this.PRECISION_UNSIGNED) / total_credits_128;
-    let validator3_portion: bigint =
-      (transfer_amounts[2] * this.PRECISION_UNSIGNED) / total_credits_128;
-    let validator4_portion: bigint =
-      (transfer_amounts[3] * this.PRECISION_UNSIGNED) / total_credits_128;
-    let validator5_portion: bigint =
-      (transfer_amounts[4] * this.PRECISION_UNSIGNED) / total_credits_128;
+        transfer_amounts[1] +
+        transfer_amounts[2] +
+        transfer_amounts[3] +
+        transfer_amounts[4]
+    );
+    let total_credits_128: bigint = BigInt.asUintN(128, total_credits);
+    let validator1_portion: bigint = BigInt.asUintN(
+      128,
+      (transfer_amounts[0] * this.PRECISION_UNSIGNED) / total_credits_128
+    );
+    let validator2_portion: bigint = BigInt.asUintN(
+      128,
+      (transfer_amounts[1] * this.PRECISION_UNSIGNED) / total_credits_128
+    );
+    let validator3_portion: bigint = BigInt.asUintN(
+      128,
+      (transfer_amounts[2] * this.PRECISION_UNSIGNED) / total_credits_128
+    );
+    let validator4_portion: bigint = BigInt.asUintN(
+      128,
+      (transfer_amounts[3] * this.PRECISION_UNSIGNED) / total_credits_128
+    );
+    let validator5_portion: bigint = BigInt.asUintN(
+      128,
+      (transfer_amounts[4] * this.PRECISION_UNSIGNED) / total_credits_128
+    );
     assert(validator1_portion == delegator_allocation[0]);
     assert(validator2_portion == delegator_allocation[1]);
     assert(validator3_portion == delegator_allocation[2]);
@@ -1471,20 +1799,24 @@ export class pondo_core_protocolProgram {
     assert(validator5_portion == delegator_allocation[4]);
 
     // Check that there's still enough account balance left for pending withdrawals
-    let account_balance: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
-    let reserved_for_withdrawal: bigint = this.balances.get(
-      this.CLAIMABLE_WITHDRAWALS
-    )!;
+    let account_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
+    let reserved_for_withdrawal: bigint = BigInt.asUintN(
+      64,
+      this.balances.get(this.CLAIMABLE_WITHDRAWALS)!
+    );
     assert(reserved_for_withdrawal !== undefined);
-    let liquidity_pool: bigint = account_balance - reserved_for_withdrawal;
-    let optimal_liquidity: bigint =
-      this.inline_calculate_optimal_liquidity(total_credits_128);
+    let liquidity_pool: bigint = BigInt.asUintN(
+      64,
+      account_balance - reserved_for_withdrawal
+    );
+    let optimal_liquidity: bigint = BigInt.asUintN(
+      64,
+      this.inline_calculate_optimal_liquidity(total_credits_128)
+    );
     assert(liquidity_pool >= optimal_liquidity);
-
-    // Update last rebalance epoch
-    let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
-    this.last_rebalance_epoch.set(BigInt('0'), current_epoch);
 
     // Update delegated balance
     this.balances.set(this.DELEGATED_BALANCE, total_credits);
@@ -1505,78 +1837,112 @@ export class pondo_core_protocolProgram {
   finalize_set_oracle_tvl(tvl: bigint) {
     // Ensure the tvl matches what exists in the core protocol
     // Get all of the delegator balances
-    let delegator1_balance: bigint =
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0');
-    let delegator2_balance: bigint =
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0');
-    let delegator3_balance: bigint =
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0');
-    let delegator4_balance: bigint =
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0');
-    let delegator5_balance: bigint =
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0');
+    let delegator1_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+    );
+    let delegator2_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+    );
+    let delegator3_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+    );
+    let delegator4_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+    );
+    let delegator5_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+    );
     // Get all of the bonded balances
     let default_bond_state: bond_state = {
       validator: this.address,
       microcredits: BigInt('0'),
     };
-    let delegator1_bonded: bigint =
+    let delegator1_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
-      default_bond_state?.microcredits;
-    let delegator2_bonded: bigint =
+        default_bond_state?.microcredits
+    );
+    let delegator2_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
-      default_bond_state?.microcredits;
-    let delegator3_bonded: bigint =
+        default_bond_state?.microcredits
+    );
+    let delegator3_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
-      default_bond_state?.microcredits;
-    let delegator4_bonded: bigint =
+        default_bond_state?.microcredits
+    );
+    let delegator4_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
-      default_bond_state?.microcredits;
-    let delegator5_bonded: bigint =
+        default_bond_state?.microcredits
+    );
+    let delegator5_bonded: bigint = BigInt.asUintN(
+      64,
       this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
-      default_bond_state?.microcredits;
+        default_bond_state?.microcredits
+    );
     // Get all of the unbonding balances
     let default_unbond_state: unbond_state = {
       microcredits: BigInt('0'),
       height: BigInt('0'),
     };
-    let delegator1_unbonding: bigint =
+    let delegator1_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
-      default_unbond_state?.microcredits;
-    let delegator2_unbonding: bigint =
+        default_unbond_state?.microcredits
+    );
+    let delegator2_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
-      default_unbond_state?.microcredits;
-    let delegator3_unbonding: bigint =
+        default_unbond_state?.microcredits
+    );
+    let delegator3_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
-      default_unbond_state?.microcredits;
-    let delegator4_unbonding: bigint =
+        default_unbond_state?.microcredits
+    );
+    let delegator4_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
-      default_unbond_state?.microcredits;
-    let delegator5_unbonding: bigint =
+        default_unbond_state?.microcredits
+    );
+    let delegator5_unbonding: bigint = BigInt.asUintN(
+      64,
       this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
-      default_unbond_state?.microcredits;
+        default_unbond_state?.microcredits
+    );
     // Get the core protocol balance
-    let core_protocol_balance: bigint =
-      this.credits.account.get(this.address) || BigInt('0');
+    let core_protocol_balance: bigint = BigInt.asUintN(
+      64,
+      this.credits.account.get(this.address) || BigInt('0')
+    );
 
     // Calculate the total tvl
-    let total_tvl: bigint =
+    let total_tvl: bigint = BigInt.asUintN(
+      64,
       delegator1_balance +
-      delegator2_balance +
-      delegator3_balance +
-      delegator4_balance +
-      delegator5_balance +
-      delegator1_bonded +
-      delegator2_bonded +
-      delegator3_bonded +
-      delegator4_bonded +
-      delegator5_bonded +
-      core_protocol_balance +
-      delegator1_unbonding +
-      delegator2_unbonding +
-      delegator3_unbonding +
-      delegator4_unbonding +
-      delegator5_unbonding;
+        delegator2_balance +
+        delegator3_balance +
+        delegator4_balance +
+        delegator5_balance +
+        delegator1_bonded +
+        delegator2_bonded +
+        delegator3_bonded +
+        delegator4_bonded +
+        delegator5_bonded +
+        core_protocol_balance +
+        delegator1_unbonding +
+        delegator2_unbonding +
+        delegator3_unbonding +
+        delegator4_unbonding +
+        delegator5_unbonding
+    );
 
     // Assert that the total tvl matches the tvl provided within a margin of error of 2%
     assert(

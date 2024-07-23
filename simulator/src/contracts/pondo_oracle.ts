@@ -283,14 +283,19 @@ export class pondo_oracleProgram {
     assert(is_banned === false);
 
     // Check if update is in the allowed update period
-    let epoch_blocks: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
+    let epoch_blocks: bigint = BigInt.asUintN(
+      32,
+      this.block.height % this.BLOCKS_PER_EPOCH
+    );
     let is_update_period: boolean =
       epoch_blocks >= this.UPDATE_BLOCKS_DISALLOWED;
     assert(is_update_period);
 
     // Ensure an update hasn't been performed in the same epoch yet
-    let block_range: bigint =
-      this.block.height - existing_validator_datum.block_height;
+    let block_range: bigint = BigInt.asUintN(
+      32,
+      this.block.height - existing_validator_datum.block_height
+    );
     assert(block_range > this.UPDATE_BLOCKS_DISALLOWED);
 
     // Get the committee state of the validator
@@ -308,44 +313,64 @@ export class pondo_oracleProgram {
     assert(bonded !== undefined);
 
     // Get the current epoch
-    let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
+    let current_epoch: bigint = BigInt.asUintN(
+      32,
+      this.block.height / this.BLOCKS_PER_EPOCH
+    );
 
     // Note: We calculate return per epoch
     // For example, given an annualized return of 10%, after a week we expected 10_000_000_000 microcredits (10K credits) to become 10_018_345_688 microcredits
     // Because we use u128, we cannot calculate a percentage yield as it would always be 0 so we normalize the return
     // to the amount of microcredits earned as if the delegator had 10K credits staked.
     // So the microcredits_yield_per_epoch would be 18_345_688
-    let microcredits_earned: bigint =
-      bonded.microcredits - existing_validator_datum.bonded_microcredits;
-    let normalized_microcredits_earned: bigint =
+    let microcredits_earned: bigint = BigInt.asUintN(
+      128,
+      bonded.microcredits - existing_validator_datum.bonded_microcredits
+    );
+    let normalized_microcredits_earned: bigint = BigInt.asUintN(
+      128,
       (microcredits_earned * this.PRECISION) /
-      existing_validator_datum.bonded_microcredits;
-    let yield_per_epoch: bigint =
-      (normalized_microcredits_earned * this.BLOCKS_PER_EPOCH) / block_range;
+        existing_validator_datum.bonded_microcredits
+    );
+    let yield_per_epoch: bigint = BigInt.asUintN(
+      128,
+      (normalized_microcredits_earned * this.BLOCKS_PER_EPOCH) / block_range
+    );
 
     // Get the boost amount for the validator
     let boost: validator_boost = this.validator_boosting.get(
       existing_validator_datum.validator
     ) || { epoch: BigInt('0'), boost_amount: BigInt('0') };
-    let boost_amount: bigint =
-      boost.epoch == current_epoch ? boost.boost_amount : BigInt('0');
+    let boost_amount: bigint = BigInt.asUintN(
+      128,
+      boost.epoch == current_epoch ? boost.boost_amount : BigInt('0')
+    );
     // Normalize the boost amount by the pondo tvl
-    let current_pondo_tvl: bigint =
-      this.pondo_tvl.get(BigInt('0')) || BigInt('10000000000000000'); // use a high default, 10B credits
+    let current_pondo_tvl: bigint = BigInt.asUintN(
+      128,
+      this.pondo_tvl.get(BigInt('0')) || BigInt('10000000000000000')
+    ); // use a high default, 10B credits
     // The normalized boost amount is the amount of boost per 10K credits staked
     // Note: This precision is 1 credit on a TVL of 10M credits
-    let normalized_boost_amount: bigint =
-      (boost_amount * this.PRECISION) / current_pondo_tvl;
+    let normalized_boost_amount: bigint = BigInt.asUintN(
+      128,
+      (boost_amount * this.PRECISION) / current_pondo_tvl
+    );
 
     // Ensure the last update was in the previous epoch, otherwise set the yield to zero
     // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
-    let previous_update_epoch: bigint =
-      existing_validator_datum.block_height / this.BLOCKS_PER_EPOCH;
+    let previous_update_epoch: bigint = BigInt.asUintN(
+      32,
+      existing_validator_datum.block_height / this.BLOCKS_PER_EPOCH
+    );
     let did_update_last_epoch: boolean =
       previous_update_epoch + BigInt('1') == current_epoch;
-    let new_microcredits_yield_per_epoch: bigint = did_update_last_epoch
-      ? yield_per_epoch + normalized_boost_amount
-      : BigInt('0');
+    let new_microcredits_yield_per_epoch: bigint = BigInt.asUintN(
+      128,
+      did_update_last_epoch
+        ? yield_per_epoch + normalized_boost_amount
+        : BigInt('0')
+    );
 
     // Construct and save the new validator_datum for the delegator
     let new_validator_datum: validator_datum = {
@@ -408,7 +433,10 @@ export class pondo_oracleProgram {
       default_validator_datum;
 
     // Calculate the epoch start block
-    let epoch_start_height: bigint = current_epoch * this.BLOCKS_PER_EPOCH;
+    let epoch_start_height: bigint = BigInt.asUintN(
+      32,
+      current_epoch * this.BLOCKS_PER_EPOCH
+    );
 
     // Get the boost multiple
     let allocations: bigint[] = this.delegator_allocation.get(BigInt('0'))!;
@@ -521,7 +549,10 @@ export class pondo_oracleProgram {
   finalize_remove_delegator(delegator_address: string) {
     // Ensure an update period isn't occuring
     // This protects against a DOS against other validators who could keep a delegator to another validator and then remove it right at the end of the update period
-    let epoch_blocks: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
+    let epoch_blocks: bigint = BigInt.asUintN(
+      32,
+      this.block.height % this.BLOCKS_PER_EPOCH
+    );
     let is_not_update_period: boolean =
       epoch_blocks < this.UPDATE_BLOCKS_DISALLOWED;
     assert(is_not_update_period);
@@ -667,7 +698,10 @@ export class pondo_oracleProgram {
     assert(validator !== undefined);
 
     // Check if the height is within the update window
-    let epoch_blocks: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
+    let epoch_blocks: bigint = BigInt.asUintN(
+      32,
+      this.block.height % this.BLOCKS_PER_EPOCH
+    );
     let is_update_period: boolean =
       epoch_blocks >= this.UPDATE_BLOCKS_DISALLOWED;
     assert(is_update_period);
@@ -739,10 +773,16 @@ export class pondo_oracleProgram {
     // Wait for the transfer to complete
 
     // Get the current epoch
-    let current_epoch: bigint = this.block.height / this.BLOCKS_PER_EPOCH;
+    let current_epoch: bigint = BigInt.asUintN(
+      32,
+      this.block.height / this.BLOCKS_PER_EPOCH
+    );
 
     // Ensure that you cannot boost during the update period
-    let epoch_blocks: bigint = this.block.height % this.BLOCKS_PER_EPOCH;
+    let epoch_blocks: bigint = BigInt.asUintN(
+      32,
+      this.block.height % this.BLOCKS_PER_EPOCH
+    );
     let is_update_period: boolean =
       epoch_blocks >= this.UPDATE_BLOCKS_DISALLOWED;
     assert(!is_update_period);
@@ -753,10 +793,12 @@ export class pondo_oracleProgram {
     ) || { epoch: BigInt('0'), boost_amount: BigInt('0') };
 
     // If the boost is in the same epoch, add the boost amount
-    let new_boost_amount: bigint =
+    let new_boost_amount: bigint = BigInt.asUintN(
+      64,
       current_boost.epoch == current_epoch
         ? current_boost.boost_amount + boost_amount
-        : boost_amount;
+        : boost_amount
+    );
 
     // Set the boosting for the validator
     let new_boost: validator_boost = {
@@ -813,12 +855,16 @@ export class pondo_oracleProgram {
     // Note: the boost multiple depends on the % of the pondo tvl that the spot would get
     // If the boost multiple is too high, it would be more profitable to boost than to decrease commission ie protocol loses money
     // If the boost multiple is too low, it would be more profitable to decrease commission than to boost ie no one would ever boost unless commissions were 0s
-    let first_yield: bigint =
+    let first_yield: bigint = BigInt.asUintN(
+      128,
       datum_0.microcredits_yield_per_epoch +
-      (datum_0.boost * this.BOOST_PRECISION) / boost_multiple;
-    let second_yield: bigint =
+        (datum_0.boost * this.BOOST_PRECISION) / boost_multiple
+    );
+    let second_yield: bigint = BigInt.asUintN(
+      128,
       datum_1.microcredits_yield_per_epoch +
-      (datum_1.boost * this.BOOST_PRECISION) / boost_multiple;
+        (datum_1.boost * this.BOOST_PRECISION) / boost_multiple
+    );
 
     // Choose the datum with the higher yield in the normal case
     // In the case where they reference the same validator, return the one with the lower yield

@@ -79,6 +79,7 @@ export const convertLeoToTs = async (filePath: string) => {
   tsCode = replaceInlineStructs(tsCode);
   tsCode = replaceMultilineGetOrUse(tsCode);
   tsCode = removeVersionFromMTSP(tsCode);
+  tsCode = constrainInts(tsCode);
 
   const tsFilePath = path.join('./src/contracts', `${parentDirectoryName}.ts`);
   console.log(`TypeScript file will be saved to: ${tsFilePath}`);
@@ -296,11 +297,46 @@ const replaceAssignment = (leoLine: string): string => {
 
   if (match) {
     const [, name, type, initialization] = match;
-    // Assuming convertType is a function you have that converts types
-    leoLine = `let ${name}: ${convertType(type)} = ${initialization}`;
+    const convertedType = convertType(type);
+    if (convertedType !== 'bigint') {
+      // skip ints for now
+      leoLine = `let ${name}: ${convertType(type)} = ${initialization}`;
+    }
   }
 
   return leoLine;
+};
+
+const constrainInts = (leoLines: string): string => {
+  // Regex to match the pattern "let <name>: <type> = <initialization>" with a complex type
+  const regex =
+    /(for \()?let (\w+):\s*(i128|i64|i32|i8|u128|u64|u32|u8)\s*=\s*([\s\S]+?);/;
+  let match;
+  while ((match = regex.exec(leoLines))) {
+    const [, forGroup, name, type, initialization] = match;
+    if (!forGroup) {
+      leoLines = leoLines.replace(
+        regex,
+        `let ${name}: ${convertType(type)} = ${truncateInt(
+          type,
+          initialization
+        )}`
+      );
+    }
+  }
+
+  return leoLines;
+};
+
+const truncateInt = (type: string, value: string): string => {
+  const regex = /(u|i)(8|32|64|128)/;
+  const match = type.match(regex);
+  if (match) {
+    const [, sign, bits] = match;
+    return `BigInt.as${sign == 'u' ? 'UintN' : 'IntN'}(${bits}, ${value});`;
+  }
+
+  return value;
 };
 
 const replaceBlockHeight = (leoLine: string): string => {
@@ -460,7 +496,7 @@ const replaceMapping = (leoLine: string): string => {
     // Adjust to use the correct TypeScript equivalent, considering the "||" for default value
     leoLine = leoLine.replace(
       getOrUseRegex,
-      `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess}`
+      `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess};`
     );
   }
 
@@ -641,7 +677,7 @@ const replaceMultilineGetOrUse = (leoLines: string): string => {
       getOrUseRegex,
       `this.${
         externalProgram?.replace('aleo/', '') || ''
-      }${mappingName}.get(${keyName.trim()})${propertyAccess} || ${defaultValue.trim()}${propertyAccess}`
+      }${mappingName}.get(${keyName.trim()})${propertyAccess} || ${defaultValue.trim()}${propertyAccess};`
     );
   }
 

@@ -2,8 +2,8 @@ import {
   referenceDelegator,
   oracle,
   credits,
-} from "../contracts/pondoProgramsIndex";
-import { block } from "./ChainEmulator";
+} from '../contracts/pondoProgramsIndex';
+import { block } from './ChainEmulator';
 
 export class OracleManager {
   block: block;
@@ -20,8 +20,7 @@ export class OracleManager {
   createReferenceDelegator(): referenceDelegator {
     const referenceDelegatorContract = new referenceDelegator(
       this.oracle,
-      this.credits,
-      this.block
+      this.credits
     );
     this.referenceDelegators.push(referenceDelegatorContract);
     return referenceDelegatorContract;

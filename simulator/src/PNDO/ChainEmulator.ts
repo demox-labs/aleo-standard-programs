@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from 'assert';
 import {
   credits,
   MTSP,
@@ -12,8 +12,8 @@ import {
   delegator3,
   delegator4,
   delegator5,
-} from "../contracts/pondoProgramsIndex";
-import { OracleManager } from "./OracleManager";
+} from '../contracts/pondoProgramsIndex';
+import { OracleManager } from './OracleManager';
 
 export interface block {
   height: bigint;
@@ -29,7 +29,7 @@ export class ChainEmulator {
     this.credits = new credits();
     this.credits.block = this.block;
     this.mtsp = new MTSP(this.credits);
-    this.oracle = new OracleManager(this.credits, this.block);
+    this.oracle = new OracleManager(this.credits);
   }
 
   establishOracleHistory() {}
