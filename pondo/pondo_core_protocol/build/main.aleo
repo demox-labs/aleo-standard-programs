@@ -147,6 +147,55 @@ finalize initialize:
 
 
 
+function prep_rebalance:
+    call pondo_delegator1.aleo/prep_rebalance into r0;
+    call pondo_delegator2.aleo/prep_rebalance into r1;
+    call pondo_delegator3.aleo/prep_rebalance into r2;
+    call pondo_delegator4.aleo/prep_rebalance into r3;
+    call pondo_delegator5.aleo/prep_rebalance into r4;
+    async prep_rebalance r0 r1 r2 r3 r4 into r5;
+    output r5 as pondo_core_protocol.aleo/prep_rebalance.future;
+
+finalize prep_rebalance:
+    input r0 as pondo_delegator1.aleo/prep_rebalance.future;
+    input r1 as pondo_delegator2.aleo/prep_rebalance.future;
+    input r2 as pondo_delegator3.aleo/prep_rebalance.future;
+    input r3 as pondo_delegator4.aleo/prep_rebalance.future;
+    input r4 as pondo_delegator5.aleo/prep_rebalance.future;
+    await r0;
+    await r1;
+    await r2;
+    await r3;
+    await r4;
+    div block.height 120_960u32 into r5;
+    get.or_use last_rebalance_epoch[0u8] 4294967295u32 into r6;
+    gt r5 r6 into r7;
+    assert.eq r7 true;
+    set r5 into last_rebalance_epoch[0u8];
+    rem block.height 120_960u32 into r8;
+    lt r8 17_280u32 into r9;
+    is.eq r6 4294967295u32 into r10;
+    or r9 r10 into r11;
+    assert.eq r11 true;
+    cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r12 as [address; 10u32];
+    get.or_use pondo_oracle.aleo/top_validators[0u8] r12 into r13;
+    cast aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc 0u32 0u64 0u128 0u8 0u128 into r14 as validator_datum;
+    get.or_use pondo_oracle.aleo/validator_data[r13[0u32]] r14 into r15;
+    get.or_use pondo_oracle.aleo/validator_data[r13[1u32]] r14 into r16;
+    get.or_use pondo_oracle.aleo/validator_data[r13[2u32]] r14 into r17;
+    get.or_use pondo_oracle.aleo/validator_data[r13[3u32]] r14 into r18;
+    get.or_use pondo_oracle.aleo/validator_data[r13[4u32]] r14 into r19;
+    cast r15.validator r15.commission into r20 as validator_state;
+    cast r16.validator r16.commission into r21 as validator_state;
+    cast r17.validator r17.commission into r22 as validator_state;
+    cast r18.validator r18.commission into r23 as validator_state;
+    cast r19.validator r19.commission into r24 as validator_state;
+    cast  r20 r21 r22 r23 r24 into r25 as [validator_state; 5u32];
+    set r25 into validator_set[1u8];
+
+
+
+
 
 
 
@@ -720,54 +769,6 @@ finalize claim_withdrawal_public:
 
 
 
-function prep_rebalance:
-    call pondo_delegator1.aleo/set_state 2u8 into r0;
-    call pondo_delegator2.aleo/set_state 2u8 into r1;
-    call pondo_delegator3.aleo/set_state 2u8 into r2;
-    call pondo_delegator4.aleo/set_state 2u8 into r3;
-    call pondo_delegator5.aleo/set_state 2u8 into r4;
-    async prep_rebalance r0 r1 r2 r3 r4 into r5;
-    output r5 as pondo_core_protocol.aleo/prep_rebalance.future;
-
-finalize prep_rebalance:
-    input r0 as pondo_delegator1.aleo/set_state.future;
-    input r1 as pondo_delegator2.aleo/set_state.future;
-    input r2 as pondo_delegator3.aleo/set_state.future;
-    input r3 as pondo_delegator4.aleo/set_state.future;
-    input r4 as pondo_delegator5.aleo/set_state.future;
-    await r0;
-    await r1;
-    await r2;
-    await r3;
-    await r4;
-    div block.height 120_960u32 into r5;
-    get.or_use last_rebalance_epoch[0u8] 4294967295u32 into r6;
-    gt r5 r6 into r7;
-    assert.eq r7 true;
-    rem block.height 120_960u32 into r8;
-    lt r8 17_280u32 into r9;
-    is.eq r6 4294967295u32 into r10;
-    or r9 r10 into r11;
-    assert.eq r11 true;
-    cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r12 as [address; 10u32];
-    get.or_use pondo_oracle.aleo/top_validators[0u8] r12 into r13;
-    cast aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc 0u32 0u64 0u128 0u8 0u128 into r14 as validator_datum;
-    get.or_use pondo_oracle.aleo/validator_data[r13[0u32]] r14 into r15;
-    get.or_use pondo_oracle.aleo/validator_data[r13[1u32]] r14 into r16;
-    get.or_use pondo_oracle.aleo/validator_data[r13[2u32]] r14 into r17;
-    get.or_use pondo_oracle.aleo/validator_data[r13[3u32]] r14 into r18;
-    get.or_use pondo_oracle.aleo/validator_data[r13[4u32]] r14 into r19;
-    cast r15.validator r15.commission into r20 as validator_state;
-    cast r16.validator r16.commission into r21 as validator_state;
-    cast r17.validator r17.commission into r22 as validator_state;
-    cast r18.validator r18.commission into r23 as validator_state;
-    cast r19.validator r19.commission into r24 as validator_state;
-    cast  r20 r21 r22 r23 r24 into r25 as [validator_state; 5u32];
-    set r25 into validator_set[1u8];
-
-
-
-
 function rebalance_retrieve_credits:
     input r0 as [u64; 5u32].public;
     input r1 as u64.public;
@@ -954,8 +955,6 @@ finalize rebalance_redistribute:
     ternary r61 250_000_000_000u64 r62 into r63;
     gte r57 r63 into r64;
     assert.eq r64 true;
-    div block.height 120_960u32 into r65;
-    set r65 into last_rebalance_epoch[0u8];
     set r33 into balances[0u8];
     set 0u8 into protocol_state[0u8];
 

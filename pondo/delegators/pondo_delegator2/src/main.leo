@@ -52,31 +52,19 @@ program pondo_delegator2.aleo {
     state_mapping.set(0u8, TERMINAL);
   }
 
-  async transition set_state(
-    public new_state: u8
+  async transition prep_rebalance(
   ) -> Future {
     // Assert that the caller is the pondo core protocol
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    // Assert that the state is only of the valid options
-    assert(new_state == BOND_ALLOWED || new_state == UNBOND_ALLOWED);
-
-    return finalize_set_state(new_state);
+    return finalize_prep_rebalance();
   }
 
-  async function finalize_set_state(
-    new_state: u8
-  ) {
+  async function finalize_prep_rebalance() {
     let current_state: u8 = state_mapping.get(0u8);
-    if (current_state == UNBOND_NOT_ALLOWED) {
-      assert(new_state == UNBOND_ALLOWED);
-    }
+    assert(current_state == UNBOND_NOT_ALLOWED);
 
-    if (current_state == TERMINAL) {
-      assert(new_state == BOND_ALLOWED);
-    }
-
-    state_mapping.set(0u8, new_state);
+    state_mapping.set(0u8, UNBOND_ALLOWED);
   }
 
   async transition set_validator(

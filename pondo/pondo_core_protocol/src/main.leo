@@ -700,11 +700,11 @@ program pondo_core_protocol.aleo {
   // -------------------
 
   async transition prep_rebalance() -> Future {
-    let f0: Future = pondo_delegator1.aleo/set_state(UNBOND_ALLOWED);
-    let f1: Future = pondo_delegator2.aleo/set_state(UNBOND_ALLOWED);
-    let f2: Future = pondo_delegator3.aleo/set_state(UNBOND_ALLOWED);
-    let f3: Future = pondo_delegator4.aleo/set_state(UNBOND_ALLOWED);
-    let f4: Future = pondo_delegator5.aleo/set_state(UNBOND_ALLOWED);
+    let f0: Future = pondo_delegator1.aleo/prep_rebalance();
+    let f1: Future = pondo_delegator2.aleo/prep_rebalance();
+    let f2: Future = pondo_delegator3.aleo/prep_rebalance();
+    let f3: Future = pondo_delegator4.aleo/prep_rebalance();
+    let f4: Future = pondo_delegator5.aleo/prep_rebalance();
 
     return finalize_prep_rebalance(f0, f1, f2, f3, f4);
   }
@@ -726,7 +726,10 @@ program pondo_core_protocol.aleo {
     // Rebalance is allowed during the first day of a new epoch
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     let last_rebalance: u32 = last_rebalance_epoch.get_or_use(0u8, 4294967295u32);
+    // Update last rebalance epoch
     assert(current_epoch > last_rebalance);
+    last_rebalance_epoch.set(0u8, current_epoch);
+
     let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
     assert(blocks_into_epoch < REBALANCE_PERIOD || last_rebalance == 4294967295u32);
 
@@ -924,10 +927,6 @@ program pondo_core_protocol.aleo {
     let liquidity_pool: u64 = account_balance - reserved_for_withdrawal;
     let optimal_liquidity: u64 = calculate_optimal_liquidity(total_credits_128);
     assert(liquidity_pool >= optimal_liquidity);
-
-    // Update last rebalance epoch
-    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
-    last_rebalance_epoch.set(0u8, current_epoch);
 
     // Update delegated balance
     balances.set(DELEGATED_BALANCE, total_credits);
