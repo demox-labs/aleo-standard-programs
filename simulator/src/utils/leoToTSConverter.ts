@@ -563,22 +563,32 @@ const removeInterfaceAssignment = (leoLine: string): string => {
 };
 
 const replaceAsserts = (leoLine: string): string => {
-  const assertEqRegex = /assert_eq\(([^,]+),\s*([^\)]+)\);/;
+  const assertEqRegex = /assert_eq\(([^,]+),\s*([^\)]+)\);(.*\/\/.*)?/;
 
   // Replace matched lines with the "assert(arg1 === arg2);" format
-  leoLine = leoLine.replace(assertEqRegex, (match, arg1, arg2) => {
+  leoLine = leoLine.replace(assertEqRegex, (match, arg1, arg2, comment) => {
     // Optionally, convert numeric literals to their TypeScript representation
     // This step can be customized or expanded based on specific needs
-    return `assert(${arg1} === ${arg2});`;
+    return `assert(${arg1} === ${arg2}${
+      comment ? `, "${comment.replace('//', '').trim()}"` : ''
+    });`;
   });
 
-  const assertNeqRegex = /assert_neq\(([^,]+),\s*([^)]+)\);/;
+  const assertNeqRegex = /assert_neq\(([^,]+),\s*([^)]+)\);(.*\/\/.*)?/;
 
   // Replace matched lines with the "assert(arg1 === arg2);" format
-  leoLine = leoLine.replace(assertNeqRegex, (match, arg1, arg2) => {
+  leoLine = leoLine.replace(assertNeqRegex, (match, arg1, arg2, comment) => {
     // Optionally, convert numeric literals to their TypeScript representation
     // This step can be customized or expanded based on specific needs
-    return `assert(${arg1} !== ${arg2});`;
+    return `assert(${arg1} !== ${arg2}${
+      comment ? `, "${comment.replace('//', '').trim()}"` : ''
+    });`;
+  });
+
+  // Include comments in the assertion
+  const assertRegex = /assert\((.+)\);(.*\/\/.*)/;
+  leoLine = leoLine.replace(assertRegex, (match, condition, comment) => {
+    return `assert(${condition}, '${comment.replace('//', '').trim()}');`;
   });
 
   return leoLine;

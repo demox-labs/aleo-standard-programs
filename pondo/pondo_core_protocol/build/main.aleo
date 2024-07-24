@@ -204,10 +204,12 @@ function deposit_public_as_signer:
     input r0 as u64.public;
     input r1 as u64.public;
     input r2 as address.public;
-    call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r0 into r3;
-    call pondo_staked_aleo_token.aleo/mint_public r1 self.signer into r4;
-    async deposit_public_as_signer r3 r4 r0 r1 into r5;
-    output r5 as pondo_core_protocol.aleo/deposit_public_as_signer.future;
+    gte r1 1u64 into r3;
+    assert.eq r3 true;
+    call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r0 into r4;
+    call pondo_staked_aleo_token.aleo/mint_public r1 self.signer into r5;
+    async deposit_public_as_signer r4 r5 r0 r1 into r6;
+    output r6 as pondo_core_protocol.aleo/deposit_public_as_signer.future;
 
 finalize deposit_public_as_signer:
     input r0 as credits.aleo/transfer_public_as_signer.future;
@@ -306,10 +308,8 @@ finalize deposit_public_as_signer:
     div r88 r86 into r89;
     sub r89 r81 into r90;
     cast r90 into r91 as u64;
-    gte r91 1u64 into r92;
+    gte r91 r3 into r92;
     assert.eq r92 true;
-    gte r91 r3 into r93;
-    assert.eq r93 true;
 
 
 
@@ -318,12 +318,14 @@ function deposit_public:
     input r0 as u64.public;
     input r1 as u64.public;
     input r2 as address.public;
-    cast r0 into r3 as u128;
-    call multi_token_support_program_v1.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r3 into r4;
-    call multi_token_support_program_v1.aleo/withdraw_credits_public r0 into r5;
-    call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r6;
-    async deposit_public r4 r5 r6 r0 r1 into r7;
-    output r7 as pondo_core_protocol.aleo/deposit_public.future;
+    gte r1 1u64 into r3;
+    assert.eq r3 true;
+    cast r0 into r4 as u128;
+    call multi_token_support_program_v1.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
+    call multi_token_support_program_v1.aleo/withdraw_credits_public r0 into r6;
+    call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r7;
+    async deposit_public r5 r6 r7 r0 r1 into r8;
+    output r8 as pondo_core_protocol.aleo/deposit_public.future;
 
 finalize deposit_public:
     input r0 as multi_token_support_program_v1.aleo/transfer_from_public.future;
@@ -424,10 +426,8 @@ finalize deposit_public:
     div r89 r87 into r90;
     sub r90 r82 into r91;
     cast r91 into r92 as u64;
-    gte r92 1u64 into r93;
+    gte r92 r4 into r93;
     assert.eq r93 true;
-    gte r92 r4 into r94;
-    assert.eq r94 true;
 
 
 
@@ -955,6 +955,9 @@ finalize rebalance_redistribute:
     ternary r61 250_000_000_000u64 r62 into r63;
     gte r57 r63 into r64;
     assert.eq r64 true;
+    add r63 250u64 into r65;
+    lte r57 r65 into r66;
+    assert.eq r66 true;
     set r33 into balances[0u8];
     set 0u8 into protocol_state[0u8];
 

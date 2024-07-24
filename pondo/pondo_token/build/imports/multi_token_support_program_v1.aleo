@@ -61,11 +61,6 @@ mapping roles:
 	value as u8.public;
 
 
-mapping roles:
-	key as field.public;
-	value as u8.public;
-
-
 function transfer_public:
     input r0 as field.public;
     input r1 as address.public;
@@ -382,16 +377,7 @@ finalize mint_public:
     not r6 into r7;
     branch.eq r7 false to end_then_0_6;
     cast r4 r0 into r8 as TokenOwner;
-    is.eq r4 r5.admin into r6;
-    not r6 into r7;
-    branch.eq r7 false to end_then_0_6;
-    cast r4 r0 into r8 as TokenOwner;
     hash.bhp256 r8 into r9 as field;
-    get roles[r9] into r10;
-    is.eq r10 1u8 into r11;
-    is.eq r10 3u8 into r12;
-    or r11 r12 into r13;
-    assert.eq r13 true;
     get roles[r9] into r10;
     is.eq r10 1u8 into r11;
     is.eq r10 3u8 into r12;
@@ -400,29 +386,6 @@ finalize mint_public:
     branch.eq true true to end_otherwise_0_7;
     position end_then_0_6;
     position end_otherwise_0_7;
-    add r5.supply r2 into r14;
-    lte r14 r5.max_supply into r15;
-    assert.eq r15 true;
-    cast r1 r0 into r16 as TokenOwner;
-    hash.bhp256 r16 into r17 as field;
-    cast r0 r1 0u128 r3 into r18 as Balance;
-    get.or_use balances[r17] r18 into r19;
-    get.or_use authorized_balances[r17] r18 into r20;
-    ternary r5.external_authorization_required r19.token_id r20.token_id into r21;
-    ternary r5.external_authorization_required r19.account r20.account into r22;
-    ternary r5.external_authorization_required r19.balance r20.balance into r23;
-    ternary r5.external_authorization_required r19.authorized_until r20.authorized_until into r24;
-    cast r21 r22 r23 r24 into r25 as Balance;
-    add r25.balance r2 into r26;
-    cast r0 r1 r26 r25.authorized_until into r27 as Balance;
-    branch.eq r5.external_authorization_required false to end_then_0_8;
-    set r27 into balances[r17];
-    branch.eq true true to end_otherwise_0_9;
-    position end_then_0_8;
-    set r27 into authorized_balances[r17];
-    position end_otherwise_0_9;
-    cast r0 r5.name r5.symbol r5.decimals r14 r5.max_supply r5.admin r5.external_authorization_required r5.external_authorization_party into r28 as TokenMetadata;
-    set r28 into registered_tokens[r0];
     add r5.supply r2 into r14;
     lte r14 r5.max_supply into r15;
     assert.eq r15 true;

@@ -108,8 +108,7 @@ program pondo_core_protocol.aleo {
   mapping withdrawal_batches: u32 => u64;
 
   async transition initialize(transfer_amount: u64) -> Future {
-    // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
-    assert(transfer_amount >= 102u64);
+    assert(transfer_amount >= 102u64); // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
 
     // Transfer ALEO to the protocol
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, transfer_amount);
@@ -205,6 +204,8 @@ program pondo_core_protocol.aleo {
     public expected_paleo_mint: u64,
     public referrer: address
   ) -> Future {
+    assert(expected_paleo_mint >= 1u64); // Assert that the expected pALEO mint is at least 1 microcredit
+
     // Transfer ALEO to pool
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, credits_deposit);
     // Mint pALEO to depositor
@@ -278,8 +279,7 @@ program pondo_core_protocol.aleo {
 
     // Calculate mint for deposit
     let paleo_for_deposit: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, credits_deposit as u128, total_paleo_pool);
-    assert(paleo_for_deposit >= 1u64);
-    assert(paleo_for_deposit >= expected_paleo_mint);
+    assert(paleo_for_deposit >= expected_paleo_mint); // Assert that the transition did not mint too much pALEO
   }
 
   inline get_commission(
@@ -305,6 +305,8 @@ program pondo_core_protocol.aleo {
     public expected_paleo_mint: u64,
     public referrer: address
   ) -> Future {
+    assert(expected_paleo_mint >= 1u64); // Assert that the expected pALEO mint is at least 1 microcredit
+
     // Transfer ALEO to pool
     let f0: Future = multi_token_support_program_v1.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
     let f1: Future = multi_token_support_program_v1.aleo/withdraw_credits_public(credits_deposit);
@@ -381,8 +383,7 @@ program pondo_core_protocol.aleo {
 
     // Calculate mint for deposit
     let paleo_for_deposit: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, credits_deposit as u128, total_paleo_pool);
-    assert(paleo_for_deposit >= 1u64);
-    assert(paleo_for_deposit >= expected_paleo_mint);
+    assert(paleo_for_deposit >= expected_paleo_mint); // Assert that the transition did not mint too much pALEO
   }
 
   async transition distribute_deposits(
@@ -425,11 +426,11 @@ program pondo_core_protocol.aleo {
     let delegator3_state: u8 = pondo_delegator3.aleo/state_mapping.get(0u8);
     let delegator4_state: u8 = pondo_delegator4.aleo/state_mapping.get(0u8);
     let delegator5_state: u8 = pondo_delegator5.aleo/state_mapping.get(0u8);
-    assert(delegator1_state == BOND_ALLOWED || delegator1_state == UNBOND_NOT_ALLOWED);
-    assert(delegator2_state == BOND_ALLOWED || delegator2_state == UNBOND_NOT_ALLOWED);
-    assert(delegator3_state == BOND_ALLOWED || delegator3_state == UNBOND_NOT_ALLOWED);
-    assert(delegator4_state == BOND_ALLOWED || delegator4_state == UNBOND_NOT_ALLOWED);
-    assert(delegator5_state == BOND_ALLOWED || delegator5_state == UNBOND_NOT_ALLOWED);
+    assert(delegator1_state == BOND_ALLOWED || delegator1_state == UNBOND_NOT_ALLOWED); // Assert that delegator1 is in the correct state
+    assert(delegator2_state == BOND_ALLOWED || delegator2_state == UNBOND_NOT_ALLOWED); // Assert that delegator2 is in the correct state
+    assert(delegator3_state == BOND_ALLOWED || delegator3_state == UNBOND_NOT_ALLOWED); // Assert that delegator3 is in the correct state
+    assert(delegator4_state == BOND_ALLOWED || delegator4_state == UNBOND_NOT_ALLOWED); // Assert that delegator4 is in the correct state
+    assert(delegator5_state == BOND_ALLOWED || delegator5_state == UNBOND_NOT_ALLOWED); // Assert that delegator5 is in the correct state
   }
 
   inline calculate_optimal_liquidity(total_balance: u128) -> u64 {
@@ -465,11 +466,10 @@ program pondo_core_protocol.aleo {
 
     // Block instant withdrawals during a rebalance
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    assert(current_state == NORMAL_STATE);
+    assert(current_state == NORMAL_STATE); // Assert that the protocol is not in a rebalancing state
 
-    // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: bool = withdrawals.contains(caller);
-    assert(!has_withdrawal);
+    assert(!has_withdrawal); // Assert that the caller does not have a pending withdrawal
 
     // Calculate new delegated balance
     let base_bond_state: bond_state = bond_state {
@@ -532,8 +532,7 @@ program pondo_core_protocol.aleo {
     let withdrawal_fee: u64 = calculate_withdraw_fee(paleo_burn_amount);
     let net_burn_amount: u64 = paleo_burn_amount - withdrawal_fee;
     let withdrawal_calculation: u128 = (net_burn_amount as u128 * full_pool as u128) / total_paleo_minted as u128;
-    // Assert that the withdrawal amount was at most the calculated amount
-    assert(withdrawal_credits <= withdrawal_calculation as u64);
+    assert(withdrawal_credits <= withdrawal_calculation as u64); // Assert that the withdrawal amount was at most the calculated amount
 
     // Update owed commission to reflect withdrawal fee
     owed_commission.set(0u8, current_owed_commission + withdrawal_fee);
@@ -565,7 +564,7 @@ program pondo_core_protocol.aleo {
 
     // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: bool = withdrawals.contains(caller);
-    assert(!has_withdrawal);
+    assert(!has_withdrawal); // only one withdrawal at a time
 
     // Calculate commission owed
     let base_bond_state: bond_state = bond_state {
@@ -677,7 +676,7 @@ program pondo_core_protocol.aleo {
 
     // Update withdrawal state
     let withdrawal: withdrawal_state = withdrawals.get(owner);
-    assert(withdrawal.claim_block < block.height);
+    assert(withdrawal.claim_block < block.height); // make sure the withdrawal is claimable
 
     // Update withrawal mapping
     if (withdrawal.microcredits == amount) {
@@ -727,11 +726,11 @@ program pondo_core_protocol.aleo {
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
     let last_rebalance: u32 = last_rebalance_epoch.get_or_use(0u8, 4294967295u32);
     // Update last rebalance epoch
-    assert(current_epoch > last_rebalance);
+    assert(current_epoch > last_rebalance); // make sure we are not rebalancing twice in the same epoch
     last_rebalance_epoch.set(0u8, current_epoch);
 
     let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
-    assert(blocks_into_epoch < REBALANCE_PERIOD || last_rebalance == 4294967295u32);
+    assert(blocks_into_epoch < REBALANCE_PERIOD || last_rebalance == 4294967295u32); // rebalance is allowed during the first day of a new epoch
 
     let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
@@ -891,7 +890,7 @@ program pondo_core_protocol.aleo {
     validator_set.set(CURRENT_VALIDATOR_SET, next_validator_set);
     validator_set.remove(NEXT_VALIDATOR_SET);
     for i: u8 in 0u8..5u8 {
-      assert(validators[i].validator == next_validator_set[i].validator && validators[i].commission == next_validator_set[i].commission);
+      assert(validators[i].validator == next_validator_set[i].validator && validators[i].commission == next_validator_set[i].commission); // ensure that the new validator set is correct
     }
     // Check that each validator has the correct portion of credits
     let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(
@@ -926,7 +925,8 @@ program pondo_core_protocol.aleo {
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let liquidity_pool: u64 = account_balance - reserved_for_withdrawal;
     let optimal_liquidity: u64 = calculate_optimal_liquidity(total_credits_128);
-    assert(liquidity_pool >= optimal_liquidity);
+    assert(liquidity_pool >= optimal_liquidity); // ensure that liquidity pool is at least optimal liquidity
+    assert(liquidity_pool <= optimal_liquidity + 250u64); // ensure that liquidity pool is close to optimal liquidity
 
     // Update delegated balance
     balances.set(DELEGATED_BALANCE, total_credits);
@@ -984,7 +984,6 @@ program pondo_core_protocol.aleo {
       + delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded + core_protocol_balance
       + delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
 
-    // Assert that the total tvl matches the tvl provided within a margin of error of 2%
-    assert(total_tvl >= tvl * 98u64 / 100u64 && total_tvl <= tvl * 102u64 / 100u64);
+    assert(total_tvl >= tvl * 98u64 / 100u64 && total_tvl <= tvl * 102u64 / 100u64); // Assert that the total tvl matches the tvl provided within a margin of error of 2%
   }
 }

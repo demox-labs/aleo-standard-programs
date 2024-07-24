@@ -1,15 +1,11 @@
-import {
-  referenceDelegator,
-  oracle,
-  credits,
-} from '../contracts/pondoProgramsIndex';
+import { oracle, credits } from '../contracts/pondoProgramsIndex';
+import { ReferenceDelegator } from './ReferenceDelegator';
 import { block } from './ChainEmulator';
 
 export class OracleManager {
   block: block;
   credits: credits;
   oracle: oracle;
-  referenceDelegators: referenceDelegator[] = [];
 
   constructor(credits: credits) {
     this.block = credits.block;
@@ -17,12 +13,21 @@ export class OracleManager {
     this.oracle = new oracle(credits);
   }
 
-  createReferenceDelegator(): referenceDelegator {
-    const referenceDelegatorContract = new referenceDelegator(
+  createReferenceDelegator(
+    admin: string,
+    validator: string
+  ): ReferenceDelegator {
+    const referenceDelegatorContract = new ReferenceDelegator(
+      this.credits,
       this.oracle,
-      this.credits
+      admin,
+      validator
     );
-    this.referenceDelegators.push(referenceDelegatorContract);
     return referenceDelegatorContract;
   }
+
+  // define default set of validators
+  // deploy reference delegator contracts with each of them
+  // map from validator address to reference delegator contract and corresponding admin address
+  // fund admin accounts
 }

@@ -3,16 +3,25 @@ import {
   oracle,
   credits,
 } from '../contracts/pondoProgramsIndex';
-import { block } from './ChainEmulator';
 
 export class ReferenceDelegator {
   credits: credits;
   oracle: oracle;
   contract: referenceDelegator;
 
-  constructor(credits: credits, oracle: oracle, block: block) {
+  constructor(
+    credits: credits,
+    oracle: oracle,
+    admin: string,
+    validator: string
+  ) {
     this.credits = credits;
     this.oracle = oracle;
-    this.contract = new referenceDelegator(this.oracle, this.credits);
+    this.contract = new referenceDelegator(
+      this.oracle,
+      this.credits,
+      admin,
+      validator
+    );
   }
 }

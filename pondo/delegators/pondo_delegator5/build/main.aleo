@@ -62,8 +62,11 @@ function prep_rebalance:
 finalize prep_rebalance:
     get state_mapping[0u8] into r0;
     is.eq r0 1u8 into r1;
-    assert.eq r1 true;
+    branch.eq r1 false to end_then_0_0;
     set 2u8 into state_mapping[0u8];
+    branch.eq true true to end_otherwise_0_1;
+    position end_then_0_0;
+    position end_otherwise_0_1;
 
 
 
@@ -133,13 +136,13 @@ finalize unbond:
     gt r4.commission r5 into r6;
     gt r4.commission 50u8 into r7;
     or r6 r7 into r8;
-    branch.eq r8 false to end_then_0_0;
+    branch.eq r8 false to end_then_0_2;
     set true into banned_validators[r2.validator];
-    branch.eq true true to end_otherwise_0_1;
-    position end_then_0_0;
+    branch.eq true true to end_otherwise_0_3;
+    position end_then_0_2;
     get state_mapping[0u8] into r9;
     assert.eq r9 2u8;
-    position end_otherwise_0_1;
+    position end_otherwise_0_3;
     set 3u8 into state_mapping[0u8];
 
 
@@ -158,12 +161,12 @@ finalize terminal_state:
     is.neq r2 0u8 into r3;
     assert.eq r3 true;
     is.eq r2 1u8 into r4;
-    branch.eq r4 false to end_then_0_2;
+    branch.eq r4 false to end_then_0_4;
     get validator_mapping[0u8] into r5;
     set true into banned_validators[r5.validator];
-    branch.eq true true to end_otherwise_0_3;
-    position end_then_0_2;
-    position end_otherwise_0_3;
+    branch.eq true true to end_otherwise_0_5;
+    position end_then_0_4;
+    position end_otherwise_0_5;
     set 4u8 into state_mapping[0u8];
 
 
@@ -207,11 +210,11 @@ finalize bond_failed:
     assert.eq r8 true;
     set 4u8 into state_mapping[0u8];
     is.eq r3.is_open false into r9;
-    branch.eq r9 false to end_then_0_4;
+    branch.eq r9 false to end_then_0_6;
     set true into banned_validators[r2.validator];
-    branch.eq true true to end_otherwise_0_5;
-    position end_then_0_4;
-    position end_otherwise_0_5;
+    branch.eq true true to end_otherwise_0_7;
+    position end_then_0_6;
+    position end_otherwise_0_7;
 
 
 

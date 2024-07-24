@@ -13,19 +13,23 @@ export class reference_delegatorProgram {
   // params
   initialized: Map<bigint, bigint> = new Map();
   MIN_DELEGATION = BigInt('10000000000');
-  VALIDATOR = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt';
-  ADMIN = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt';
+  VALIDATOR: string;
+  ADMIN: string;
   pondo_oracle: pondo_oracleProgram;
   credits: creditsProgram;
   constructor(
     // constructor args
     pondo_oracleContract: pondo_oracleProgram,
-    creditsContract: creditsProgram
+    creditsContract: creditsProgram,
+    admin: string = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt',
+    validator: string = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt'
   ) {
     // constructor body
     this.pondo_oracle = pondo_oracleContract;
     this.credits = creditsContract;
     this.block = this.credits.block;
+    this.ADMIN = admin;
+    this.VALIDATOR = validator;
   }
 
   //program reference_delegator.aleo {// The address of the person who controls this program

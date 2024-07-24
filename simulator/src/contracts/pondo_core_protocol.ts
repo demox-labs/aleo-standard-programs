@@ -151,8 +151,10 @@ export class pondo_core_protocolProgram {
   // withdrawals are processed at the start of the next epoch i.e. batch 0u32 is processed at the start of epoch 1u32
 
   initialize(transfer_amount: bigint) {
-    // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
-    assert(transfer_amount >= BigInt('102'));
+    assert(
+      transfer_amount >= BigInt('102'),
+      'Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool'
+    );
 
     // Transfer ALEO to the protocol
 
@@ -261,6 +263,11 @@ export class pondo_core_protocolProgram {
     expected_paleo_mint: bigint,
     referrer: string
   ) {
+    assert(
+      expected_paleo_mint >= BigInt('1'),
+      'Assert that the expected pALEO mint is at least 1 microcredit'
+    );
+
     // Transfer ALEO to pool
 
     this.credits.signer = this.signer;
@@ -482,8 +489,10 @@ export class pondo_core_protocolProgram {
         total_paleo_pool
       )
     );
-    assert(paleo_for_deposit >= BigInt('1'));
-    assert(paleo_for_deposit >= expected_paleo_mint);
+    assert(
+      paleo_for_deposit >= expected_paleo_mint,
+      'Assert that the transition did not mint too much pALEO'
+    );
   }
 
   inline_get_commission(rewards: bigint, commission_rate: bigint) {
@@ -520,6 +529,11 @@ export class pondo_core_protocolProgram {
     expected_paleo_mint: bigint,
     referrer: string
   ) {
+    assert(
+      expected_paleo_mint >= BigInt('1'),
+      'Assert that the expected pALEO mint is at least 1 microcredit'
+    );
+
     // Transfer ALEO to pool
 
     this.multi_token_support_program.signer = this.signer;
@@ -747,8 +761,10 @@ export class pondo_core_protocolProgram {
         total_paleo_pool
       )
     );
-    assert(paleo_for_deposit >= BigInt('1'));
-    assert(paleo_for_deposit >= expected_paleo_mint);
+    assert(
+      paleo_for_deposit >= expected_paleo_mint,
+      'Assert that the transition did not mint too much pALEO'
+    );
   }
 
   distribute_deposits(transfer_amounts: bigint[]) {
@@ -831,23 +847,28 @@ export class pondo_core_protocolProgram {
     assert(delegator5_state !== undefined);
     assert(
       delegator1_state == this.BOND_ALLOWED ||
-        delegator1_state == this.UNBOND_NOT_ALLOWED
+        delegator1_state == this.UNBOND_NOT_ALLOWED,
+      'Assert that delegator1 is in the correct state'
     );
     assert(
       delegator2_state == this.BOND_ALLOWED ||
-        delegator2_state == this.UNBOND_NOT_ALLOWED
+        delegator2_state == this.UNBOND_NOT_ALLOWED,
+      'Assert that delegator2 is in the correct state'
     );
     assert(
       delegator3_state == this.BOND_ALLOWED ||
-        delegator3_state == this.UNBOND_NOT_ALLOWED
+        delegator3_state == this.UNBOND_NOT_ALLOWED,
+      'Assert that delegator3 is in the correct state'
     );
     assert(
       delegator4_state == this.BOND_ALLOWED ||
-        delegator4_state == this.UNBOND_NOT_ALLOWED
+        delegator4_state == this.UNBOND_NOT_ALLOWED,
+      'Assert that delegator4 is in the correct state'
     );
     assert(
       delegator5_state == this.BOND_ALLOWED ||
-        delegator5_state == this.UNBOND_NOT_ALLOWED
+        delegator5_state == this.UNBOND_NOT_ALLOWED,
+      'Assert that delegator5 is in the correct state'
     );
   }
 
@@ -901,11 +922,16 @@ export class pondo_core_protocolProgram {
       this.protocol_state.get(this.PROTOCOL_STATE_KEY)!
     );
     assert(current_state !== undefined);
-    assert(current_state == this.NORMAL_STATE);
+    assert(
+      current_state == this.NORMAL_STATE,
+      'Assert that the protocol is not in a rebalancing state'
+    );
 
-    // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: boolean = this.withdrawals.has(caller);
-    assert(!has_withdrawal);
+    assert(
+      !has_withdrawal,
+      'Assert that the caller does not have a pending withdrawal'
+    );
 
     // Calculate new delegated balance
     let base_bond_state: bond_state = {
@@ -1106,8 +1132,10 @@ export class pondo_core_protocolProgram {
       128,
       (net_burn_amount * full_pool) / total_paleo_minted
     );
-    // Assert that the withdrawal amount was at most the calculated amount
-    assert(withdrawal_credits <= withdrawal_calculation);
+    assert(
+      withdrawal_credits <= withdrawal_calculation,
+      'Assert that the withdrawal amount was at most the calculated amount'
+    );
 
     // Update owed commission to reflect withdrawal fee
     this.owed_commission.set(
@@ -1138,7 +1166,7 @@ export class pondo_core_protocolProgram {
   finalize_withdraw_public(paleo_burn_amount: bigint, caller: string) {
     // Assert that the caller does not have a pending withdrawal
     let has_withdrawal: boolean = this.withdrawals.has(caller);
-    assert(!has_withdrawal);
+    assert(!has_withdrawal, 'only one withdrawal at a time');
 
     // Calculate commission owed
     let base_bond_state: bond_state = {
@@ -1400,7 +1428,10 @@ export class pondo_core_protocolProgram {
     // Update withdrawal state
     let withdrawal: withdrawal_state = this.withdrawals.get(owner)!;
     assert(withdrawal !== undefined);
-    assert(withdrawal.claim_block < this.block.height);
+    assert(
+      withdrawal.claim_block < this.block.height,
+      'make sure the withdrawal is claimable'
+    );
 
     // Update withrawal mapping
     if (withdrawal.microcredits == amount) {
@@ -1465,7 +1496,10 @@ export class pondo_core_protocolProgram {
       this.last_rebalance_epoch.get(BigInt('0')) || BigInt('4294967295')
     );
     // Update last rebalance epoch
-    assert(current_epoch > last_rebalance);
+    assert(
+      current_epoch > last_rebalance,
+      'make sure we are not rebalancing twice in the same epoch'
+    );
     this.last_rebalance_epoch.set(BigInt('0'), current_epoch);
 
     let blocks_into_epoch: bigint = BigInt.asUintN(
@@ -1474,7 +1508,8 @@ export class pondo_core_protocolProgram {
     );
     assert(
       blocks_into_epoch < this.REBALANCE_PERIOD ||
-        last_rebalance == BigInt('4294967295')
+        last_rebalance == BigInt('4294967295'),
+      'rebalance is allowed during the first day of a new epoch'
     );
 
     let top_validators: string[] = this.pondo_oracle.top_validators.get(
@@ -1746,7 +1781,8 @@ export class pondo_core_protocolProgram {
     for (let i: number = 0; i < 5; i++) {
       assert(
         validators[i].validator == next_validator_set[i].validator &&
-          validators[i].commission == next_validator_set[i].commission
+          validators[i].commission == next_validator_set[i].commission,
+        'ensure that the new validator set is correct'
       );
     }
     // Check that each validator has the correct portion of credits
@@ -1816,7 +1852,14 @@ export class pondo_core_protocolProgram {
       64,
       this.inline_calculate_optimal_liquidity(total_credits_128)
     );
-    assert(liquidity_pool >= optimal_liquidity);
+    assert(
+      liquidity_pool >= optimal_liquidity,
+      'ensure that liquidity pool is at least optimal liquidity'
+    );
+    assert(
+      liquidity_pool <= optimal_liquidity + BigInt('250'),
+      'ensure that liquidity pool is close to optimal liquidity'
+    );
 
     // Update delegated balance
     this.balances.set(this.DELEGATED_BALANCE, total_credits);
@@ -1944,10 +1987,10 @@ export class pondo_core_protocolProgram {
         delegator5_unbonding
     );
 
-    // Assert that the total tvl matches the tvl provided within a margin of error of 2%
     assert(
       total_tvl >= (tvl * BigInt('98')) / BigInt('100') &&
-        total_tvl <= (tvl * BigInt('102')) / BigInt('100')
+        total_tvl <= (tvl * BigInt('102')) / BigInt('100'),
+      'Assert that the total tvl matches the tvl provided within a margin of error of 2%'
     );
   }
 }
