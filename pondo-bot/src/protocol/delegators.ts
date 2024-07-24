@@ -9,7 +9,7 @@ import { CREDITS_PROGRAM, MIN_DELEGATION, NETWORK, PRIVATE_KEY } from "../consta
 import { extractValidator, formatAleoString } from "../util";
 
 
-const bondDelegator = async (delegatorProgramId: string, minBalance: bigint) => {
+const bondDelegator = async (delegatorProgramId: string, minBalance: bigint, delegatorState: PONDO_DELEGATOR_STATE) => {
   console.log(`Bonding delegator ${delegatorProgramId}`);
   const delegatorProgram = await getProgram(delegatorProgramId);
   const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
@@ -26,16 +26,19 @@ const bondDelegator = async (delegatorProgramId: string, minBalance: bigint) => 
   if (balance < minBalance) {
     // Delegator does not have enough credits to bond
     console.log(`Delegator ${delegatorProgramId} does not have enough credits to bond`);
-    await submitTransaction(
-      NETWORK!,
-      PRIVATE_KEY!,
-      delegatorProgram,
-      'insufficient_balance',
-      [],
-      2, // TODO: set the correct fee
-      undefined,
-      resolvedImports
-    );
+    if (delegatorState === '0u8') {
+      console.log('Delegator is in state 0u8, submitting insufficient_balance transaction');
+      await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        delegatorProgram,
+        'insufficient_balance',
+        [],
+        2, // TODO: set the correct fee
+        undefined,
+        resolvedImports
+      );
+    }
   } else {
     // Delegator has enough credits to bond
     await submitTransaction(

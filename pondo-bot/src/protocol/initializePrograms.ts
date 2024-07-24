@@ -58,7 +58,7 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
     // Set the inputs
     let inputs: string[] = [];
     if (program.includes('pondo_core_protocol')) {
-      inputs = ['1_000_000u64']
+      inputs = ['100_000_000_000u64']
     }
 
     // Initialize the program
