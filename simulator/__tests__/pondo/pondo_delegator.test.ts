@@ -3,7 +3,7 @@ import {
   delegator1,
   oracle,
 } from '../../src/contracts/pondoProgramsIndex';
-import { block } from '../../src/PNDO/ChainEmulator';
+import { block } from '../../src/pondo/ChainEmulator';
 
 import {
   MINIMUM_BOND_POOL,

@@ -7,7 +7,7 @@ import {
   MICROCREDITS_TO_CREDITS,
   committee_state,
 } from '../../src/contracts/credits';
-import { block } from '../../src/PNDO/ChainEmulator';
+import { block } from '../../src/pondo/ChainEmulator';
 
 import assert from 'assert';
 

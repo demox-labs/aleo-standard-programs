@@ -1,15 +1,17 @@
+import { credits } from '../src/contracts/pondoProgramsIndex';
 import {
-  credits,
-} from "../src/contracts/pondoProgramsIndex";
-import { TokenOwner, multi_token_support_programProgram } from "../src/contracts/multi_token_support_program";
-import { block } from "../src/PNDO/ChainEmulator";
+  TokenOwner,
+  multi_token_support_programProgram,
+} from '../src/contracts/multi_token_support_program';
+import { block } from '../src/pondo/ChainEmulator';
 
-describe("MTSP tests", () => {
+describe('MTSP tests', () => {
   let block: block;
   let creditsContract: credits;
   let mtsp: multi_token_support_programProgram;
 
-  const ADDRESS = "aleo1ap9w8dkfrahs2msqhr439whxtz8pvnx3c3clln3ps6tklefj6g8shgmtsp";
+  const ADDRESS =
+    'aleo1ap9w8dkfrahs2msqhr439whxtz8pvnx3c3clln3ps6tklefj6g8shgmtsp';
   const u32Max = BigInt(4294967295);
 
   // Token data
@@ -27,33 +29,67 @@ describe("MTSP tests", () => {
   });
 
   // This test fails but should pass after audit fix
-  it("initialize can only be called once by any address", () => {
+  it('initialize can only be called once by any address', () => {
     mtsp.caller = ADDRESS;
     mtsp.initialize();
 
     expect(() => mtsp.initialize()).toThrow();
   });
 
-  it("register_token must use a unique token_id", () => {
+  it('register_token must use a unique token_id', () => {
     mtsp.caller = ADDRESS;
     mtsp.initialize();
 
     // Register token
-    mtsp.register_token(tokenId, tokenName, symbol, decimals, maxSupply, false, ADDRESS);
+    mtsp.register_token(
+      tokenId,
+      tokenName,
+      symbol,
+      decimals,
+      maxSupply,
+      false,
+      ADDRESS
+    );
 
     // Try to register the same token again
-    expect(() => mtsp.register_token(tokenId, tokenName, symbol, decimals, maxSupply, false, ADDRESS)).toThrow();
+    expect(() =>
+      mtsp.register_token(
+        tokenId,
+        tokenName,
+        symbol,
+        decimals,
+        maxSupply,
+        false,
+        ADDRESS
+      )
+    ).toThrow();
 
     // Register a different token
-    mtsp.register_token('token_id_2', tokenName, symbol, decimals, maxSupply, false, ADDRESS);
+    mtsp.register_token(
+      'token_id_2',
+      tokenName,
+      symbol,
+      decimals,
+      maxSupply,
+      false,
+      ADDRESS
+    );
   });
 
-  it("mint should increase the balance of the user", () => {
+  it('mint should increase the balance of the user', () => {
     mtsp.caller = ADDRESS;
     mtsp.initialize();
 
     // Register token
-    mtsp.register_token(tokenId, tokenName, symbol, decimals, maxSupply, false, ADDRESS);
+    mtsp.register_token(
+      tokenId,
+      tokenName,
+      symbol,
+      decimals,
+      maxSupply,
+      false,
+      ADDRESS
+    );
 
     // Mint tokens
     mtsp.mint_public(tokenId, ADDRESS, BigInt(1000), u32Max);
@@ -61,18 +97,26 @@ describe("MTSP tests", () => {
     // Check the balance of the user
     const balanceKey: TokenOwner = {
       account: ADDRESS,
-      token_id: tokenId
+      token_id: tokenId,
     };
     const balance = mtsp.authorized_balances.get(balanceKey.toString());
     expect(balance?.balance).toBe(BigInt(1000));
   });
 
-  it("burn should decrease the balance of the user", () => {
+  it('burn should decrease the balance of the user', () => {
     mtsp.caller = ADDRESS;
     mtsp.initialize();
 
     // Register token
-    mtsp.register_token(tokenId, tokenName, symbol, decimals, maxSupply, false, ADDRESS);
+    mtsp.register_token(
+      tokenId,
+      tokenName,
+      symbol,
+      decimals,
+      maxSupply,
+      false,
+      ADDRESS
+    );
 
     // Mint tokens
     mtsp.mint_public(tokenId, ADDRESS, BigInt(1000), u32Max);
@@ -80,7 +124,7 @@ describe("MTSP tests", () => {
     // Check the balance of the user
     const balanceKey: TokenOwner = {
       account: ADDRESS,
-      token_id: tokenId
+      token_id: tokenId,
     };
     const balance = mtsp.authorized_balances.get(balanceKey.toString());
     expect(balance?.balance).toBe(BigInt(1000));

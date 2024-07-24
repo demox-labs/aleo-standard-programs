@@ -12,7 +12,7 @@ import {
   pALEO,
   PNDO,
 } from '../../src/contracts/pondoProgramsIndex';
-import { ZERO_GROUP_ADDRESS } from '../../src/PNDO/constants';
+import { ZERO_GROUP_ADDRESS } from '../../src/pondo/constants';
 
 const ADMIN = 'admin';
 const USER0 = 'user0';

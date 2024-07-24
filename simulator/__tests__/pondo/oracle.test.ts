@@ -9,7 +9,7 @@ import {
   PORTION_3,
   PORTION_4,
   PORTION_5,
-} from '../../src/PNDO/constants';
+} from '../../src/pondo/constants';
 
 const ZERO_GROUP_ADDRESS =
   'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc';
