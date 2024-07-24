@@ -826,6 +826,6 @@ function withdraw_credits_private:
     output r8 as multi_token_support_program_v1.aleo/withdraw_credits_private.future;
 
 finalize withdraw_credits_private:
-   input r0 as credits.aleo/transfer_public_to_private.future;
+    input r0 as credits.aleo/transfer_public_to_private.future;
     await r0;
 

@@ -509,7 +509,7 @@ const replaceMapping = (leoLine: string): string => {
     // Adjust to use the correct TypeScript equivalent, considering the "||" for default value
     leoLine = leoLine.replace(
       getOrUseRegex,
-      `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess};`
+      `this.${mappingName}.get(${keyName})${propertyAccess} || ${defaultValue}${propertyAccess}`
     );
   }
 

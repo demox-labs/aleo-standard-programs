@@ -242,13 +242,13 @@ export class multi_token_support_programProgram {
         token_id: token_id,
       };
       let role_owner_hash: string = JSON.stringify(role_owner);
-      let role: bigint = this.roles.get(role_owner_hash)!;
+      let role: bigint = BigInt.asUintN(8, this.roles.get(role_owner_hash)!);
       assert(role !== undefined);
       assert(role == this.MINTER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
     }
 
     // Check that the token supply + amount <= max_supply
-    let new_supply: bigint = token.supply + amount;
+    let new_supply: bigint = BigInt.asUintN(128, token.supply + amount);
     assert(new_supply <= token.max_supply);
 
     // Get or create the balance for the recipient
@@ -341,13 +341,13 @@ export class multi_token_support_programProgram {
         token_id: token_id,
       };
       let role_owner_hash: string = JSON.stringify(role_owner);
-      let role: bigint = this.roles.get(role_owner_hash)!;
+      let role: bigint = BigInt.asUintN(8, this.roles.get(role_owner_hash)!);
       assert(role !== undefined);
       assert(role == this.MINTER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
     }
 
     // Check that the token supply + amount <= max_supply
-    let new_supply: bigint = token.supply + amount;
+    let new_supply: bigint = BigInt.asUintN(128, token.supply + amount);
     assert(new_supply <= token.max_supply);
 
     // Check that whether the token is authorized or not matches the authorized parameter
@@ -391,7 +391,7 @@ export class multi_token_support_programProgram {
         token_id: owner.token_id,
       };
       let role_owner_hash: string = JSON.stringify(role_owner);
-      let role: bigint = this.roles.get(role_owner_hash)!;
+      let role: bigint = BigInt.asUintN(8, this.roles.get(role_owner_hash)!);
       assert(role !== undefined);
       assert(role == this.BURNER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
     }
@@ -434,7 +434,10 @@ export class multi_token_support_programProgram {
         return; // Done burning
       } else {
         this.authorized_balances.delete(balance_key);
-        let left_to_burn: bigint = amount - authorized_balance.balance;
+        let left_to_burn: bigint = BigInt.asUintN(
+          128,
+          amount - authorized_balance.balance
+        );
         // Burn remainder from locked balance
         let locked_balance: Balance = this.balances.get(balance_key)!;
         assert(locked_balance !== undefined);
@@ -487,13 +490,13 @@ export class multi_token_support_programProgram {
         token_id: token_id,
       };
       let role_owner_hash: string = JSON.stringify(role_owner);
-      let role: bigint = this.roles.get(role_owner_hash)!;
+      let role: bigint = BigInt.asUintN(8, this.roles.get(role_owner_hash)!);
       assert(role !== undefined);
       assert(role == this.BURNER_ROLE || role == this.SUPPLY_MANAGER_ROLE);
     }
 
     // Check that the token supply - amount >= 0
-    let new_supply: bigint = token.supply - amount; // underflow will be caught by the VM
+    let new_supply: bigint = BigInt.asUintN(128, token.supply - amount); // underflow will be caught by the VM
 
     // Update the token supply
     let new_metadata: TokenMetadata = {
@@ -547,15 +550,25 @@ export class multi_token_support_programProgram {
     let authorized_balance_expired: boolean =
       authorized_balance.authorized_until < this.block.height;
     // If the authorized balance is expired, treat is as part of the locked balance
-    let actual_locked_balance: bigint = authorized_balance_expired
-      ? locked_balance.balance + authorized_balance.balance
-      : locked_balance.balance;
-    let actual_authorized_balance: bigint = authorized_balance_expired
-      ? BigInt('0')
-      : authorized_balance.balance;
+    let actual_locked_balance: bigint = BigInt.asUintN(
+      128,
+      authorized_balance_expired
+        ? locked_balance.balance + authorized_balance.balance
+        : locked_balance.balance
+    );
+    let actual_authorized_balance: bigint = BigInt.asUintN(
+      128,
+      authorized_balance_expired ? BigInt('0') : authorized_balance.balance
+    );
     // Move the amount from the locked balance to the authorized balance
-    let new_locked_balance: bigint = actual_locked_balance - amount;
-    let new_authorized_balance: bigint = actual_authorized_balance + amount;
+    let new_locked_balance: bigint = BigInt.asUintN(
+      128,
+      actual_locked_balance - amount
+    );
+    let new_authorized_balance: bigint = BigInt.asUintN(
+      128,
+      actual_authorized_balance + amount
+    );
 
     // Update the authorized balance with the incremented amount and new expiration
     let new_authorized_balance_struct: Balance = {
@@ -666,9 +679,10 @@ export class multi_token_support_programProgram {
     let authorization_required: boolean =
       this.registered_tokens.get(token_id)!.external_authorization_required;
     assert(authorization_required !== undefined);
-    let default_expiration: bigint = authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let default_expiration: bigint = BigInt.asUintN(
+      32,
+      authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let default_balance: Balance = {
       token_id: token_id,
       account: recipient,
@@ -751,9 +765,10 @@ export class multi_token_support_programProgram {
     let authorization_required: boolean =
       this.registered_tokens.get(token_id)!.external_authorization_required;
     assert(authorization_required !== undefined);
-    let default_expiration: bigint = authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let default_expiration: bigint = BigInt.asUintN(
+      32,
+      authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let default_balance: Balance = {
       token_id: token_id,
       account: recipient,
@@ -802,8 +817,10 @@ export class multi_token_support_programProgram {
       token_id: token_id,
     };
     let allowance_key: string = JSON.stringify(allowance);
-    let current_allowance: bigint =
-      this.allowances.get(allowance_key) || BigInt('0');
+    let current_allowance: bigint = BigInt.asUintN(
+      128,
+      this.allowances.get(allowance_key) || BigInt('0')
+    );
     // Increase or create the allowance amount
     this.allowances.set(allowance_key, current_allowance + amount);
   }
@@ -829,7 +846,10 @@ export class multi_token_support_programProgram {
       token_id: token_id,
     };
     let allowance_key: string = JSON.stringify(allowance);
-    let current_allowance: bigint = this.allowances.get(allowance_key)!;
+    let current_allowance: bigint = BigInt.asUintN(
+      128,
+      this.allowances.get(allowance_key)!
+    );
     assert(current_allowance !== undefined);
     // Decrease the allowance amount
     this.allowances.set(allowance_key, current_allowance - amount);
@@ -864,7 +884,10 @@ export class multi_token_support_programProgram {
       token_id: token_id,
     };
     let allowance_key: string = JSON.stringify(allowance);
-    let current_allowance: bigint = this.allowances.get(allowance_key)!;
+    let current_allowance: bigint = BigInt.asUintN(
+      128,
+      this.allowances.get(allowance_key)!
+    );
     assert(current_allowance !== undefined);
     // Decrease the allowance by the amount being spent
     this.allowances.set(allowance_key, current_allowance - amount);
@@ -904,9 +927,10 @@ export class multi_token_support_programProgram {
     let authorization_required: boolean =
       this.registered_tokens.get(token_id)!.external_authorization_required;
     assert(authorization_required !== undefined);
-    let default_expiration: bigint = authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let default_expiration: bigint = BigInt.asUintN(
+      32,
+      authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let default_balance: Balance = {
       token_id: token_id,
       account: recipient,
@@ -939,9 +963,10 @@ export class multi_token_support_programProgram {
     amount: bigint,
     external_authorization_required: boolean
   ) {
-    let authorized_until: bigint = external_authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let authorized_until: bigint = BigInt.asUintN(
+      32,
+      external_authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let token: Token = {
       owner: recipient,
       amount: amount,
@@ -1006,9 +1031,10 @@ export class multi_token_support_programProgram {
     amount: bigint,
     external_authorization_required: boolean
   ) {
-    let authorized_until: bigint = external_authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let authorized_until: bigint = BigInt.asUintN(
+      32,
+      external_authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let token: Token = {
       owner: recipient,
       amount: amount,
@@ -1049,7 +1075,10 @@ export class multi_token_support_programProgram {
       token_id: token_id,
     };
     let allowance_key: string = JSON.stringify(allowance);
-    let current_allowance: bigint = this.allowances.get(allowance_key)!;
+    let current_allowance: bigint = BigInt.asUintN(
+      128,
+      this.allowances.get(allowance_key)!
+    );
     assert(current_allowance !== undefined);
     // Update the allowance
     this.allowances.set(allowance_key, current_allowance - amount);
@@ -1091,9 +1120,10 @@ export class multi_token_support_programProgram {
 
     let external_authorization_required: boolean =
       input_record.external_authorization_required;
-    let authorized_until: bigint = external_authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let authorized_until: bigint = BigInt.asUintN(
+      32,
+      external_authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let transfer_record: Token = {
       owner: recipient,
       amount: amount,
@@ -1170,9 +1200,10 @@ export class multi_token_support_programProgram {
     let authorization_required: boolean =
       this.registered_tokens.get(token_id)!.external_authorization_required;
     assert(authorization_required !== undefined);
-    let default_expiration: bigint = authorization_required
-      ? BigInt('0')
-      : BigInt('4294967295');
+    let default_expiration: bigint = BigInt.asUintN(
+      32,
+      authorization_required ? BigInt('0') : BigInt('4294967295')
+    );
     let default_balance: Balance = {
       token_id: token_id,
       account: recipient,
