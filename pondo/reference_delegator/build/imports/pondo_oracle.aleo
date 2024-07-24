@@ -69,7 +69,7 @@ function initialize:
     output r0 as pondo_oracle.aleo/initialize.future;
 
 finalize initialize:
-    set true into control_addresses[aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039];
+    set true into control_addresses[aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0];
     set false into control_addresses[pondo_delegator1.aleo];
     set false into control_addresses[pondo_delegator2.aleo];
     set false into control_addresses[pondo_delegator3.aleo];

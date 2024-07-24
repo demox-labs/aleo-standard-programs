@@ -61,8 +61,12 @@ function prep_rebalance:
 
 finalize prep_rebalance:
     get state_mapping[0u8] into r0;
-    is.eq r0 1u8 into r1;
-    branch.eq r1 false to end_then_0_0;
+    is.neq r0 0u8 into r1;
+    assert.eq r1 true;
+    is.neq r0 3u8 into r2;
+    assert.eq r2 true;
+    is.eq r0 1u8 into r3;
+    branch.eq r3 false to end_then_0_0;
     set 2u8 into state_mapping[0u8];
     branch.eq true true to end_otherwise_0_1;
     position end_then_0_0;

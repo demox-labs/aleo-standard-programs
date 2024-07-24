@@ -60,6 +60,10 @@ program pondo_delegator4.aleo {
 
   async function finalize_prep_rebalance() {
     let current_state: u8 = state_mapping.get(0u8);
+
+    assert(current_state != BOND_ALLOWED); // Ensure the delegator is not in the BOND_ALLOWED state
+    assert(current_state != UNBONDING); // Ensure the delegator is not in the UNBOND_NOT_ALLOWED state
+    
     if (current_state == UNBOND_NOT_ALLOWED) {
       state_mapping.set(0u8, UNBOND_ALLOWED);
     }

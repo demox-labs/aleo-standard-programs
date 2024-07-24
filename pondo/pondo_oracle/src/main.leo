@@ -1,15 +1,11 @@
 import credits.aleo;
 
-// TODO:
-// 1. Fix boosting so that it's accurate to the benefits for boosting and slightly profitable to boost
-
-
 // The program to permissionless calculate the yield of reference delegators to validators
 // Note: Many reference delegators for the same validator are supported
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
-  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039;
+  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch

@@ -3,7 +3,7 @@ import pondo_oracle.aleo;
 
 program reference_delegator.aleo {
   // The address of the person who controls this program
-  const ADMIN: address = aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
+  const ADMIN: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
   // The address of the validator who will be delegated to
   const VALIDATOR: address = aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
   // The minimum delegation set by the credits.aleo program
