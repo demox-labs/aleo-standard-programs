@@ -42,8 +42,7 @@ program pondo_delegator3.aleo {
   }
 
   async transition initialize() -> Future {
-    // Assert that the caller is the pondo core protocol
-    assert_eq(self.caller, pondo_core_protocol.aleo);
+    assert_eq(self.caller, pondo_core_protocol.aleo);  // Assert that the caller is the pondo core protocol
 
     return finalize_initialize();
   }
@@ -52,39 +51,30 @@ program pondo_delegator3.aleo {
     state_mapping.set(0u8, TERMINAL);
   }
 
-  async transition set_state(
-    public new_state: u8
+  async transition prep_rebalance(
   ) -> Future {
-    // Assert that the caller is the pondo core protocol
-    assert_eq(self.caller, pondo_core_protocol.aleo);
+    assert_eq(self.caller, pondo_core_protocol.aleo);  // Assert that the caller is the pondo core protocol
 
-    // Assert that the state is only of the valid options
-    assert(new_state == BOND_ALLOWED || new_state == UNBOND_ALLOWED);
-
-    return finalize_set_state(new_state);
+    return finalize_prep_rebalance();
   }
 
-  async function finalize_set_state(
-    new_state: u8
-  ) {
+  async function finalize_prep_rebalance() {
     let current_state: u8 = state_mapping.get(0u8);
+
+    assert(current_state != BOND_ALLOWED); // Ensure the delegator is not in the BOND_ALLOWED state
+    assert(current_state != UNBONDING); // Ensure the delegator is not in the UNBOND_NOT_ALLOWED state
+    
     if (current_state == UNBOND_NOT_ALLOWED) {
-      assert(new_state == UNBOND_ALLOWED);
+      state_mapping.set(0u8, UNBOND_ALLOWED);
     }
-
-    if (current_state == TERMINAL) {
-      assert(new_state == BOND_ALLOWED);
-    }
-
-    state_mapping.set(0u8, new_state);
   }
 
   async transition set_validator(
     public new_validator: address,
     public new_commission: u8
   ) -> Future {
-    // Assert that the caller is the pondo core protocol
-    assert_eq(self.caller, pondo_core_protocol.aleo);
+    assert_eq(self.caller, pondo_core_protocol.aleo);  // Assert that the caller is the pondo core protocol
+    assert(new_commission <= MAX_COMMISSION); // Ensure the commission is within the allowed range
 
     return finalize_set_validator(new_validator, new_commission);
   }
@@ -102,7 +92,7 @@ program pondo_delegator3.aleo {
 
     // Ensure the delegator is in the correct state
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == TERMINAL);
+    assert(current_state == TERMINAL); // Ensure the delegator is in the TERMINAL state
 
     state_mapping.set(0u8, BOND_ALLOWED);
   }
@@ -123,13 +113,13 @@ program pondo_delegator3.aleo {
     f0.await();
 
     let current_validator_state: validator_state = validator_mapping.get(0u8);
-    assert_eq(validator, current_validator_state.validator);
+    assert_eq(validator, current_validator_state.validator); // Ensure we're bonding to the correct validator
 
     let balance: u64 = credits.aleo/account.get(pondo_delegator3.aleo);
-    assert_eq(balance, 0u64);
+    assert_eq(balance, 0u64); // Ensure the delegator is bonded completely
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == BOND_ALLOWED || current_state == UNBOND_NOT_ALLOWED);
+    assert(current_state == BOND_ALLOWED || current_state == UNBOND_NOT_ALLOWED); // Ensure the delegator is in the correct state
 
     state_mapping.set(0u8, UNBOND_NOT_ALLOWED);
   }
@@ -152,7 +142,7 @@ program pondo_delegator3.aleo {
 
     // Should be entirely unbonded
     let bonded: bool = credits.aleo/bonded.contains(pondo_delegator3.aleo);
-    assert_eq(bonded, false);
+    assert_eq(bonded, false); // Ensure the delegator was completely unbonded
 
     // Get the current validator state
     let current_validator_state: validator_state = validator_mapping.get(0u8);
@@ -163,15 +153,15 @@ program pondo_delegator3.aleo {
     };
     let validator_committee_state: committee_state = credits.aleo/committee.get_or_use(current_validator_state.validator, default_committee_state);
     // Check if the commission increased by more than the allowed amount
-    let commission_increased: bool = current_validator_state.commission > (validator_committee_state.commission + MAX_COMMISSION_INCREASE);
-    let commission_beyond_limit: bool = current_validator_state.commission > MAX_COMMISSION;
+    let commission_increased: bool = validator_committee_state.commission > (current_validator_state.commission + MAX_COMMISSION_INCREASE);
+    let commission_beyond_limit: bool = validator_committee_state.commission > MAX_COMMISSION;
 
     // If the commission changed, ban the validator, otherwise ensure the delegator is in the correct state
     if (commission_increased || commission_beyond_limit) {
       banned_validators.set(current_validator_state.validator, true);
     } else {
       let current_state: u8 = state_mapping.get(0u8);
-      assert_eq(current_state, UNBOND_ALLOWED);
+      assert_eq(current_state, UNBOND_ALLOWED); // Ensure the delegator is allowed to unbond
     }
 
     // Set the state to unbonding
@@ -185,12 +175,12 @@ program pondo_delegator3.aleo {
 
   async function finalize_terminal_state() {
     let bonded: bool = credits.aleo/bonded.contains(pondo_delegator3.aleo);
-    assert_eq(bonded, false);
+    assert_eq(bonded, false); // Ensure the delegator was completely unbonded
     let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator3.aleo);
-    assert_eq(is_unbonding, false);
+    assert_eq(is_unbonding, false); // Ensure the delegator is no longer unbonding
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state != BOND_ALLOWED);
+    assert(current_state != BOND_ALLOWED); // Ensure the delegator is not in the BOND_ALLOWED state
 
     if (current_state == UNBOND_NOT_ALLOWED) {
       let current_validator_state: validator_state = validator_mapping.get(0u8);
@@ -201,8 +191,7 @@ program pondo_delegator3.aleo {
   }
 
   async transition transfer_to_core_protocol(public amount: u64) -> Future {
-    // Assert that the caller is the pondo core protocol
-    assert_eq(self.caller, pondo_core_protocol.aleo);
+    assert_eq(self.caller, pondo_core_protocol.aleo);  // Assert that the caller is the pondo core protocol
 
     let f0: Future = credits.aleo/transfer_public(pondo_core_protocol.aleo, amount);
 
@@ -215,10 +204,10 @@ program pondo_delegator3.aleo {
     f0.await();
 
     let balance: u64 = credits.aleo/account.get(pondo_delegator3.aleo);
-    assert_eq(balance, 0u64);
+    assert_eq(balance, 0u64); // Ensure all the funds were transferred
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert_eq(current_state, TERMINAL);
+    assert_eq(current_state, TERMINAL); // Ensure the delegator is in the TERMINAL state
   }
 
   async transition bond_failed() -> Future {
@@ -227,9 +216,9 @@ program pondo_delegator3.aleo {
 
   async function finalize_bond_failed() {
     let bonded: bool = credits.aleo/bonded.contains(pondo_delegator3.aleo);
-    assert_eq(bonded, false);
+    assert_eq(bonded, false); // Ensure the delegator was not bonded
     let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator3.aleo);
-    assert_eq(is_unbonding, false);
+    assert_eq(is_unbonding, false); // Ensure the delegator is not unbonding
 
     let current_validator_state: validator_state = validator_mapping.get(0u8);
     // Bonding always succeeds if the validator isn't in the committee given a sufficient balance
@@ -238,10 +227,10 @@ program pondo_delegator3.aleo {
     // The two conditions that would prevent a valid bond are:
     // 1. The validator is closed to delegators
     // 2. The validator is unbonding
-    assert(validator_committee_state.is_open == false || validator_is_unbonding);
+    assert(validator_committee_state.is_open == false || validator_is_unbonding); // Ensure the validator is closed to delegators or unbonding
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == BOND_ALLOWED);
+    assert(current_state == BOND_ALLOWED); // Ensure the delegator was in the BOND_ALLOWED state
 
     state_mapping.set(0u8, TERMINAL);
 
@@ -257,15 +246,15 @@ program pondo_delegator3.aleo {
 
   async function finalize_insufficient_balance() {
     let bonded: bool = credits.aleo/bonded.contains(pondo_delegator3.aleo);
-    assert_eq(bonded, false);
+    assert_eq(bonded, false); // Ensure the delegator was not bonded
     let is_unbonding: bool = credits.aleo/unbonding.contains(pondo_delegator3.aleo);
-    assert_eq(is_unbonding, false);
+    assert_eq(is_unbonding, false); // Ensure the delegator is not unbonding
 
     let balance: u64 = credits.aleo/account.get(pondo_delegator3.aleo);
-    assert(balance < 10_000_000_000u64);
+    assert(balance < 10_000_000_000u64); // Ensure the balance is less than the minimum required to bond
 
     let current_state: u8 = state_mapping.get(0u8);
-    assert(current_state == BOND_ALLOWED);
+    assert(current_state == BOND_ALLOWED); // Ensure the delegator was in the BOND_ALLOWED state
 
     state_mapping.set(0u8, TERMINAL);
   }
@@ -283,6 +272,6 @@ program pondo_delegator3.aleo {
   ) {
     f0.await();
 
-    assert(banned_validators.contains(validator));
+    assert(banned_validators.contains(validator)); // Ensure the validator was in the banned mapping
   }
 }

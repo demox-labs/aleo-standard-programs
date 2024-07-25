@@ -3,7 +3,7 @@ import pondo_oracle.aleo;
 
 program reference_delegator.aleo {
   // The address of the person who controls this program
-  const ADMIN: address = aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
+  const ADMIN: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
   // The address of the validator who will be delegated to
   const VALIDATOR: address = aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt;
   // The minimum delegation set by the credits.aleo program
@@ -17,10 +17,10 @@ program reference_delegator.aleo {
     assert_eq(self.caller, ADMIN);
 
     // Transfer 10K credits to the program
-    let f0: Future = credits.aleo/transfer_public_as_signer(reference_delegator.aleo, MIN_DELEGATION);
+    let f0: Future = credits.aleo/transfer_public_as_signer(self.address, MIN_DELEGATION);
 
     // Delegate those 10K credits to a validator
-    let f1: Future = credits.aleo/bond_public(VALIDATOR, reference_delegator.aleo, MIN_DELEGATION);
+    let f1: Future = credits.aleo/bond_public(VALIDATOR, self.address, MIN_DELEGATION);
 
     // Register the reference delegation with the pondo oracle
     let f2: Future = pondo_oracle.aleo/propose_delegator(VALIDATOR);
@@ -55,7 +55,7 @@ program reference_delegator.aleo {
     assert_eq(self.caller, ADMIN);
 
     // Unbond_public
-    let f0: Future = credits.aleo/unbond_public(reference_delegator.aleo, amount);
+    let f0: Future = credits.aleo/unbond_public(self.address, amount);
 
     // Remove the reference delegator
     let f1: Future = pondo_oracle.aleo/remove_delegator();
@@ -72,7 +72,7 @@ program reference_delegator.aleo {
     f1.await(); // remove_reference_delegator
 
     // Assert that the delegator is fully unbonded
-    let still_bonded: bool = credits.aleo/bonded.contains(reference_delegator.aleo);
+    let still_bonded: bool = credits.aleo/bonded.contains(self.address);
     assert_eq(still_bonded, false);
   }
 
@@ -94,7 +94,7 @@ program reference_delegator.aleo {
     f0.await();
 
     // Ensure there's not remaining balance
-    let balance: u64 = credits.aleo/account.get_or_use(reference_delegator.aleo, 0u64);
+    let balance: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     assert_eq(balance, 0u64);
   }
 }
