@@ -1,15 +1,15 @@
 import credits.aleo;
 
-// TODO:
-// 1. Fix boosting so that it's accurate to the benefits for boosting and slightly profitable to boost
-
-
 // The program to permissionless calculate the yield of reference delegators to validators
 // Note: Many reference delegators for the same validator are supported
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
-  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo1am58znyhghvyj7lesu0h6wvxecxfhu8svdvgema6g5eqv7kecuzsm7z039;
+  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
+  // The Zero Group Address
+  const ZERO_GROUP_ADDRESS: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
+  // The One Group Address
+  const ONE_GROUP_ADDRESS: address = aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch
@@ -97,16 +97,16 @@ program pondo_oracle.aleo {
     ]);
     top_validators.set(0u8,
       [
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS
       ]
     );
   }
@@ -345,8 +345,8 @@ program pondo_oracle.aleo {
     // Get the array of top validators
     let top_validators_addresses: [address; 10] = top_validators.get(0u8);
     let default_validator_datum: validator_datum = validator_datum {
-      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      delegator: ZERO_GROUP_ADDRESS,
+      validator: ZERO_GROUP_ADDRESS,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
@@ -430,16 +430,16 @@ program pondo_oracle.aleo {
 
     // Remove from the top 10 validators if there
     let top_validators_addresses: [address; 10] = top_validators.get(0u8);
-    let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[0u8];
-    let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[1u8];
-    let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[2u8];
-    let new_validator_3: address = top_validators_addresses[3u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[3u8];
-    let new_validator_4: address = top_validators_addresses[4u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[4u8];
-    let new_validator_5: address = top_validators_addresses[5u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[5u8];
-    let new_validator_6: address = top_validators_addresses[6u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[6u8];
-    let new_validator_7: address = top_validators_addresses[7u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[7u8];
-    let new_validator_8: address = top_validators_addresses[8u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[8u8];
-    let new_validator_9: address = top_validators_addresses[9u8] == delegator_address ? aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc : top_validators_addresses[9u8];
+    let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[0u8];
+    let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[1u8];
+    let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[2u8];
+    let new_validator_3: address = top_validators_addresses[3u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[3u8];
+    let new_validator_4: address = top_validators_addresses[4u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[4u8];
+    let new_validator_5: address = top_validators_addresses[5u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[5u8];
+    let new_validator_6: address = top_validators_addresses[6u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[6u8];
+    let new_validator_7: address = top_validators_addresses[7u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[7u8];
+    let new_validator_8: address = top_validators_addresses[8u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[8u8];
+    let new_validator_9: address = top_validators_addresses[9u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[9u8];
 
     // Swap until 0group address is at the end of the array
     let swap_result_0: (address, address) = swap_zero_group_address(new_validator_0, new_validator_1);
@@ -473,6 +473,10 @@ program pondo_oracle.aleo {
   async transition pondo_ban_validator(
     public validator: address
   ) -> Future {
+    // Check that 1Group and 0Group addresses cannot be banned
+    assert_neq(validator, ZERO_GROUP_ADDRESS);
+    assert_neq(validator, ONE_GROUP_ADDRESS);
+
     return finalize_pondo_ban_validator(validator, self.caller);
   }
 
@@ -668,7 +672,7 @@ program pondo_oracle.aleo {
     address_0: address,
     address_1: address
   ) -> (address, address) {
-      if (address_0 == aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) {
+      if (address_0 == ZERO_GROUP_ADDRESS) {
         return (address_1, address_0);
       } else {
         return (address_0, address_1);
