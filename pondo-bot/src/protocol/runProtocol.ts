@@ -37,14 +37,6 @@ const getPondoDelegatorStates = async (): Promise<string[]> => {
   return states;
 }
 
-const calculateOptimalLiquidity = (total_balance: bigint): bigint => {
-  let min_liquidity: bigint =
-    (total_balance * MIN_LIQUIDITY_PERCENT) / PRECISION_UNSIGNED;
-  let optimal_liquidity: bigint =
-    min_liquidity > MAX_LIQUIDITY ? MAX_LIQUIDITY : min_liquidity;
-  return optimal_liquidity;
-}
-
 const determineRebalanceAmounts = async (): Promise<bigint[]> => {
   // Constants
   const delegatorAllocation: bigint[] = [BigInt(3700), BigInt(2600), BigInt(1600), BigInt(1200), BigInt(900)];
@@ -56,23 +48,27 @@ const determineRebalanceAmounts = async (): Promise<bigint[]> => {
   let totalCredits = await getPublicBalance(programAddress);
   console.log(`Total credits: ${totalCredits}`);
 
-  const liquidityPool = calculateOptimalLiquidity(totalCredits); // Add 100 microcredits to the liquidity pool
-  console.log(`Liquidity pool: ${liquidityPool}`);
-
-  // Calculate the total credits after removing the liquidity pool
-  totalCredits -= liquidityPool;
-
   // Get the balance reserved for withdrawals
   const reservedForWithdrawalsString = await getMappingValue('2u8', CORE_PROTOCOL_PROGRAM, 'balances');
   const reservedForWithdrawals = BigInt(reservedForWithdrawalsString.slice(0, -3));
   console.log(`Reserved for withdrawals: ${reservedForWithdrawals}`);
 
-  // Calculate the total account balance
+  // Calculate the total account balance minus the reserved amount
   totalCredits -= reservedForWithdrawals;
+
+  let liquidityPool = totalCredits * MIN_LIQUIDITY_PERCENT / BigInt(10250);
+  if (liquidityPool > MAX_LIQUIDITY) {
+    liquidityPool = MAX_LIQUIDITY;
+  }
+  totalCredits -= liquidityPool;
+
+  console.log(`Liquidty pool: ${liquidityPool}, new total credits: ${totalCredits}`);
   
   // Derive individual transfer amounts based on their portions
   let transferAmounts: bigint[] = delegatorAllocation.map(portion => {
-    return (portion * totalCredits) / PRECISION_UNSIGNED;
+    const microcredits = portion * totalCredits / PRECISION_UNSIGNED;
+    console.log('portion: ', PRECISION_UNSIGNED * microcredits / totalCredits);
+    return microcredits;
   });
 
   console.log(`Transfer amounts: ${transferAmounts}`);
@@ -83,18 +79,17 @@ const determineRebalanceAmounts = async (): Promise<bigint[]> => {
 const prepRebalance = async (): Promise<void> => {
   console.log('Starting prep rebalance');
 
-  const lastRebalanceBlock = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'last_rebalance_epoch');
+  let lastRebalanceBlock = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'last_rebalance_epoch');
   if (!lastRebalanceBlock) {
-    console.log('No last rebalance epoch found, skipping');
+    lastRebalanceBlock = '4294967295u32u32'; // Set to max value if not set, in the case of the protocol initialization
+  }
+  
+  const lastRebalanceEpoch = BigInt(lastRebalanceBlock.slice(0, -3)) / BigInt(EPOCH_BLOCKS);
+  const currentEpoch = BigInt(await getHeight()) / BigInt(EPOCH_BLOCKS);
+  console.log(`Last rebalance epoch: ${lastRebalanceEpoch}, current epoch: ${currentEpoch}`);
+  if (lastRebalanceEpoch >= currentEpoch) {
+    console.log(`Already rebalanced in this epoch: ${currentEpoch}, skipping`);
     return;
-  } else {
-    const lastRebalanceEpoch = BigInt(lastRebalanceBlock.slice(0, -3)) / BigInt(EPOCH_BLOCKS);
-    const currentEpoch = BigInt(await getHeight()) / BigInt(EPOCH_BLOCKS);
-    console.log(`Last rebalance epoch: ${lastRebalanceEpoch}, current epoch: ${currentEpoch}`);
-    if (lastRebalanceEpoch >= currentEpoch) {
-      console.log(`Already rebalanced in this epoch: ${currentEpoch}, skipping`);
-      return;
-    }
   }
 
   const pondoDelegatorStates = await getPondoDelegatorStates();
@@ -122,15 +117,8 @@ const prepRebalance = async (): Promise<void> => {
   }
 }
 
-const getTopValidators = async (): Promise<string[]> => {
-  let topValidatorsString = await getMappingValue('0u8', PONDO_ORACLE_PROGRAM, 'top_validators');
-  if (!topValidatorsString) {
-    // TODO: This is broken, it should return validator data and then extract the commissions
-    topValidatorsString = `${ZERO_ADDRESS},${ZERO_ADDRESS},${ZERO_ADDRESS},${ZERO_ADDRESS},${ZERO_ADDRESS}`;
-  }
-  console.log(`Top validators: ${topValidatorsString}`);
-  const topValidators = topValidatorsString.split(',');
-  console.log(`Top validators: ${topValidators}`);
+const getTopValidators = async (): Promise<string> => {
+  let topValidators = await getMappingValue('1u8', CORE_PROTOCOL_PROGRAM, 'validator_set');
   return topValidators;
 }
 
@@ -182,7 +170,7 @@ const rebalanceRedistribute = async (): Promise<void> => {
   // Format the inputs
   // TODO: the commissions should come from on chain
   const inputs = [
-    `[${topValidators.map(validator => `{ validator: ${validator}, commission: 0u8}`).join(',')}]`,
+    `${topValidators}`,
     `[${rebalanceAmounts.map(amount => `${amount}u64`).join(',')}]`
   ];
   console.log(`Inputs: ${inputs}`);

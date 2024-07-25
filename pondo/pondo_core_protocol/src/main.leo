@@ -931,11 +931,11 @@ program pondo_core_protocol.aleo {
     let validator3_portion: u128 = (transfer_amounts[2u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator4_portion: u128 = (transfer_amounts[3u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator5_portion: u128 = (transfer_amounts[4u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
-    assert(validator1_portion == delegator_allocation[0u8]);
-    assert(validator2_portion == delegator_allocation[1u8]);
-    assert(validator3_portion == delegator_allocation[2u8]);
-    assert(validator4_portion == delegator_allocation[3u8]);
-    assert(validator5_portion == delegator_allocation[4u8]);
+    assert(delegator_allocation[0u8] - validator1_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[1u8] - validator2_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[2u8] - validator3_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[3u8] - validator4_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[4u8] - validator5_portion <= 2u128); // ensure that the validator portion is close to the expected portion
 
     // Check that there's still enough account balance left for pending withdrawals
     let account_balance: u64 = credits.aleo/account.get_or_use(self.address, 0u64);

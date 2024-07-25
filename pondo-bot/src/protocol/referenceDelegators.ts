@@ -214,7 +214,7 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
 }
 
 export const updateReferenceDelegatorsIfNecessary = async () => {
-  console.log('Approving reference delegators');
+  console.log('Updating reference delegators data if necessary');
 
   const transactionHistory = await getPublicTransactionsForAddress(PONDO_ORACLE_PROGRAM, 'add_delegator', 0) as ExecuteTransaction[];
   const delegators = transactionHistory.map(tx => tx.transaction.execution.transitions[0].inputs[0].value);

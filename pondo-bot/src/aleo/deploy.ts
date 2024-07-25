@@ -97,7 +97,7 @@ export const deploymentCost = (program: string) => {
   let fee = 1;
 
   if (program.indexOf('multi_token_support') !== -1) {
-    fee = 70; // At time of writing, the fee for deploying the multi-token support program is 69632150 microcredits
+    fee = 75; // At time of writing, the fee for deploying the multi-token support program is 69632150 microcredits
   } else if (program.indexOf('pondo_oracle') !== -1) {
     fee = 98; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
@@ -107,7 +107,7 @@ export const deploymentCost = (program: string) => {
   } else if (program.indexOf('pondo_delegator') !== -1) {
     fee = 21; // At time of writing, the fee for deploying the pondo vault program is 20008475 microcredits
   } else if (program.indexOf('pondo_core_protocol') !== -1) {
-    fee = 51; // At time of writing, the fee for deploying the pondo vault program is 50593425 microcredits
+    fee = 55; // At time of writing, the fee for deploying the pondo vault program is 50593425 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
     fee = 8; // At time of writing, the fee for deploying the pondo vault program is 7761100 microcredits
   }
