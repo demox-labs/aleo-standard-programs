@@ -58,7 +58,9 @@ const unbondDelegator = async (delegatorProgramId: string) => {
   console.log(`Unbonding delegator ${delegatorProgramId}`);
   const delegatorProgram = await getProgram(delegatorProgramId);
   const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
-  const balance = await getPublicBalance(delegatorProgramAddress);
+  const bondedState = JSON.parse(formatAleoString(await getMappingValue(delegatorProgramAddress, CREDITS_PROGRAM, 'bonded')));
+  const balance = BigInt(bondedState["microcredits"].slice(0, -3));
+
   console.log(`Delegator ${delegatorProgramId} has balance ${balance}`);
 
   const imports = pondoDependencyTree[delegatorProgramId];
@@ -95,7 +97,7 @@ const finalizeToTerminalState = async (delegatorProgramId: string) => {
         2, // TODO: set the correct fee
       );
     } else {
-      console.log(`Delegator ${delegatorProgramId} is still unbonding, skipping`);
+      console.log(`Delegator ${delegatorProgramId} is still unbonding, skipping ${unbondHeight - currentHeight} blocks left`);
     }
   } else {
     console.log(`Delegator ${delegatorProgramId} has finished unbonding, moving to terminal state`);
@@ -124,10 +126,10 @@ export const handleDelegatorUpdate = async (delegatorProgramId: string, state: P
 
   switch (state) {
     case '0u8': // Bond allowed
-      await bondDelegator(delegatorProgramId, MIN_DELEGATION);
+      await bondDelegator(delegatorProgramId, MIN_DELEGATION, state);
       break;
     case '1u8': // Unbond not allowed
-      await bondDelegator(delegatorProgramId, BigInt(1_000_000));
+      await bondDelegator(delegatorProgramId, BigInt(1_000_000), state);
       break;
     case '2u8': // Unbond allowed
       await unbondDelegator(delegatorProgramId);

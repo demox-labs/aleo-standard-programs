@@ -5,7 +5,7 @@ import { AuthorizeTransaction } from '../workers/authorizeTransaction';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
 import { delegateDeployTransaction, delegateDeployment, getProgram, pollDelegatedDeployment, pollDelegatedTransaction } from './client';
 import { delay } from '../util';
-import { EPOCH_BLOCKS, EPOCH_BLOCKS_DEFAULT, ORACLE_UPDATE_BLOCKS, ORACLE_UPDATE_BLOCKS_DEFAULT, REBALANCE_BLOCKS, REBALANCE_BLOCKS_DEFAULT } from '../constants';
+import { DEFAULT_VALIDATOR_ADDRESS, EPOCH_BLOCKS, EPOCH_BLOCKS_DEFAULT, ORACLE_UPDATE_BLOCKS, ORACLE_UPDATE_BLOCKS_DEFAULT, REBALANCE_BLOCKS, REBALANCE_BLOCKS_DEFAULT } from '../constants';
 
 type AuthorizePool = Pool<
   FunctionThread<[network: string,
@@ -30,6 +30,13 @@ const updateEpoch = (programCode: string): string => {
   }
   if (REBALANCE_BLOCKS !== REBALANCE_BLOCKS_DEFAULT) {
     updatedProgramCode = updatedProgramCode.replaceAll(REBALANCE_BLOCKS_DEFAULT.toString(), REBALANCE_BLOCKS.toString());
+  }
+
+  if (DEFAULT_VALIDATOR_ADDRESS) {
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0',
+      DEFAULT_VALIDATOR_ADDRESS
+    );
   }
   return updatedProgramCode;
 }

@@ -56,6 +56,11 @@ mapping allowances:
 	value as u128.public;
 
 
+mapping roles:
+	key as field.public;
+	value as u8.public;
+
+
 function transfer_public:
     input r0 as field.public;
     input r1 as address.public;
@@ -71,28 +76,33 @@ finalize transfer_public:
     cast r3 r0 into r4 as TokenOwner;
     hash.bhp256 r4 into r5 as field;
     get authorized_balances[r5] into r6;
-    sub r6.balance r2 into r7;
-    cast r0 r3 r7 r6.authorized_until into r8 as Balance;
-    set r8 into authorized_balances[r5];
-    cast r1 r0 into r9 as TokenOwner;
-    hash.bhp256 r9 into r10 as field;
-    get registered_tokens[r0] into r11;
-    ternary r11.external_authorization_required 0u32 4294967295u32 into r12;
-    cast r0 r1 0u128 r12 into r13 as Balance;
-    get.or_use balances[r10] r13 into r14;
-    get.or_use authorized_balances[r10] r13 into r15;
-    ternary r11.external_authorization_required r14.token_id r15.token_id into r16;
-    ternary r11.external_authorization_required r14.account r15.account into r17;
-    ternary r11.external_authorization_required r14.balance r15.balance into r18;
-    ternary r11.external_authorization_required r14.authorized_until r15.authorized_until into r19;
-    cast r16 r17 r18 r19 into r20 as Balance;
-    add r20.balance r2 into r21;
-    cast r0 r1 r21 r6.authorized_until into r22 as Balance;
-    branch.eq r11.external_authorization_required false to end_then_0_0;
-    set r22 into balances[r10];
+    get registered_tokens[r0] into r7;
+    lte block.height r6.authorized_until into r8;
+    not r7.external_authorization_required into r9;
+    or r8 r9 into r10;
+    assert.eq r10 true;
+    sub r6.balance r2 into r11;
+    cast r0 r3 r11 r6.authorized_until into r12 as Balance;
+    set r12 into authorized_balances[r5];
+    cast r1 r0 into r13 as TokenOwner;
+    hash.bhp256 r13 into r14 as field;
+    get registered_tokens[r0] into r15;
+    ternary r15.external_authorization_required 0u32 4294967295u32 into r16;
+    cast r0 r1 0u128 r16 into r17 as Balance;
+    get.or_use balances[r14] r17 into r18;
+    get.or_use authorized_balances[r14] r17 into r19;
+    ternary r15.external_authorization_required r18.token_id r19.token_id into r20;
+    ternary r15.external_authorization_required r18.account r19.account into r21;
+    ternary r15.external_authorization_required r18.balance r19.balance into r22;
+    ternary r15.external_authorization_required r18.authorized_until r19.authorized_until into r23;
+    cast r20 r21 r22 r23 into r24 as Balance;
+    add r24.balance r2 into r25;
+    cast r0 r1 r25 r24.authorized_until into r26 as Balance;
+    branch.eq r15.external_authorization_required false to end_then_0_0;
+    set r26 into balances[r14];
     branch.eq true true to end_otherwise_0_1;
     position end_then_0_0;
-    set r22 into authorized_balances[r10];
+    set r26 into authorized_balances[r14];
     position end_otherwise_0_1;
 
 
@@ -113,28 +123,33 @@ finalize transfer_public_as_signer:
     cast r3 r0 into r4 as TokenOwner;
     hash.bhp256 r4 into r5 as field;
     get authorized_balances[r5] into r6;
-    sub r6.balance r2 into r7;
-    cast r0 r3 r7 r6.authorized_until into r8 as Balance;
-    set r8 into authorized_balances[r5];
-    cast r1 r0 into r9 as TokenOwner;
-    hash.bhp256 r9 into r10 as field;
-    get registered_tokens[r0] into r11;
-    ternary r11.external_authorization_required 0u32 4294967295u32 into r12;
-    cast r0 r1 0u128 r12 into r13 as Balance;
-    get.or_use balances[r10] r13 into r14;
-    get.or_use authorized_balances[r10] r13 into r15;
-    ternary r11.external_authorization_required r14.token_id r15.token_id into r16;
-    ternary r11.external_authorization_required r14.account r15.account into r17;
-    ternary r11.external_authorization_required r14.balance r15.balance into r18;
-    ternary r11.external_authorization_required r14.authorized_until r15.authorized_until into r19;
-    cast r16 r17 r18 r19 into r20 as Balance;
-    add r20.balance r2 into r21;
-    cast r0 r1 r21 r6.authorized_until into r22 as Balance;
-    branch.eq r11.external_authorization_required false to end_then_0_2;
-    set r22 into balances[r10];
+    get registered_tokens[r0] into r7;
+    lte block.height r6.authorized_until into r8;
+    not r7.external_authorization_required into r9;
+    or r8 r9 into r10;
+    assert.eq r10 true;
+    sub r6.balance r2 into r11;
+    cast r0 r3 r11 r6.authorized_until into r12 as Balance;
+    set r12 into authorized_balances[r5];
+    cast r1 r0 into r13 as TokenOwner;
+    hash.bhp256 r13 into r14 as field;
+    get registered_tokens[r0] into r15;
+    ternary r15.external_authorization_required 0u32 4294967295u32 into r16;
+    cast r0 r1 0u128 r16 into r17 as Balance;
+    get.or_use balances[r14] r17 into r18;
+    get.or_use authorized_balances[r14] r17 into r19;
+    ternary r15.external_authorization_required r18.token_id r19.token_id into r20;
+    ternary r15.external_authorization_required r18.account r19.account into r21;
+    ternary r15.external_authorization_required r18.balance r19.balance into r22;
+    ternary r15.external_authorization_required r18.authorized_until r19.authorized_until into r23;
+    cast r20 r21 r22 r23 into r24 as Balance;
+    add r24.balance r2 into r25;
+    cast r0 r1 r25 r24.authorized_until into r26 as Balance;
+    branch.eq r15.external_authorization_required false to end_then_0_2;
+    set r26 into balances[r14];
     branch.eq true true to end_otherwise_0_3;
     position end_then_0_2;
-    set r22 into authorized_balances[r10];
+    set r26 into authorized_balances[r14];
     position end_otherwise_0_3;
 
 
@@ -170,7 +185,7 @@ function transfer_private_to_public:
     input r2 as Token.record;
     sub r2.amount r1 into r3;
     cast r2.owner r3 r2.token_id r2.external_authorization_required r2.authorized_until into r4 as Token.record;
-    async transfer_private_to_public r2.token_id r0 r1 into r5;
+    async transfer_private_to_public r2.token_id r0 r1 r2.authorized_until r2.external_authorization_required into r5;
     output r4 as Token.record;
     output r5 as multi_token_support_program_v1.aleo/transfer_private_to_public.future;
 
@@ -178,25 +193,31 @@ finalize transfer_private_to_public:
     input r0 as field.public;
     input r1 as address.public;
     input r2 as u128.public;
-    cast r1 r0 into r3 as TokenOwner;
-    hash.bhp256 r3 into r4 as field;
-    get registered_tokens[r0] into r5;
-    ternary r5.external_authorization_required 0u32 4294967295u32 into r6;
-    cast r0 r1 0u128 r6 into r7 as Balance;
-    get.or_use balances[r4] r7 into r8;
-    get.or_use authorized_balances[r4] r7 into r9;
-    ternary r5.external_authorization_required r8.token_id r9.token_id into r10;
-    ternary r5.external_authorization_required r8.account r9.account into r11;
-    ternary r5.external_authorization_required r8.balance r9.balance into r12;
-    ternary r5.external_authorization_required r8.authorized_until r9.authorized_until into r13;
-    cast r10 r11 r12 r13 into r14 as Balance;
-    add r14.balance r2 into r15;
-    cast r0 r1 r15 r14.authorized_until into r16 as Balance;
-    branch.eq r5.external_authorization_required false to end_then_0_4;
-    set r16 into balances[r4];
+    input r3 as u32.public;
+    input r4 as boolean.public;
+    lte block.height r3 into r5;
+    not r4 into r6;
+    or r5 r6 into r7;
+    assert.eq r7 true;
+    cast r1 r0 into r8 as TokenOwner;
+    hash.bhp256 r8 into r9 as field;
+    get registered_tokens[r0] into r10;
+    ternary r10.external_authorization_required 0u32 4294967295u32 into r11;
+    cast r0 r1 0u128 r11 into r12 as Balance;
+    get.or_use balances[r9] r12 into r13;
+    get.or_use authorized_balances[r9] r12 into r14;
+    ternary r10.external_authorization_required r13.token_id r14.token_id into r15;
+    ternary r10.external_authorization_required r13.account r14.account into r16;
+    ternary r10.external_authorization_required r13.balance r14.balance into r17;
+    ternary r10.external_authorization_required r13.authorized_until r14.authorized_until into r18;
+    cast r15 r16 r17 r18 into r19 as Balance;
+    add r19.balance r2 into r20;
+    cast r0 r1 r20 r19.authorized_until into r21 as Balance;
+    branch.eq r10.external_authorization_required false to end_then_0_4;
+    set r21 into balances[r9];
     branch.eq true true to end_otherwise_0_5;
     position end_then_0_4;
-    set r16 into authorized_balances[r4];
+    set r21 into authorized_balances[r9];
     position end_otherwise_0_5;
 
 
@@ -223,9 +244,14 @@ finalize transfer_public_to_private:
     cast r2 r0 into r5 as TokenOwner;
     hash.bhp256 r5 into r6 as field;
     get authorized_balances[r6] into r7;
-    sub r7.balance r1 into r8;
-    cast r0 r2 r8 r7.authorized_until into r9 as Balance;
-    set r9 into authorized_balances[r6];
+    get registered_tokens[r0] into r8;
+    lte block.height r7.authorized_until into r9;
+    not r8.external_authorization_required into r10;
+    or r9 r10 into r11;
+    assert.eq r11 true;
+    sub r7.balance r1 into r12;
+    cast r0 r2 r12 r7.authorized_until into r13 as Balance;
+    set r13 into authorized_balances[r6];
 
 
 
@@ -281,6 +307,51 @@ finalize update_token_management:
     get registered_tokens[r0] into r4;
     assert.eq r3 r4.admin;
     cast r0 r4.name r4.symbol r4.decimals r4.supply r4.max_supply r1 r4.external_authorization_required r2 into r5 as TokenMetadata;
+    set r5 into registered_tokens[r0];
+
+
+
+
+function set_role:
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u8.public;
+    is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r3;
+    assert.eq r3 true;
+    async set_role r0 r1 r2 self.caller into r4;
+    output r4 as multi_token_support_program_v1.aleo/set_role.future;
+
+finalize set_role:
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as u8.public;
+    input r3 as address.public;
+    get registered_tokens[r0] into r4;
+    assert.eq r3 r4.admin;
+    cast r1 r0 into r5 as TokenOwner;
+    hash.bhp256 r5 into r6 as field;
+    set r2 into roles[r6];
+
+
+
+
+function remove_role:
+    input r0 as field.public;
+    input r1 as address.public;
+    is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r2;
+    assert.eq r2 true;
+    async remove_role r0 r1 self.caller into r3;
+    output r3 as multi_token_support_program_v1.aleo/remove_role.future;
+
+finalize remove_role:
+    input r0 as field.public;
+    input r1 as address.public;
+    input r2 as address.public;
+    get registered_tokens[r0] into r3;
+    assert.eq r2 r3.admin;
+    cast r1 r0 into r4 as TokenOwner;
+    hash.bhp256 r4 into r5 as field;
+    remove roles[r5];
 
 
 
@@ -302,30 +373,42 @@ finalize mint_public:
     input r3 as u32.public;
     input r4 as address.public;
     get registered_tokens[r0] into r5;
-    assert.eq r5.admin r4;
-    add r5.supply r2 into r6;
-    lte r6 r5.max_supply into r7;
-    assert.eq r7 true;
-    cast r1 r0 into r8 as TokenOwner;
+    is.eq r4 r5.admin into r6;
+    not r6 into r7;
+    branch.eq r7 false to end_then_0_6;
+    cast r4 r0 into r8 as TokenOwner;
     hash.bhp256 r8 into r9 as field;
-    cast r0 r1 0u128 r3 into r10 as Balance;
-    get.or_use balances[r9] r10 into r11;
-    get.or_use authorized_balances[r9] r10 into r12;
-    ternary r5.external_authorization_required r11.token_id r12.token_id into r13;
-    ternary r5.external_authorization_required r11.account r12.account into r14;
-    ternary r5.external_authorization_required r11.balance r12.balance into r15;
-    ternary r5.external_authorization_required r11.authorized_until r12.authorized_until into r16;
-    cast r13 r14 r15 r16 into r17 as Balance;
-    add r17.balance r2 into r18;
-    cast r0 r1 r18 r17.authorized_until into r19 as Balance;
-    branch.eq r5.external_authorization_required false to end_then_0_6;
-    set r19 into balances[r9];
+    get roles[r9] into r10;
+    is.eq r10 1u8 into r11;
+    is.eq r10 3u8 into r12;
+    or r11 r12 into r13;
+    assert.eq r13 true;
     branch.eq true true to end_otherwise_0_7;
     position end_then_0_6;
-    set r19 into authorized_balances[r9];
     position end_otherwise_0_7;
-    cast r0 r5.name r5.symbol r5.decimals r6 r5.max_supply r5.admin r5.external_authorization_required r5.external_authorization_party into r20 as TokenMetadata;
-    set r20 into registered_tokens[r0];
+    add r5.supply r2 into r14;
+    lte r14 r5.max_supply into r15;
+    assert.eq r15 true;
+    cast r1 r0 into r16 as TokenOwner;
+    hash.bhp256 r16 into r17 as field;
+    cast r0 r1 0u128 r3 into r18 as Balance;
+    get.or_use balances[r17] r18 into r19;
+    get.or_use authorized_balances[r17] r18 into r20;
+    ternary r5.external_authorization_required r19.token_id r20.token_id into r21;
+    ternary r5.external_authorization_required r19.account r20.account into r22;
+    ternary r5.external_authorization_required r19.balance r20.balance into r23;
+    ternary r5.external_authorization_required r19.authorized_until r20.authorized_until into r24;
+    cast r21 r22 r23 r24 into r25 as Balance;
+    add r25.balance r2 into r26;
+    cast r0 r1 r26 r25.authorized_until into r27 as Balance;
+    branch.eq r5.external_authorization_required false to end_then_0_8;
+    set r27 into balances[r17];
+    branch.eq true true to end_otherwise_0_9;
+    position end_then_0_8;
+    set r27 into authorized_balances[r17];
+    position end_otherwise_0_9;
+    cast r0 r5.name r5.symbol r5.decimals r14 r5.max_supply r5.admin r5.external_authorization_required r5.external_authorization_party into r28 as TokenMetadata;
+    set r28 into registered_tokens[r0];
 
 
 
@@ -339,25 +422,40 @@ function mint_private:
     is.neq r0 3443843282313283355522573239085696902919850365217539366784739393210722344986field into r5;
     assert.eq r5 true;
     cast r1 r2 r0 r3 r4 into r6 as Token.record;
-    async mint_private r0 r1 r2 r3 r4 self.caller into r7;
+    async mint_private r0 r2 r3 r4 self.caller into r7;
     output r6 as Token.record;
     output r7 as multi_token_support_program_v1.aleo/mint_private.future;
 
 finalize mint_private:
     input r0 as field.public;
-    input r1 as address.public;
-    input r2 as u128.public;
-    input r3 as boolean.public;
-    input r4 as u32.public;
-    input r5 as address.public;
-    get registered_tokens[r0] into r6;
-    assert.eq r6.admin r5;
-    add r6.supply r2 into r7;
-    lte r7 r6.max_supply into r8;
-    assert.eq r8 true;
-    assert.eq r6.external_authorization_required r3;
-    cast r0 r6.name r6.symbol r6.decimals r7 r6.max_supply r6.admin r6.external_authorization_required r6.external_authorization_party into r9 as TokenMetadata;
-    set r9 into registered_tokens[r0];
+    input r1 as u128.public;
+    input r2 as boolean.public;
+    input r3 as u32.public;
+    input r4 as address.public;
+    get registered_tokens[r0] into r5;
+    is.eq r4 r5.admin into r6;
+    not r6 into r7;
+    branch.eq r7 false to end_then_0_10;
+    cast r4 r0 into r8 as TokenOwner;
+    hash.bhp256 r8 into r9 as field;
+    get roles[r9] into r10;
+    is.eq r10 1u8 into r11;
+    is.eq r10 3u8 into r12;
+    or r11 r12 into r13;
+    assert.eq r13 true;
+    branch.eq true true to end_otherwise_0_11;
+    position end_then_0_10;
+    position end_otherwise_0_11;
+    add r5.supply r1 into r14;
+    lte r14 r5.max_supply into r15;
+    assert.eq r15 true;
+    assert.eq r5.external_authorization_required r2;
+    is.eq r3 0u32 into r16;
+    not r5.external_authorization_required into r17;
+    or r16 r17 into r18;
+    assert.eq r18 true;
+    cast r0 r5.name r5.symbol r5.decimals r14 r5.max_supply r5.admin r5.external_authorization_required r5.external_authorization_party into r19 as TokenMetadata;
+    set r19 into registered_tokens[r0];
 
 
 
@@ -377,31 +475,47 @@ finalize burn_public:
     input r1 as u128.public;
     input r2 as address.public;
     get registered_tokens[r0.token_id] into r3;
-    assert.eq r3.admin r2;
-    sub r3.supply r1 into r4;
-    cast r0.token_id r0.account 0u128 0u32 into r5 as Balance;
-    hash.bhp256 r0 into r6 as field;
-    get.or_use balances[r6] r5 into r7;
-    cast r7.balance into r8 as i128;
-    cast r1 into r9 as i128;
-    sub r8 r9 into r10;
-    gte r10 0i128 into r11;
-    cast r10 into r12 as u128;
-    ternary r11 r12 0u128 into r13;
-    cast r0.token_id r0.account r13 r7.authorized_until into r14 as Balance;
-    set r14 into balances[r6];
-    lt r10 0i128 into r15;
-    branch.eq r15 false to end_then_0_8;
-    sub r1 r7.balance into r16;
-    get authorized_balances[r6] into r17;
-    sub r17.balance r16 into r18;
-    cast r0.token_id r0.account r18 r17.authorized_until into r19 as Balance;
-    set r19 into authorized_balances[r6];
-    branch.eq true true to end_otherwise_0_9;
-    position end_then_0_8;
-    position end_otherwise_0_9;
-    cast r0.token_id r3.name r3.symbol r3.decimals r4 r3.max_supply r3.admin r3.external_authorization_required r3.external_authorization_party into r20 as TokenMetadata;
-    set r20 into registered_tokens[r0.token_id];
+    is.neq r2 r3.admin into r4;
+    branch.eq r4 false to end_then_0_12;
+    cast r2 r0.token_id into r5 as TokenOwner;
+    hash.bhp256 r5 into r6 as field;
+    get roles[r6] into r7;
+    is.eq r7 2u8 into r8;
+    is.eq r7 3u8 into r9;
+    or r8 r9 into r10;
+    assert.eq r10 true;
+    branch.eq true true to end_otherwise_0_13;
+    position end_then_0_12;
+    position end_otherwise_0_13;
+    sub r3.supply r1 into r11;
+    cast r3.token_id r3.name r3.symbol r3.decimals r11 r3.max_supply r3.admin r3.external_authorization_required r3.external_authorization_party into r12 as TokenMetadata;
+    set r12 into registered_tokens[r0.token_id];
+    cast r0.token_id r0.account 0u128 0u32 into r13 as Balance;
+    hash.bhp256 r0 into r14 as field;
+    get.or_use authorized_balances[r14] r13 into r15;
+    gt r15.balance 0u128 into r16;
+    branch.eq r16 false to end_then_0_14;
+    gt r15.balance r1 into r17;
+    branch.eq r17 false to end_then_1_16;
+    sub r15.balance r1 into r18;
+    cast r0.token_id r0.account r18 r15.authorized_until into r19 as Balance;
+    set r19 into authorized_balances[r14];
+    branch.eq true true to end_otherwise_1_17;
+    position end_then_1_16;
+    remove authorized_balances[r14];
+    sub r1 r15.balance into r20;
+    get balances[r14] into r21;
+    sub r21.balance r20 into r22;
+    cast r0.token_id r0.account r22 r21.authorized_until into r23 as Balance;
+    set r23 into balances[r14];
+    position end_otherwise_1_17;
+    branch.eq true true to end_otherwise_0_15;
+    position end_then_0_14;
+    get balances[r14] into r24;
+    sub r24.balance r1 into r25;
+    cast r0.token_id r0.account r25 r24.authorized_until into r26 as Balance;
+    set r26 into balances[r14];
+    position end_otherwise_0_15;
 
 
 
@@ -422,10 +536,22 @@ finalize burn_private:
     input r1 as u128.public;
     input r2 as address.public;
     get registered_tokens[r0] into r3;
-    assert.eq r3.admin r2;
-    sub r3.supply r1 into r4;
-    cast r0 r3.name r3.symbol r3.decimals r4 r3.max_supply r3.admin r3.external_authorization_required r3.external_authorization_party into r5 as TokenMetadata;
-    set r5 into registered_tokens[r0];
+    is.eq r2 r3.admin into r4;
+    not r4 into r5;
+    branch.eq r5 false to end_then_0_18;
+    cast r2 r0 into r6 as TokenOwner;
+    hash.bhp256 r6 into r7 as field;
+    get roles[r7] into r8;
+    is.eq r8 2u8 into r9;
+    is.eq r8 3u8 into r10;
+    or r9 r10 into r11;
+    assert.eq r11 true;
+    branch.eq true true to end_otherwise_0_19;
+    position end_then_0_18;
+    position end_otherwise_0_19;
+    sub r3.supply r1 into r12;
+    cast r0 r3.name r3.symbol r3.decimals r12 r3.max_supply r3.admin r3.external_authorization_required r3.external_authorization_party into r13 as TokenMetadata;
+    set r13 into registered_tokens[r0];
 
 
 
@@ -445,16 +571,20 @@ finalize prehook_public:
     get registered_tokens[r0.token_id] into r4;
     is.eq r3 r4.external_authorization_party into r5;
     assert.eq r5 true;
-    hash.bhp256 r0 into r6 as field;
-    get balances[r6] into r7;
-    sub r7.balance r1 into r8;
-    cast r0.token_id r0.account r8 r7.authorized_until into r9 as Balance;
-    set r9 into balances[r6];
-    cast r0.token_id r0.account 0u128 r2 into r10 as Balance;
-    get.or_use authorized_balances[r6] r10 into r11;
-    add r11.balance r1 into r12;
-    cast r0.token_id r0.account r12 r2 into r13 as Balance;
-    set r13 into authorized_balances[r6];
+    cast r0.token_id r0.account 0u128 0u32 into r6 as Balance;
+    hash.bhp256 r0 into r7 as field;
+    get.or_use balances[r7] r6 into r8;
+    get.or_use authorized_balances[r7] r6 into r9;
+    lt r9.authorized_until block.height into r10;
+    add r8.balance r9.balance into r11;
+    ternary r10 r11 r8.balance into r12;
+    ternary r10 0u128 r9.balance into r13;
+    sub r12 r1 into r14;
+    add r13 r1 into r15;
+    cast r0.token_id r0.account r15 r2 into r16 as Balance;
+    set r16 into authorized_balances[r7];
+    cast r0.token_id r0.account r14 r8.authorized_until into r17 as Balance;
+    set r17 into balances[r7];
 
 
 
@@ -494,16 +624,11 @@ finalize approve_public:
     input r2 as u128.public;
     input r3 as address.public;
     cast r3 r0 into r4 as TokenOwner;
-    hash.bhp256 r3 into r5 as field;
-    contains balances[r5] into r6;
-    contains authorized_balances[r5] into r7;
-    or r6 r7 into r8;
-    assert.eq r8 true;
-    cast r3 r1 r0 into r9 as Allowance;
-    hash.bhp256 r9 into r10 as field;
-    get.or_use allowances[r10] 0u128 into r11;
-    add r11 r2 into r12;
-    set r12 into allowances[r10];
+    cast r3 r1 r0 into r5 as Allowance;
+    hash.bhp256 r5 into r6 as field;
+    get.or_use allowances[r6] 0u128 into r7;
+    add r7 r2 into r8;
+    set r8 into allowances[r6];
 
 
 
@@ -523,10 +648,8 @@ finalize unapprove_public:
     cast r3 r1 r0 into r4 as Allowance;
     hash.bhp256 r4 into r5 as field;
     get allowances[r5] into r6;
-    gte r6 r2 into r7;
-    assert.eq r7 true;
-    sub r6 r2 into r8;
-    set r8 into allowances[r5];
+    sub r6 r2 into r7;
+    set r7 into allowances[r5];
 
 
 
@@ -548,39 +671,39 @@ finalize transfer_from_public:
     cast r1 r4 r0 into r5 as Allowance;
     hash.bhp256 r5 into r6 as field;
     get allowances[r6] into r7;
-    gte r7 r3 into r8;
-    assert.eq r8 true;
-    sub r7 r3 into r9;
-    set r9 into allowances[r6];
-    cast r1 r0 into r10 as TokenOwner;
-    hash.bhp256 r1 into r11 as field;
-    get authorized_balances[r11] into r12;
-    assert.eq r1 r12.account;
-    gte r12.balance r3 into r13;
-    assert.eq r13 true;
-    sub r12.balance r3 into r14;
-    cast r0 r1 r14 r12.authorized_until into r15 as Balance;
-    set r15 into authorized_balances[r11];
-    cast r2 r0 into r16 as TokenOwner;
-    hash.bhp256 r16 into r17 as field;
-    get registered_tokens[r0] into r18;
-    ternary r18.external_authorization_required 0u32 4294967295u32 into r19;
-    cast r0 r2 0u128 r19 into r20 as Balance;
-    get.or_use balances[r17] r20 into r21;
-    get.or_use authorized_balances[r17] r20 into r22;
-    ternary r18.external_authorization_required r21.token_id r22.token_id into r23;
-    ternary r18.external_authorization_required r21.account r22.account into r24;
-    ternary r18.external_authorization_required r21.balance r22.balance into r25;
-    ternary r18.external_authorization_required r21.authorized_until r22.authorized_until into r26;
-    cast r23 r24 r25 r26 into r27 as Balance;
-    add r27.balance r3 into r28;
-    cast r0 r2 r28 r12.authorized_until into r29 as Balance;
-    branch.eq r18.external_authorization_required false to end_then_0_10;
-    set r29 into balances[r17];
-    branch.eq true true to end_otherwise_0_11;
-    position end_then_0_10;
-    set r29 into authorized_balances[r17];
-    position end_otherwise_0_11;
+    sub r7 r3 into r8;
+    set r8 into allowances[r6];
+    cast r1 r0 into r9 as TokenOwner;
+    hash.bhp256 r9 into r10 as field;
+    get authorized_balances[r10] into r11;
+    get registered_tokens[r0] into r12;
+    lte block.height r11.authorized_until into r13;
+    not r12.external_authorization_required into r14;
+    or r13 r14 into r15;
+    assert.eq r15 true;
+    sub r11.balance r3 into r16;
+    cast r0 r1 r16 r11.authorized_until into r17 as Balance;
+    set r17 into authorized_balances[r10];
+    cast r2 r0 into r18 as TokenOwner;
+    hash.bhp256 r18 into r19 as field;
+    get registered_tokens[r0] into r20;
+    ternary r20.external_authorization_required 0u32 4294967295u32 into r21;
+    cast r0 r2 0u128 r21 into r22 as Balance;
+    get.or_use balances[r19] r22 into r23;
+    get.or_use authorized_balances[r19] r22 into r24;
+    ternary r20.external_authorization_required r23.token_id r24.token_id into r25;
+    ternary r20.external_authorization_required r23.account r24.account into r26;
+    ternary r20.external_authorization_required r23.balance r24.balance into r27;
+    ternary r20.external_authorization_required r23.authorized_until r24.authorized_until into r28;
+    cast r25 r26 r27 r28 into r29 as Balance;
+    add r29.balance r3 into r30;
+    cast r0 r2 r30 r29.authorized_until into r31 as Balance;
+    branch.eq r20.external_authorization_required false to end_then_0_20;
+    set r31 into balances[r19];
+    branch.eq true true to end_otherwise_0_21;
+    position end_then_0_20;
+    set r31 into authorized_balances[r19];
+    position end_otherwise_0_21;
 
 
 
@@ -608,19 +731,19 @@ finalize transfer_from_public_to_private:
     cast r1 r3 r0 into r6 as Allowance;
     hash.bhp256 r6 into r7 as field;
     get allowances[r7] into r8;
-    gte r8 r2 into r9;
-    assert.eq r9 true;
-    sub r8 r2 into r10;
-    set r10 into allowances[r7];
-    cast r1 r0 into r11 as TokenOwner;
-    hash.bhp256 r1 into r12 as field;
-    get authorized_balances[r12] into r13;
-    assert.eq r1 r13.account;
-    gte r13.balance r2 into r14;
-    assert.eq r14 true;
-    sub r13.balance r2 into r15;
-    cast r0 r1 r15 r13.authorized_until into r16 as Balance;
-    set r16 into authorized_balances[r12];
+    sub r8 r2 into r9;
+    set r9 into allowances[r7];
+    cast r1 r0 into r10 as TokenOwner;
+    hash.bhp256 r10 into r11 as field;
+    get authorized_balances[r11] into r12;
+    get registered_tokens[r0] into r13;
+    lte block.height r12.authorized_until into r14;
+    not r13.external_authorization_required into r15;
+    or r14 r15 into r16;
+    assert.eq r16 true;
+    sub r12.balance r2 into r17;
+    cast r0 r1 r17 r12.authorized_until into r18 as Balance;
+    set r18 into authorized_balances[r11];
 
 
 
@@ -629,7 +752,7 @@ function deposit_credits_public:
     input r0 as u64.public;
     call credits.aleo/transfer_public_as_signer multi_token_support_program_v1.aleo r0 into r1;
     cast r0 into r2 as u128;
-    async deposit_credits_public r1 r2 self.caller into r3;
+    async deposit_credits_public r1 r2 self.signer into r3;
     output r3 as multi_token_support_program_v1.aleo/deposit_credits_public.future;
 
 finalize deposit_credits_public:

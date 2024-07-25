@@ -153,26 +153,26 @@ program pondo_core_protocol.aleo {
     balances.set(BONDED_WITHDRAWALS, 0u64);
     balances.set(CLAIMABLE_WITHDRAWALS, 0u64);
     owed_commission.set(0u8, 0u64);
-    protocol_state.set(PROTOCOL_STATE_KEY, NORMAL_STATE);
+    protocol_state.set(PROTOCOL_STATE_KEY, REBALANCING_STATE);
 
     let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
       [
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0
       ]
     );
     let default_datum: validator_datum = validator_datum {
-      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      delegator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+      validator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
@@ -735,21 +735,21 @@ program pondo_core_protocol.aleo {
     let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
       [
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-        aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0
       ]
     );
     let default_datum: validator_datum = validator_datum {
-      delegator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
-      validator: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc,
+      delegator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+      validator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
@@ -776,6 +776,9 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) -> Future {
+    for i: u8 in 0u8..5u8 {
+      assert(transfer_amounts[i] > 0u64); // Assert that the transfer amount is greater than 0
+    }
     let f0: Future = pondo_delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
     let f1: Future = pondo_delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
     let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
@@ -802,6 +805,18 @@ program pondo_core_protocol.aleo {
     f3.await();
     f4.await();
     f5.await();
+
+    // Assert that all credits were retrieved
+    let balance1: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let balance2: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let balance3: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let balance4: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let balance5: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+    assert(balance1 == 0u64); // Assert that the balance is 0
+    assert(balance2 == 0u64); // Assert that the balance is 0
+    assert(balance3 == 0u64); // Assert that the balance is 0
+    assert(balance4 == 0u64); // Assert that the balance is 0
+    assert(balance5 == 0u64); // Assert that the balance is 0
 
     let full_balance: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let current_balance: u64 = balances.get(DELEGATED_BALANCE);
@@ -837,6 +852,8 @@ program pondo_core_protocol.aleo {
     balances.set(BONDED_WITHDRAWALS, bonded_withdrawals - current_withdrawal_batch);
 
     // Update protocol state
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state == NORMAL_STATE); // Assert that the protocol is in a normal state
     protocol_state.set(PROTOCOL_STATE_KEY, REBALANCING_STATE);
   }
 
@@ -932,6 +949,8 @@ program pondo_core_protocol.aleo {
     balances.set(DELEGATED_BALANCE, total_credits);
 
     // Update protocol state
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state == REBALANCING_STATE);
     protocol_state.set(PROTOCOL_STATE_KEY, NORMAL_STATE);
   }
 

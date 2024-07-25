@@ -1,6 +1,6 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
 
-import { getHeight, getMappingValue, getPublicBalance } from '../aleo/client';
+import { getHeight, getMappingValue, getProgram, getPublicBalance } from '../aleo/client';
 import { resolveImports } from '../aleo/deploy';
 import { submitTransaction } from '../aleo/execute';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
@@ -98,10 +98,10 @@ const prepRebalance = async (): Promise<void> => {
   }
 
   const pondoDelegatorStates = await getPondoDelegatorStates();
-  const allTerminal = pondoDelegatorStates.every(state => state === '4u8');
+  const allTerminalOrBonded = pondoDelegatorStates.every(state => state === '1u8' || state === '4u8');
 
-  if (allTerminal) {
-    console.log('All pondo delegators are in terminal state, ready to rebalance_redistribute');
+  if (allTerminalOrBonded) {
+    console.log('All pondo delegators are in unbond_not_Allowed or terminal state, ready to prep_rebalance');
 
 
     const programCode = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
@@ -134,47 +134,86 @@ const getTopValidators = async (): Promise<string[]> => {
   return topValidators;
 }
 
+const rebalanceRetrieveCredits = async (): Promise<void> => {
+  console.log('Rebalancing and retrieving credits');
+  let delegatorBalances = [];
+  for (let index = 1; index < 6; index++) {
+    const delegatorProgramId = `pondo_delegator${index}.aleo`;
+    const delegatorProgram = await getProgram(delegatorProgramId);
+    const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
+    const delegatorBalance = await getPublicBalance(delegatorProgramAddress);
+    delegatorBalances.push(delegatorBalance);
+  }
+  const owedCommission = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'owed_commission');
+  const inputs = [
+    `[${delegatorBalances.map(balance => `${balance}u64`).join(',')}]`,
+    owedCommission
+  ];
+  const programCode = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
+  // Resolve imports
+  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+  let resolvedImports = await resolveImports(imports);
+  await submitTransaction(
+    NETWORK,
+    PRIVATE_KEY,
+    programCode,
+    'rebalance_retrieve_credits',
+    inputs,
+    2, // TODO: set the correct fee
+    undefined,
+    resolvedImports
+  );
+}
+
 /// Call rebalance_redistribute on the core protocol program if all pondo delegators are in terminal state
-const rebalanceRedistribute = async (pondoDelegatorStates: string[]): Promise<void> => {
-  console.log('Rebalancing and redistributing');
+const rebalanceRedistribute = async (): Promise<void> => {
+  // Ensure next validator set is set
+  const nextValidatorSet = await getMappingValue('1u8', CORE_PROTOCOL_PROGRAM, 'validator_set');
+  if (!nextValidatorSet) {
+    console.log('Next validator set not set, skipping rebalance_redistribute');
+    return;
+  }
+
+  console.log('All pondo delegators are in terminal state, ready to rebalance_redistribute');
+  // Get the top validators
+  const topValidators = await getTopValidators();
+  // Get the rebalance amounts
+  const rebalanceAmounts = await determineRebalanceAmounts();
+  // Format the inputs
+  // TODO: the commissions should come from on chain
+  const inputs = [
+    `[${topValidators.map(validator => `{ validator: ${validator}, commission: 0u8}`).join(',')}]`,
+    `[${rebalanceAmounts.map(amount => `${amount}u64`).join(',')}]`
+  ];
+  console.log(`Inputs: ${inputs}`);
+
+  // Get the program code
+  const programCode = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
+  // Resolve imports
+  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+  let resolvedImports = await resolveImports(imports);
+  await submitTransaction(
+    NETWORK,
+    PRIVATE_KEY,
+    programCode,
+    'rebalance_redistribute',
+    inputs,
+    2, // TODO: set the correct fee
+    undefined,
+    resolvedImports
+  );
+  console.log('rebalance_redistribute transaction submitted');
+}
+
+const continueRebalanceIfNeccessary = async (pondoDelegatorStates: string[]): Promise<void> => {
   const allTerminal = pondoDelegatorStates.every(state => state === '4u8');
   if (allTerminal) {
-    // Ensure next validator set is set
-    const nextValidatorSet = await getMappingValue('1u8', CORE_PROTOCOL_PROGRAM, 'validator_set');
-    if (!nextValidatorSet) {
-      console.log('Next validator set not set, skipping rebalance_redistribute');
-      return;
+    const protocolState = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'protocol_state');
+    if (protocolState === '0u8') {
+      await rebalanceRetrieveCredits();
+    } else {
+      await rebalanceRedistribute();
     }
-
-    console.log('All pondo delegators are in terminal state, ready to rebalance_redistribute');
-    // Get the top validators
-    const topValidators = await getTopValidators();
-    // Get the rebalance amounts
-    const rebalanceAmounts = await determineRebalanceAmounts();
-    // Format the inputs
-    // TODO: the commissions should come from on chain
-    const inputs = [
-      `[${topValidators.map(validator => `{ validator: ${validator}, commission: 0u8}`).join(',')}]`,
-      `[${rebalanceAmounts.map(amount => `${amount}u64`).join(',')}]`
-    ];
-    console.log(`Inputs: ${inputs}`);
-
-    // Get the program code
-    const programCode = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
-    // Resolve imports
-    const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
-    let resolvedImports = await resolveImports(imports);
-    await submitTransaction(
-      NETWORK,
-      PRIVATE_KEY,
-      programCode,
-      'rebalance_redistribute',
-      inputs,
-      2, // TODO: set the correct fee
-      undefined,
-      resolvedImports
-    );
-    console.log('rebalance_redistribute transaction submitted');
   }
 }
 
@@ -191,7 +230,7 @@ export const runProtocol = async (): Promise<void> => {
   }
 
   // Can be run in any epoch period
-  await rebalanceRedistribute(pondoDelegatorStates);
+  await continueRebalanceIfNeccessary(pondoDelegatorStates);
 
   // Handle updating all of the delegators
   for (let index = 1; index < 6; index++) {

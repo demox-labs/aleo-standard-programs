@@ -54,16 +54,23 @@ finalize ban_validator:
 
 
 
-function set_state:
+function prep_rebalance:
     assert.eq self.caller pondo_core_protocol.aleo;
-    async set_state into r0;
-    output r0 as pondo_delegator5.aleo/set_state.future;
+    async prep_rebalance into r0;
+    output r0 as pondo_delegator5.aleo/prep_rebalance.future;
 
-finalize set_state:
+finalize prep_rebalance:
     get state_mapping[0u8] into r0;
-    is.eq r0 4u8 into r1;
-    ternary r1 4u8 2u8 into r2;
-    set r2 into state_mapping[0u8];
+    is.neq r0 0u8 into r1;
+    assert.eq r1 true;
+    is.neq r0 3u8 into r2;
+    assert.eq r2 true;
+    is.eq r0 1u8 into r3;
+    branch.eq r3 false to end_then_0_0;
+    set 2u8 into state_mapping[0u8];
+    branch.eq true true to end_otherwise_0_1;
+    position end_then_0_0;
+    position end_otherwise_0_1;
 
 
 
@@ -72,8 +79,10 @@ function set_validator:
     input r0 as address.public;
     input r1 as u8.public;
     assert.eq self.caller pondo_core_protocol.aleo;
-    async set_validator r0 r1 into r2;
-    output r2 as pondo_delegator5.aleo/set_validator.future;
+    lte r1 50u8 into r2;
+    assert.eq r2 true;
+    async set_validator r0 r1 into r3;
+    output r3 as pondo_delegator5.aleo/set_validator.future;
 
 finalize set_validator:
     input r0 as address.public;
@@ -127,17 +136,17 @@ finalize unbond:
     get validator_mapping[0u8] into r2;
     cast true 0u8 into r3 as committee_state;
     get.or_use credits.aleo/committee[r2.validator] r3 into r4;
-    add r4.commission 10u8 into r5;
-    gt r2.commission r5 into r6;
-    gt r2.commission 50u8 into r7;
+    add r2.commission 10u8 into r5;
+    gt r4.commission r5 into r6;
+    gt r4.commission 50u8 into r7;
     or r6 r7 into r8;
-    branch.eq r8 false to end_then_0_0;
+    branch.eq r8 false to end_then_0_2;
     set true into banned_validators[r2.validator];
-    branch.eq true true to end_otherwise_0_1;
-    position end_then_0_0;
+    branch.eq true true to end_otherwise_0_3;
+    position end_then_0_2;
     get state_mapping[0u8] into r9;
     assert.eq r9 2u8;
-    position end_otherwise_0_1;
+    position end_otherwise_0_3;
     set 3u8 into state_mapping[0u8];
 
 
@@ -156,12 +165,12 @@ finalize terminal_state:
     is.neq r2 0u8 into r3;
     assert.eq r3 true;
     is.eq r2 1u8 into r4;
-    branch.eq r4 false to end_then_0_2;
+    branch.eq r4 false to end_then_0_4;
     get validator_mapping[0u8] into r5;
     set true into banned_validators[r5.validator];
-    branch.eq true true to end_otherwise_0_3;
-    position end_then_0_2;
-    position end_otherwise_0_3;
+    branch.eq true true to end_otherwise_0_5;
+    position end_then_0_4;
+    position end_otherwise_0_5;
     set 4u8 into state_mapping[0u8];
 
 
@@ -205,11 +214,11 @@ finalize bond_failed:
     assert.eq r8 true;
     set 4u8 into state_mapping[0u8];
     is.eq r3.is_open false into r9;
-    branch.eq r9 false to end_then_0_4;
+    branch.eq r9 false to end_then_0_6;
     set true into banned_validators[r2.validator];
-    branch.eq true true to end_otherwise_0_5;
-    position end_then_0_4;
-    position end_otherwise_0_5;
+    branch.eq true true to end_otherwise_0_7;
+    position end_then_0_6;
+    position end_otherwise_0_7;
 
 
 
