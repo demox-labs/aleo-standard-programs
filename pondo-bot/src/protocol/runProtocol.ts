@@ -193,9 +193,9 @@ const continueRebalanceIfNeccessary = async (pondoDelegatorStates: string[]): Pr
   const allTerminal = pondoDelegatorStates.every(state => state === '4u8');
   if (allTerminal) {
     const protocolState = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'protocol_state');
-    if (protocolState === '0u8') {
+    if (protocolState === '1u8') {
       await rebalanceRetrieveCredits();
-    } else {
+    } else if (protocolState === '2u8') {
       await rebalanceRedistribute();
     }
   }

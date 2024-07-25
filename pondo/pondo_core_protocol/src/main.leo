@@ -37,6 +37,9 @@ program pondo_core_protocol.aleo {
   const UNBONDING: u8 = 3u8;
   const TERMINAL: u8 = 4u8;
 
+  // The One Group Address
+  const ONE_GROUP_ADDRESS: address = aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
+
   // copied from credits.aleo, as structs are not importable
   struct bond_state {
     validator: address,
@@ -76,7 +79,8 @@ program pondo_core_protocol.aleo {
   // * 0u8 -> normal operation, post rebalance
   const NORMAL_STATE: u8 = 0u8;
   // * 1u8 -> rebalancing in progress, all funds are in the core protocol
-  const REBALANCING_STATE: u8 = 1u8;
+  const PREP_REBALANCE_STATE: u8 = 1u8;
+  const REBALANCING_STATE: u8 = 2u8;
   mapping protocol_state: u8 => u8;
 
   // Metadata mapping for the balances of ALEO held in the program
@@ -125,7 +129,7 @@ program pondo_core_protocol.aleo {
     let f7: Future = pondo_delegator4.aleo/initialize();
     let f8: Future = pondo_delegator5.aleo/initialize();
 
-    return finalize_initialize(f0, f1, f2, f3, f4, f5, f6, f7, f8);
+    return finalize_initialize(f0, f1, f2, f3, f4, f5, f6, f7, f8, transfer_amount);
   }
 
   async function finalize_initialize(
@@ -137,7 +141,8 @@ program pondo_core_protocol.aleo {
     public f5: Future,
     public f6: Future,
     public f7: Future,
-    public f8: Future
+    public f8: Future,
+    public transfer_amount: u64
   ) {
     f0.await();
     f1.await();
@@ -149,7 +154,7 @@ program pondo_core_protocol.aleo {
     f7.await();
     f8.await();
 
-    balances.set(DELEGATED_BALANCE, 0u64);
+    balances.set(DELEGATED_BALANCE, transfer_amount);
     balances.set(BONDED_WITHDRAWALS, 0u64);
     balances.set(CLAIMABLE_WITHDRAWALS, 0u64);
     owed_commission.set(0u8, 0u64);
@@ -158,25 +163,25 @@ program pondo_core_protocol.aleo {
     let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
       [
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS
       ]
     );
     let default_datum: validator_datum = validator_datum {
-      delegator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-      validator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+      delegator: ONE_GROUP_ADDRESS,
+      validator: ONE_GROUP_ADDRESS,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
-      commission: 0u8,
+      commission: 40u8, // Add a safety margin to the commission rate because this will represent a real validator after automatic code updates
       boost: 0u128
     };
     let validator1: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[0u8], default_datum);
@@ -269,7 +274,7 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state == NORMAL_STATE
+    let deposit_pool: u64 = current_state != REBALANCING_STATE
      ? core_protocol_account - credits_deposit - reserved_for_withdrawal
      : core_protocol_account - currently_delegated - credits_deposit - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
@@ -373,7 +378,7 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state == NORMAL_STATE
+    let deposit_pool: u64 = current_state != REBALANCING_STATE
      ? core_protocol_account - credits_deposit - reserved_for_withdrawal
      : core_protocol_account - currently_delegated - credits_deposit - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
@@ -469,7 +474,7 @@ program pondo_core_protocol.aleo {
 
     // Block instant withdrawals during a rebalance
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    assert(current_state == NORMAL_STATE); // Assert that the protocol is not in a rebalancing state
+    assert(current_state != REBALANCING_STATE); // Assert that the protocol is not in a rebalancing state
 
     let has_withdrawal: bool = withdrawals.contains(caller);
     assert(!has_withdrawal); // Assert that the caller does not have a pending withdrawal
@@ -617,7 +622,7 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state == NORMAL_STATE
+    let deposit_pool: u64 = current_state != REBALANCING_STATE
      ? core_protocol_account - reserved_for_withdrawal
      : core_protocol_account - currently_delegated - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
@@ -732,31 +737,36 @@ program pondo_core_protocol.aleo {
     assert(current_epoch > last_rebalance); // make sure we are not rebalancing twice in the same epoch
     last_rebalance_epoch.set(0u8, current_epoch);
 
+    // Assert that the protocol is in a normal state
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state == NORMAL_STATE); // Assert that the protocol is in a normal state
+    protocol_state.set(PROTOCOL_STATE_KEY, PREP_REBALANCE_STATE); // Set the protocol state to prep_rebalance
+
     let blocks_into_epoch: u32 = block.height % BLOCKS_PER_EPOCH;
     assert(blocks_into_epoch < REBALANCE_PERIOD || last_rebalance == 4294967295u32); // rebalance is allowed during the first day of a new epoch
 
     let top_validators: [address; 10] = pondo_oracle.aleo/top_validators.get_or_use(
       0u8,
       [
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-        aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS,
+        ONE_GROUP_ADDRESS
       ]
     );
     let default_datum: validator_datum = validator_datum {
-      delegator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
-      validator: aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0,
+      delegator: ONE_GROUP_ADDRESS,
+      validator: ONE_GROUP_ADDRESS,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
-      commission: 0u8,
+      commission: 40u8, // Add a safety margin to the commission rate because this will represent a real validator after automatic code updates
       boost: 0u128
     };
     let validator1: validator_datum = pondo_oracle.aleo/validator_data.get_or_use(top_validators[0u8], default_datum);
@@ -779,9 +789,6 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) -> Future {
-    for i: u8 in 0u8..5u8 {
-      assert(transfer_amounts[i] > 0u64); // Assert that the transfer amount is greater than 0
-    }
     let f0: Future = pondo_delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
     let f1: Future = pondo_delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
     let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
@@ -808,18 +815,6 @@ program pondo_core_protocol.aleo {
     f3.await();
     f4.await();
     f5.await();
-
-    // Assert that all credits were retrieved
-    let balance1: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
-    let balance2: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
-    let balance3: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
-    let balance4: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
-    let balance5: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
-    assert(balance1 == 0u64); // Assert that the balance is 0
-    assert(balance2 == 0u64); // Assert that the balance is 0
-    assert(balance3 == 0u64); // Assert that the balance is 0
-    assert(balance4 == 0u64); // Assert that the balance is 0
-    assert(balance5 == 0u64); // Assert that the balance is 0
 
     let full_balance: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let current_balance: u64 = balances.get(DELEGATED_BALANCE);
@@ -856,7 +851,7 @@ program pondo_core_protocol.aleo {
 
     // Update protocol state
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    assert(current_state == NORMAL_STATE); // Assert that the protocol is in a normal state
+    assert(current_state == PREP_REBALANCE_STATE); // Assert that the protocol is in a normal state
     protocol_state.set(PROTOCOL_STATE_KEY, REBALANCING_STATE);
   }
 

@@ -1683,6 +1683,8 @@ finalize remove_delegator:
 
 function pondo_ban_validator:
     input r0 as address.public;
+    assert.neq r0 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
+    assert.neq r0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
     async pondo_ban_validator r0 self.caller into r1;
     output r1 as pondo_oracle.aleo/pondo_ban_validator.future;
 
