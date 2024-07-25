@@ -80,11 +80,17 @@ const prepRebalance = async (): Promise<void> => {
   console.log('Starting prep rebalance');
 
   const lastRebalanceBlock = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'last_rebalance_epoch');
-  const lastRebalanceEpoch = BigInt(lastRebalanceBlock.slice(0, -3)) / BigInt(EPOCH_BLOCKS);
+  const lastRebalanceEpoch = BigInt(lastRebalanceBlock.slice(0, -3));
   const currentEpoch = BigInt(await getHeight()) / BigInt(EPOCH_BLOCKS);
   console.log(`Last rebalance epoch: ${lastRebalanceEpoch}, current epoch: ${currentEpoch}`);
   if (lastRebalanceEpoch >= currentEpoch) {
     console.log(`Already rebalanced in this epoch: ${currentEpoch}, skipping`);
+    return;
+  }
+
+  const protocolState = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'protocol_state');
+  if (protocolState !== '0u8') {
+    console.log(`Protocol state is not in normal state, skipping prep_rebalance`);
     return;
   }
 
