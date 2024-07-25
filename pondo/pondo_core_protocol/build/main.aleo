@@ -143,6 +143,8 @@ finalize initialize:
     cast r16.validator r16.commission into r21 as validator_state;
     cast  r17 r18 r19 r20 r21 into r22 as [validator_state; 5u32];
     set r22 into validator_set[1u8];
+    div block.height 120_960u32 into r23;
+    set r23 into last_rebalance_epoch[0u8];
 
 
 
@@ -168,7 +170,7 @@ finalize prep_rebalance:
     await r3;
     await r4;
     div block.height 120_960u32 into r5;
-    get.or_use last_rebalance_epoch[0u8] 4294967295u32 into r6;
+    get last_rebalance_epoch[0u8] into r6;
     gt r5 r6 into r7;
     assert.eq r7 true;
     set r5 into last_rebalance_epoch[0u8];

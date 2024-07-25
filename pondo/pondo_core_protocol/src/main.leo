@@ -193,6 +193,9 @@ program pondo_core_protocol.aleo {
       validator_state { validator: validator5.validator, commission: validator5.commission }
     ];
     validator_set.set(NEXT_VALIDATOR_SET, next_validator_set);
+
+    let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
+    last_rebalance_epoch.set(0u8, current_epoch);
   }
 
   // -------------------
@@ -724,7 +727,7 @@ program pondo_core_protocol.aleo {
     // Confirm that rebalancing is allowed
     // Rebalance is allowed during the first day of a new epoch
     let current_epoch: u32 = block.height / BLOCKS_PER_EPOCH;
-    let last_rebalance: u32 = last_rebalance_epoch.get_or_use(0u8, 4294967295u32);
+    let last_rebalance: u32 = last_rebalance_epoch.get(0u8);
     // Update last rebalance epoch
     assert(current_epoch > last_rebalance); // make sure we are not rebalancing twice in the same epoch
     last_rebalance_epoch.set(0u8, current_epoch);

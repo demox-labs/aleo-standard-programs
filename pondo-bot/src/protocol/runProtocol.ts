@@ -79,11 +79,7 @@ const determineRebalanceAmounts = async (): Promise<bigint[]> => {
 const prepRebalance = async (): Promise<void> => {
   console.log('Starting prep rebalance');
 
-  let lastRebalanceBlock = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'last_rebalance_epoch');
-  if (!lastRebalanceBlock) {
-    lastRebalanceBlock = '4294967295u32u32'; // Set to max value if not set, in the case of the protocol initialization
-  }
-  
+  const lastRebalanceBlock = await getMappingValue('0u8', CORE_PROTOCOL_PROGRAM, 'last_rebalance_epoch');
   const lastRebalanceEpoch = BigInt(lastRebalanceBlock.slice(0, -3)) / BigInt(EPOCH_BLOCKS);
   const currentEpoch = BigInt(await getHeight()) / BigInt(EPOCH_BLOCKS);
   console.log(`Last rebalance epoch: ${lastRebalanceEpoch}, current epoch: ${currentEpoch}`);
