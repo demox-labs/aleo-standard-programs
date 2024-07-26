@@ -1,9 +1,13 @@
-import { deployAllProgramsIfNecessary } from "./aleo/deploy";
-import { NETWORK, ORACLE_PRIVATE_KEY, PRIVATE_KEY } from "./constants";
-import { initializeProgramsIfNecessary } from "./protocol/initializePrograms";
-import { approveReferenceDelegatorsIfNecessary, deployReferenceDelegatorsIfNecessary } from "./protocol/referenceDelegators";
-import { runProtocol } from "./protocol/runProtocol";
-import { delay } from "./util";
+import { deployAllProgramsIfNecessary } from './aleo/deploy';
+import { NETWORK, ORACLE_PRIVATE_KEY, PRIVATE_KEY, TEST } from './constants';
+import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
+import {
+  approveReferenceDelegatorsIfNecessary,
+  deployReferenceDelegatorsIfNecessary,
+} from './protocol/referenceDelegators';
+import { runProtocol } from './protocol/runProtocol';
+import { runUserActions } from './protocol/userActions';
+import { delay } from './util';
 
 async function main() {
   // Deploy all programs if necessary
@@ -13,16 +17,20 @@ async function main() {
   // Deploy reference delegators if necessary
   await deployReferenceDelegatorsIfNecessary();
 
-  console.log("All programs have been deployed and initialized");
+  console.log('All programs have been deployed and initialized');
 
   while (true) {
     try {
       if (ORACLE_PRIVATE_KEY) {
         // Approve reference delegators if necessary
-        await approveReferenceDelegatorsIfNecessary()
+        await approveReferenceDelegatorsIfNecessary();
       }
       // Run the protocol
       await runProtocol();
+
+      if (TEST) {
+        await runUserActions();
+      }
 
       // Sleep for 15 seconds
       await delay(15_000);
