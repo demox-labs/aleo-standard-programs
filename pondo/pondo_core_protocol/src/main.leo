@@ -263,7 +263,7 @@ program pondo_core_protocol.aleo {
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
 
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let total_paleo_pool: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
@@ -274,9 +274,12 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state != REBALANCING_STATE
-     ? core_protocol_account - credits_deposit - reserved_for_withdrawal
-     : core_protocol_account - currently_delegated - credits_deposit - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
+    let core_protocol_account_i64: i64 = core_protocol_account as i64;
+    let credits_deposit_i64: i64 = credits_deposit as i64;
+    let reserved_for_withdrawal_i64: i64 = reserved_for_withdrawal as i64;
+    let deposit_pool: i64 = current_state != REBALANCING_STATE
+     ? core_protocol_account_i64 - credits_deposit_i64 - reserved_for_withdrawal_i64
+     : core_protocol_account_i64 - currently_delegated as i64 - credits_deposit_i64 - reserved_for_withdrawal_i64; // if the protocol is rebalancing, the full balance is in the account
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
 
@@ -367,7 +370,7 @@ program pondo_core_protocol.aleo {
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
 
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let total_paleo_pool: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
@@ -378,9 +381,12 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state != REBALANCING_STATE
-     ? core_protocol_account - credits_deposit - reserved_for_withdrawal
-     : core_protocol_account - currently_delegated - credits_deposit - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
+    let core_protocol_account_i64: i64 = core_protocol_account as i64;
+    let credits_deposit_i64: i64 = credits_deposit as i64;
+    let reserved_for_withdrawal_i64: i64 = reserved_for_withdrawal as i64;
+    let deposit_pool: i64 = current_state != REBALANCING_STATE
+     ? core_protocol_account_i64 - credits_deposit_i64 - reserved_for_withdrawal_i64
+     : core_protocol_account_i64 - currently_delegated as i64 - credits_deposit_i64 - reserved_for_withdrawal_i64; // if the protocol is rebalancing, the full balance is in the account
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
 
@@ -515,7 +521,7 @@ program pondo_core_protocol.aleo {
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
@@ -610,7 +616,7 @@ program pondo_core_protocol.aleo {
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program_v1.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
@@ -622,9 +628,11 @@ program pondo_core_protocol.aleo {
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let deposit_pool: u64 = current_state != REBALANCING_STATE
-     ? core_protocol_account - reserved_for_withdrawal
-     : core_protocol_account - currently_delegated - reserved_for_withdrawal; // if the protocol is rebalancing, the full balance is in the account
+    let core_protocol_account_i64: i64 = core_protocol_account as i64;
+    let reserved_for_withdrawal_i64: i64 = reserved_for_withdrawal as i64;
+    let deposit_pool: i64 = current_state != REBALANCING_STATE
+     ? core_protocol_account_i64 - reserved_for_withdrawal_i64
+     : core_protocol_account_i64 - currently_delegated as i64 - reserved_for_withdrawal_i64; // if the protocol is rebalancing, the full balance is in the account
     // Update owed commission balance
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
