@@ -1,0 +1,22 @@
+name: TestnetBeta Pondo Bot Deployments Trigger
+
+on:
+  push:
+    branches:
+      - 'testnet-beta'
+      - 'pondo-bot'
+
+jobs:
+  pondo-bot-ap-southeast-1:
+    uses: ./.github/workflows/provision-bot.yml
+    with:
+      region: 'ap-southeast-1'
+      github_actions_role: 'pondo-bot-role'
+      default_validator_address: '0xaleo15cxs366usuh0hzawudsnn7dza9jmsm6kqmpljtzq9e4529vmlcgq4dem0x'
+      network: 'TestnetV0'
+      rpc_url: 'https://testnetbeta.aleorpc.com'
+      client_url: 'https://testnetbeta.aleorpc.com'
+      epoch_blocks: '1000'
+      oracle_update_blocks: '800'
+      rebalance_blocks: '500'
+    secrets: inherit
