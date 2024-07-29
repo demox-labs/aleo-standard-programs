@@ -1,7 +1,7 @@
 import credits.aleo;
 
 // The 'mtsp' program.
-program multi_token_support_program_v1.aleo {
+program multi_token_support_program_v02.aleo {
   record Token {
     owner: address,
     amount: u128,

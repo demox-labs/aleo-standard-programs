@@ -1,5 +1,5 @@
 import credits.aleo;
-import multi_token_support_program_v1.aleo;
+import multi_token_support_program_v02.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -264,7 +264,7 @@ finalize deposit_public_as_signer:
     sub r38 r39 into r40;
     get balances[0u8] into r41;
     get owed_commission[0u8] into r42;
-    get multi_token_support_program_v1.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r43;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r43;
     cast r42 into r44 as u128;
     add r43.supply r44 into r45;
     cast r3 into r46 as u128;
@@ -332,15 +332,15 @@ function deposit_public:
     gte r1 1u64 into r3;
     assert.eq r3 true;
     cast r0 into r4 as u128;
-    call multi_token_support_program_v1.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
-    call multi_token_support_program_v1.aleo/withdraw_credits_public r0 into r6;
+    call multi_token_support_program_v02.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
+    call multi_token_support_program_v02.aleo/withdraw_credits_public r0 into r6;
     call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r7;
     async deposit_public r5 r6 r7 r0 r1 into r8;
     output r8 as pondo_core_protocol.aleo/deposit_public.future;
 
 finalize deposit_public:
-    input r0 as multi_token_support_program_v1.aleo/transfer_from_public.future;
-    input r1 as multi_token_support_program_v1.aleo/withdraw_credits_public.future;
+    input r0 as multi_token_support_program_v02.aleo/transfer_from_public.future;
+    input r1 as multi_token_support_program_v02.aleo/withdraw_credits_public.future;
     input r2 as pondo_staked_aleo_token.aleo/mint_public.future;
     input r3 as u64.public;
     input r4 as u64.public;
@@ -386,7 +386,7 @@ finalize deposit_public:
     sub r39 r40 into r41;
     get balances[0u8] into r42;
     get owed_commission[0u8] into r43;
-    get multi_token_support_program_v1.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
     cast r43 into r45 as u128;
     add r44.supply r45 into r46;
     cast r4 into r47 as u128;
@@ -601,7 +601,7 @@ finalize instant_withdraw_public:
     sub r43 r44 into r45;
     get balances[0u8] into r46;
     get owed_commission[0u8] into r47;
-    get multi_token_support_program_v1.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r48;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r48;
     cast r47 into r49 as u128;
     add r48.supply r49 into r50;
     cast r2 into r51 as u128;
@@ -715,7 +715,7 @@ finalize withdraw_public:
     sub r39 r40 into r41;
     get balances[0u8] into r42;
     get owed_commission[0u8] into r43;
-    get multi_token_support_program_v1.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
     cast r43 into r45 as u128;
     add r44.supply r45 into r46;
     cast r1 into r47 as u128;
@@ -849,7 +849,7 @@ finalize rebalance_retrieve_credits:
     add r10 r6[4u32] into r11;
     get balances[0u8] into r12;
     get owed_commission[0u8] into r13;
-    get multi_token_support_program_v1.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r14;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r14;
     cast r13 into r15 as u128;
     add r14.supply r15 into r16;
     cast r7 into r17 as u128;
