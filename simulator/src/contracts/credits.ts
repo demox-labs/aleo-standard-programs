@@ -110,7 +110,7 @@ export class creditsProgram {
     );
     assert(
       bonded.microcredits === BigInt(0) ||
-        amount >= BigInt(1 * MICROCREDITS_TO_CREDITS),
+      amount >= BigInt(1 * MICROCREDITS_TO_CREDITS),
       "must bond at least 1 credit"
     );
 
@@ -166,8 +166,7 @@ export class creditsProgram {
     assert(unbonding !== undefined, "not unbonding");
     assert(
       this.block.height >= unbonding!.height,
-      `unbonding period has not passed ${this.block.height} ${
-        unbonding!.height
+      `unbonding period has not passed ${this.block.height} ${unbonding!.height
       }`
     );
 

@@ -657,7 +657,7 @@ export class multi_token_support_programProgram {
     assert(token !== undefined);
     assert(
       this.block.height <= balance.authorized_until ||
-        !token.external_authorization_required
+      !token.external_authorization_required
     );
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = {
@@ -743,7 +743,7 @@ export class multi_token_support_programProgram {
     assert(token !== undefined);
     assert(
       this.block.height <= balance.authorized_until ||
-        !token.external_authorization_required
+      !token.external_authorization_required
     );
     // Update the balance, and check that the balance >= amount
     let new_balance: Balance = {
@@ -905,7 +905,7 @@ export class multi_token_support_programProgram {
     assert(token !== undefined);
     assert(
       this.block.height <= balance.authorized_until ||
-        !token.external_authorization_required
+      !token.external_authorization_required
     );
 
     // Update the balance for the owner
@@ -1012,7 +1012,7 @@ export class multi_token_support_programProgram {
     assert(token_metadata !== undefined);
     assert(
       this.block.height <= balance.authorized_until ||
-        !token_metadata.external_authorization_required
+      !token_metadata.external_authorization_required
     );
     // Update the balance
     let new_balance: Balance = {
@@ -1096,7 +1096,7 @@ export class multi_token_support_programProgram {
     assert(token_metadata !== undefined);
     assert(
       this.block.height <= balance.authorized_until ||
-        !token_metadata.external_authorization_required
+      !token_metadata.external_authorization_required
     );
     // Update the balance for the owner
     let new_balance: Balance = {
@@ -1148,7 +1148,7 @@ export class multi_token_support_programProgram {
   ) {
     assert(
       this.block.height <= input_token_authorized_until ||
-        !external_authorization_required
+      !external_authorization_required
     );
   }
 
@@ -1188,7 +1188,7 @@ export class multi_token_support_programProgram {
     // Assert that the record authorization is not expired
     assert(
       this.block.height <= record_authorized_until ||
-        !external_authorization_required
+      !external_authorization_required
     );
     // Get or create the balance for the recipient
     let recipient_key: TokenOwner = {

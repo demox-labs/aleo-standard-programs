@@ -1,0 +1,44 @@
+{
+  "name": "pondo-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "scripts": {
+    "build": "tsc -p . && tsc-alias",
+    "dev": "npm run build -- -w",
+    "start": "node ./index.js",
+    "test": "node ./dist/pondo-sdk/lib/entry/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@demox-labs/aleo-sdk": "^0.3.37",
+    "@demox-labs/aleo-sdk-web": "^0.3.30",
+    "@provablehq/sdk": "^0.6.10",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "bech32": "^2.0.0",
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3",
+    "comlink": "^4.4.1",
+    "crypto-browserify": "^3.12.0",
+    "eslint": "^8.56.0",
+    "eslint-webpack-plugin": "^4.0.1",
+    "fs.promises": "^0.1.2",
+    "fs.promises.exists": "^1.1.4",
+    "html-webpack-plugin": "^5.5.0",
+    "idb-keyval": "^6.2.1",
+    "mime": "^4.0.4",
+    "mime-lite": "^1.0.3",
+    "node-fetch": "^3.3.2",
+    "path-browserify": "^1.0.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "save-dev": "0.0.1-security",
+    "stream-browserify": "^3.0.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "tsc-alias": "1.8.10"
+  }
+}
