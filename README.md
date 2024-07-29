@@ -1,5 +1,5 @@
 <h1 align="center">
-        <img alt="pondo" src="./media/pondo-logo.png" height="50" style="display: inline-block;  vertical-align: middle;">
+        <img alt="pondo" src="./media/pondo-logo.png" height="30" style="display: inline-block;  vertical-align: middle;">
         <span style="display: inline-block;  vertical-align: middle;">Pondo</span>
 </h1>
 
