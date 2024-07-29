@@ -26,7 +26,7 @@ npm install @demox-labs/pondo-sdk
 
 ### Deposit
 
-Here is an example of how you can delegate **100 ACs** for staking in Pondo:
+Here is an example of how you can delegate **100 ALEO Creditss** for staking in Pondo:
 
 ```js
 import { depositPublic, LiveRpcProvider } from '@demox-labs/pondo-sdk';
