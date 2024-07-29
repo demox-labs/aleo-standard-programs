@@ -1,4 +1,4 @@
-# multi_token_support_program_v1.aleo
+# multi_token_support_program_v02.aleo
 
 ## Build Guide
 

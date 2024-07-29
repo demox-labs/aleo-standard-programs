@@ -12,7 +12,7 @@ jobs:
     with:
       region: 'ap-southeast-1'
       github_actions_role: 'pondo-bot-role'
-      default_validator_address: '0xaleo15cxs366usuh0hzawudsnn7dza9jmsm6kqmpljtzq9e4529vmlcgq4dem0x'
+      default_validator_address: 'aleo15cxs366usuh0hzawudsnn7dza9jmsm6kqmpljtzq9e4529vmlcgq4dem0x'
       network: 'TestnetV0'
       rpc_url: 'https://testnetbeta.aleorpc.com'
       client_url: 'https://testnetbeta.aleorpc.com'

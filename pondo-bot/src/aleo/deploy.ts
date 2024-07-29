@@ -33,6 +33,7 @@ import {
   MAX_GUARANTEED_LIQUIDITY_DEFAULT,
   MIN_LIQUIDITY_PERCENT,
   MIN_LIQUIDITY_PERCENT_DEFAULT,
+  ORACLE_ADDRESS,
 } from '../constants';
 
 type AuthorizePool = Pool<
@@ -72,6 +73,10 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
       REBALANCE_BLOCKS.toString()
     );
   }
+  updatedProgramCode = updatedProgramCode.replaceAll(
+    'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
+    ORACLE_ADDRESS
+  );
 
   if (DEFAULT_VALIDATOR_ADDRESS) {
     updatedProgramCode = updatedProgramCode.replaceAll(

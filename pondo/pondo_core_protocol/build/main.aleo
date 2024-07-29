@@ -1,5 +1,5 @@
 import credits.aleo;
-import multi_token_support_program_v1.aleo;
+import multi_token_support_program_v02.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -250,6 +250,7 @@ finalize deposit_public_as_signer:
     add r30 r14.microcredits into r31;
     add r31 r15.microcredits into r32;
     get balances[1u8] into r33;
+<<<<<<< HEAD
     add r24 r28 into r34;
     add r34 r32 into r35;
     sub r35 r33 into r36;
@@ -263,6 +264,21 @@ finalize deposit_public_as_signer:
     gt r36 r37 into r44;
     cast r36 into r45 as i64;
     cast r37 into r46 as i64;
+=======
+    cast r24 into r34 as i64;
+    cast r28 into r35 as i64;
+    add r34 r35 into r36;
+    cast r32 into r37 as i64;
+    add r36 r37 into r38;
+    cast r33 into r39 as i64;
+    sub r38 r39 into r40;
+    get balances[0u8] into r41;
+    get owed_commission[0u8] into r42;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r43;
+    cast r42 into r44 as u128;
+    add r43.supply r44 into r45;
+    cast r3 into r46 as u128;
+>>>>>>> 4fd43f3 (Add ci & update mtsp program name)
     sub r45 r46 into r47;
     ternary r44 r47 0i64 into r48;
     cast r48 into r49 as u128;
@@ -323,15 +339,15 @@ function deposit_public:
     gte r1 1u64 into r3;
     assert.eq r3 true;
     cast r0 into r4 as u128;
-    call multi_token_support_program_v1.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
-    call multi_token_support_program_v1.aleo/withdraw_credits_public r0 into r6;
+    call multi_token_support_program_v02.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
+    call multi_token_support_program_v02.aleo/withdraw_credits_public r0 into r6;
     call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r7;
     async deposit_public r5 r6 r7 r0 r1 into r8;
     output r8 as pondo_core_protocol.aleo/deposit_public.future;
 
 finalize deposit_public:
-    input r0 as multi_token_support_program_v1.aleo/transfer_from_public.future;
-    input r1 as multi_token_support_program_v1.aleo/withdraw_credits_public.future;
+    input r0 as multi_token_support_program_v02.aleo/transfer_from_public.future;
+    input r1 as multi_token_support_program_v02.aleo/withdraw_credits_public.future;
     input r2 as pondo_staked_aleo_token.aleo/mint_public.future;
     input r3 as u64.public;
     input r4 as u64.public;
@@ -368,6 +384,7 @@ finalize deposit_public:
     add r31 r15.microcredits into r32;
     add r32 r16.microcredits into r33;
     get balances[1u8] into r34;
+<<<<<<< HEAD
     add r25 r29 into r35;
     add r35 r33 into r36;
     sub r36 r34 into r37;
@@ -381,6 +398,21 @@ finalize deposit_public:
     gt r37 r38 into r45;
     cast r37 into r46 as i64;
     cast r38 into r47 as i64;
+=======
+    cast r25 into r35 as i64;
+    cast r29 into r36 as i64;
+    add r35 r36 into r37;
+    cast r33 into r38 as i64;
+    add r37 r38 into r39;
+    cast r34 into r40 as i64;
+    sub r39 r40 into r41;
+    get balances[0u8] into r42;
+    get owed_commission[0u8] into r43;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
+    cast r43 into r45 as u128;
+    add r44.supply r45 into r46;
+    cast r4 into r47 as u128;
+>>>>>>> 4fd43f3 (Add ci & update mtsp program name)
     sub r46 r47 into r48;
     ternary r45 r48 0i64 into r49;
     cast r49 into r50 as u128;
@@ -579,6 +611,7 @@ finalize instant_withdraw_public:
     add r35 r19.microcredits into r36;
     add r36 r20.microcredits into r37;
     get balances[1u8] into r38;
+<<<<<<< HEAD
     add r29 r33 into r39;
     add r39 r37 into r40;
     sub r40 r38 into r41;
@@ -639,6 +672,69 @@ finalize instant_withdraw_public:
     assert.eq r93 true;
     add r75 r85 into r94;
     set r94 into owed_commission[0u8];
+=======
+    cast r29 into r39 as i64;
+    cast r33 into r40 as i64;
+    add r39 r40 into r41;
+    cast r37 into r42 as i64;
+    add r41 r42 into r43;
+    cast r38 into r44 as i64;
+    sub r43 r44 into r45;
+    get balances[0u8] into r46;
+    get owed_commission[0u8] into r47;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r48;
+    cast r47 into r49 as u128;
+    add r48.supply r49 into r50;
+    cast r2 into r51 as u128;
+    add r50 r51 into r52;
+    cast r46 into r53 as i64;
+    gt r45 r53 into r54;
+    cast r46 into r55 as i64;
+    sub r45 r55 into r56;
+    ternary r54 r56 0i64 into r57;
+    cast r57 into r58 as u128;
+    mul r58 1000u128 into r59;
+    div r59 10_000u128 into r60;
+    cast r60 into r61 as u64;
+    cast r57 into r62 as u64;
+    sub r62 r61 into r63;
+    add r46 r63 into r64;
+    get.or_use credits.aleo/account[pondo_core_protocol.aleo] 0u64 into r65;
+    get balances[2u8] into r66;
+    sub r65 r66 into r67;
+    add r67 r3 into r68;
+    cast r64 into r69 as u128;
+    cast r68 into r70 as u128;
+    cast r61 into r71 as u128;
+    add r69 r70 into r72;
+    add r72 r71 into r73;
+    mul r52 r73 into r74;
+    div r74 r72 into r75;
+    sub r75 r52 into r76;
+    cast r76 into r77 as u64;
+    add r47 r77 into r78;
+    cast r77 into r79 as u128;
+    add r52 r79 into r80;
+    add r64 r61 into r81;
+    cast r81 into r82 as u128;
+    cast r68 into r83 as u128;
+    add r82 r83 into r84;
+    cast r2 into r85 as u128;
+    mul r85 025u128 into r86;
+    div r86 10_000u128 into r87;
+    cast r87 into r88 as u64;
+    sub r2 r88 into r89;
+    cast r89 into r90 as u128;
+    cast r84 into r91 as u128;
+    mul r90 r91 into r92;
+    cast r80 into r93 as u128;
+    div r92 r93 into r94;
+    cast r94 into r95 as u64;
+    lte r3 r95 into r96;
+    assert.eq r96 true;
+    add r78 r88 into r97;
+    set r97 into owed_commission[0u8];
+>>>>>>> 4fd43f3 (Add ci & update mtsp program name)
 
 
 
@@ -695,6 +791,7 @@ finalize withdraw_public:
     cast r27 into r37 as i64;
     cast r31 into r38 as i64;
     add r37 r38 into r39;
+<<<<<<< HEAD
     cast r35 into r40 as i64;
     add r39 r40 into r41;
     cast r36 into r42 as i64;
@@ -756,6 +853,78 @@ finalize withdraw_public:
     add r94 1u32 into r95;
     cast r87 r95 into r96 as withdrawal_state;
     set r96 into withdrawals[r2];
+=======
+    cast r34 into r40 as i64;
+    sub r39 r40 into r41;
+    get balances[0u8] into r42;
+    get owed_commission[0u8] into r43;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
+    cast r43 into r45 as u128;
+    add r44.supply r45 into r46;
+    cast r1 into r47 as u128;
+    add r46 r47 into r48;
+    cast r42 into r49 as i64;
+    gt r41 r49 into r50;
+    cast r42 into r51 as i64;
+    sub r41 r51 into r52;
+    ternary r50 r52 0i64 into r53;
+    cast r53 into r54 as u128;
+    mul r54 1000u128 into r55;
+    div r55 10_000u128 into r56;
+    cast r56 into r57 as u64;
+    cast r53 into r58 as u64;
+    sub r58 r57 into r59;
+    add r42 r59 into r60;
+    get.or_use credits.aleo/account[pondo_core_protocol.aleo] 0u64 into r61;
+    get balances[2u8] into r62;
+    get protocol_state[0u8] into r63;
+    cast r61 into r64 as i64;
+    cast r62 into r65 as i64;
+    is.neq r63 2u8 into r66;
+    sub r64 r65 into r67;
+    cast r60 into r68 as i64;
+    sub r64 r68 into r69;
+    sub r69 r65 into r70;
+    ternary r66 r67 r70 into r71;
+    cast r60 into r72 as u128;
+    cast r71 into r73 as u128;
+    cast r57 into r74 as u128;
+    add r72 r73 into r75;
+    add r75 r74 into r76;
+    mul r48 r76 into r77;
+    div r77 r75 into r78;
+    sub r78 r48 into r79;
+    cast r79 into r80 as u64;
+    add r43 r80 into r81;
+    set r81 into owed_commission[0u8];
+    cast r80 into r82 as u128;
+    add r48 r82 into r83;
+    add r60 r57 into r84;
+    cast r84 into r85 as u128;
+    cast r71 into r86 as u128;
+    add r85 r86 into r87;
+    cast r1 into r88 as u128;
+    cast r87 into r89 as u128;
+    mul r88 r89 into r90;
+    cast r83 into r91 as u128;
+    div r90 r91 into r92;
+    cast r92 into r93 as u64;
+    add r34 r93 into r94;
+    set r94 into balances[1u8];
+    sub r84 r93 into r95;
+    set r95 into balances[0u8];
+    add block.height 43_200u32 into r96;
+    div r96 120_960u32 into r97;
+    add r97 1u32 into r98;
+    mul r98 120_960u32 into r99;
+    add r99 17_280u32 into r100;
+    add r100 1u32 into r101;
+    cast r93 r101 into r102 as withdrawal_state;
+    set r102 into withdrawals[r2];
+    get.or_use withdrawal_batches[r97] 0u64 into r103;
+    add r103 r93 into r104;
+    set r104 into withdrawal_batches[r97];
+>>>>>>> 4fd43f3 (Add ci & update mtsp program name)
 
 
 
@@ -821,6 +990,7 @@ finalize rebalance_retrieve_credits:
     await r3;
     await r4;
     await r5;
+<<<<<<< HEAD
     get balances[1u8] into r8;
     add r6[0u32] r6[1u32] into r9;
     add r9 r6[2u32] into r10;
@@ -870,6 +1040,60 @@ finalize rebalance_retrieve_credits:
     get protocol_state[0u8] into r50;
     is.eq r50 1u8 into r51;
     assert.eq r51 true;
+=======
+    add r6[0u32] r6[1u32] into r8;
+    add r8 r6[2u32] into r9;
+    add r9 r6[3u32] into r10;
+    add r10 r6[4u32] into r11;
+    get balances[0u8] into r12;
+    get owed_commission[0u8] into r13;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r14;
+    cast r13 into r15 as u128;
+    add r14.supply r15 into r16;
+    cast r7 into r17 as u128;
+    sub r16 r17 into r18;
+    gt r11 r12 into r19;
+    cast r11 into r20 as i64;
+    cast r12 into r21 as i64;
+    sub r20 r21 into r22;
+    ternary r19 r22 0i64 into r23;
+    cast r23 into r24 as u128;
+    mul r24 1000u128 into r25;
+    div r25 10_000u128 into r26;
+    cast r26 into r27 as u64;
+    cast r23 into r28 as u64;
+    sub r28 r27 into r29;
+    add r12 r29 into r30;
+    get.or_use credits.aleo/account[pondo_core_protocol.aleo] 0u64 into r31;
+    get balances[2u8] into r32;
+    sub r31 r11 into r33;
+    sub r33 r32 into r34;
+    cast r30 into r35 as u128;
+    cast r34 into r36 as u128;
+    cast r27 into r37 as u128;
+    add r35 r36 into r38;
+    add r38 r37 into r39;
+    mul r18 r39 into r40;
+    div r40 r38 into r41;
+    sub r41 r18 into r42;
+    cast r42 into r43 as u64;
+    add r13 r43 into r44;
+    sub r44 r7 into r45;
+    set r45 into owed_commission[0u8];
+    add r30 r27 into r46;
+    set r46 into balances[0u8];
+    div block.height 120_960u32 into r47;
+    sub r47 1u32 into r48;
+    get.or_use withdrawal_batches[r48] 0u64 into r49;
+    add r32 r49 into r50;
+    set r50 into balances[2u8];
+    get balances[1u8] into r51;
+    sub r51 r49 into r52;
+    set r52 into balances[1u8];
+    get protocol_state[0u8] into r53;
+    is.eq r53 1u8 into r54;
+    assert.eq r54 true;
+>>>>>>> 4fd43f3 (Add ci & update mtsp program name)
     set 2u8 into protocol_state[0u8];
 
 

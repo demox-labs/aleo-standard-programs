@@ -5,7 +5,7 @@
     "license": "MIT",
     "dependencies": [
         {
-            "name": "multi_token_support_program_v1.aleo",
+            "name": "multi_token_support_program_v02.aleo",
             "location": "local",
             "path": "../../multi_token_support_program"
         }
