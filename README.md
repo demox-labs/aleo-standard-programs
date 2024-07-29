@@ -151,7 +151,7 @@ console.log(`Transaction '${transactionUUID}' submitted, current status: '${stat
 
 ### Get ALEO credits for pALEO burnt
 
-Here is an example of how to get the amount of credits you could get for burning a specific amount of pAleo tokens you currently own.
+Here is an example of how to simulate the amount of credits you could get for burning a specific amount of pAleo tokens you currently own.
 
 ```js
 import { getWithdralCredits, LiveRpcProvider } from '@demox-labs/pondo-sdk';
