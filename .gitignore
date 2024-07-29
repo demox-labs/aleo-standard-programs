@@ -6,3 +6,4 @@ outputs/
 .DS_Store
 .vscode
 pondo-sdk/cache
+pondo-sdk/dist
