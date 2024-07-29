@@ -10,6 +10,12 @@ export const RPC_URL = process.env.RPC_URL;
 export const CLIENT_URL = process.env.CLIENT_URL;
 
 export const TEST = process.env.TEST;
+export const TEST_USER0_PRIVATE_KEY = process.env.TEST_USER0_PRIVATE_KEY;
+export const TEST_USER0_ADDRESS = process.env.TEST_USER0_ADDRESS;
+export const TEST_USER1_PRIVATE_KEY = process.env.TEST_USER1_PRIVATE_KEY;
+export const TEST_USER1_ADDRESS = process.env.TEST_USER1_ADDRESS;
+export const TEST_USER2_PRIVATE_KEY = process.env.TEST_USER2_PRIVATE_KEY;
+export const TEST_USER2_ADDRESS = process.env.TEST_USER2_ADDRESS;
 
 // If no private key or network is provided, throw an error
 if (!PRIVATE_KEY) {

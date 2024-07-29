@@ -12,6 +12,7 @@ import {
   PRIVATE_KEY,
   ZERO_ADDRESS,
 } from '../constants';
+import { PONDO_PROTOCOL_STATE } from './types';
 import { formatAleoString } from '../util';
 import {
   pondoDependencyTree,
@@ -26,6 +27,26 @@ const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
   program.includes('pondo_core_protocol')
 )!;
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM];
+
+////// DEPOSIT //////
+
+export const depositAsSigner = async (deposit: bigint, privateKey?: string) => {
+  const paleoForDeposit =
+    (await calculatePaleoForDeposit(deposit)) - BigInt(1000);
+  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+  const resolvedImports = await resolveImports(imports);
+
+  await submitTransaction(
+    NETWORK!,
+    privateKey || PRIVATE_KEY!,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'deposit_public_as_signer',
+    [`${deposit}u64`, `${paleoForDeposit}u64`, ZERO_ADDRESS],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
 
 const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
   let totalProtocolBalance = BigInt(0);
@@ -74,6 +95,9 @@ const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
       : BigInt(0);
   const earnedCommission =
     (earnedRewards * PONDO_COMMISSION) / PRECISION_UNSIGNED;
+  console.log('Earned commission: ', earnedCommission);
+  const nonCommissionedRewards = earnedRewards - earnedCommission;
+  console.log('Non-commissioned rewards: ', nonCommissionedRewards);
 
   const reservedForWithdrawalsString = await getMappingValue(
     '2u8',
@@ -86,8 +110,20 @@ const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
   const coreProtocolAccountBalance = await getPublicBalance(
     CORE_PROTOCOL_PROGRAM!
   );
-  const depositPool = coreProtocolAccountBalance - reservedForWithdrawals;
-  const totalAleo = lastDelegatedBalance + depositPool;
+  const protocolState = await getMappingValue(
+    '0u8',
+    CORE_PROTOCOL_PROGRAM,
+    'protocol_state'
+  );
+  const depositPool =
+    protocolState == PONDO_PROTOCOL_STATE.REBALANCING
+      ? coreProtocolAccountBalance -
+        lastDelegatedBalance -
+        reservedForWithdrawals
+      : coreProtocolAccountBalance - reservedForWithdrawals;
+  console.log('Deposit pool: ', depositPool);
+  let totalAleo = lastDelegatedBalance + depositPool;
+  console.log('Last delegated balance: ', lastDelegatedBalance);
 
   const paleoMetadata = await getMappingValue(
     PALEO_TOKEN_ID,
@@ -103,11 +139,23 @@ const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
     'owed_commission'
   );
   const owedComission = BigInt(owedCommissionString.slice(0, -3));
+  console.log('Owed commission: ', owedComission);
+  console.log('Minted paleo: ', mintedPaleo);
   const totalPaleo = mintedPaleo + owedComission;
 
+  const paleoForCommission = calculatePaleoMint(
+    totalAleo + nonCommissionedRewards,
+    totalPaleo,
+    earnedCommission
+  );
+  console.log('Paleo for commission: ', paleoForCommission);
+
+  totalAleo += nonCommissionedRewards;
   const paleoAfterCommission =
     (totalPaleo * (totalAleo + earnedCommission)) / totalAleo;
   const aleoAfterCommission = totalAleo + earnedCommission;
+  console.log('Aleo after commission: ', aleoAfterCommission); // TODO: add buffer for additional rewards earned in the interceding blocks
+  console.log('Paleo after commission: ', paleoAfterCommission);
 
   return calculatePaleoMint(aleoAfterCommission, paleoAfterCommission, deposit);
 };
@@ -117,34 +165,14 @@ const calculatePaleoMint = (
   totalPaleo: bigint,
   deposit: bigint
 ) => {
-  let newTotalPaleo: bigint = BigInt.asUintN(
-    128,
-    (totalPaleo * (totalAleo + deposit)) / totalAleo
-  );
-  let diff: bigint = BigInt.asUintN(128, newTotalPaleo - totalPaleo);
+  let newTotalPaleo: bigint = (totalPaleo * (totalAleo + deposit)) / totalAleo;
+  let diff: bigint = newTotalPaleo - totalPaleo;
   let paleoToMint: bigint = BigInt.asUintN(64, diff);
+  console.log('Paleo to mint: ', paleoToMint);
   return paleoToMint;
 };
 
-export const depositAsSigner = async (deposit: bigint, privateKey?: string) => {
-  const paleoForDeposit = await calculatePaleoForDeposit(deposit);
-  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
-  const resolvedImports = await resolveImports(imports);
+////// WITHDRAW //////
+export const instantWithdraw = async (withdrawalPaleo: bigint) => {};
 
-  await submitTransaction(
-    NETWORK!,
-    privateKey || PRIVATE_KEY!,
-    CORE_PROTOCOL_PROGRAM_CODE,
-    'deposit_public_as_signer',
-    [`${deposit}u64`, `${paleoForDeposit}u64`, ZERO_ADDRESS],
-    3,
-    undefined,
-    resolvedImports
-  );
-};
-
-let deposited = false;
-export const runUserActions = async () => {
-  await depositAsSigner(BigInt(10_000_000_000));
-  deposited = true;
-};
+export const calculateAleoForWithdrawal = async (withdrawalPaleo: bigint) => {};
