@@ -22,7 +22,7 @@ export async function depositPublic(rpcProvider, privateKeyString, depositCredit
 async function getDepositPublicInputs(rpcProvider, aleoAddress, depositCredits, referrer) {
     const depositMicrocredits = depositCredits * 1_000_000;
     let contracts = await initializeContracts();
-    const presetMappingValues = await initializeMappings(rpcProvider, depositPublicPresetMappingKeys(contracts, aleoAddress));
+    await initializeMappings(rpcProvider, depositPublicPresetMappingKeys(contracts, aleoAddress));
     contracts.coreProtocolInstance.signer = aleoAddress;
     contracts.coreProtocolInstance.deposit_public_as_signer(BigInt(depositMicrocredits), BigInt("1"), '');
     const paleoForDeposit = contracts.coreProtocolInstance.computed_paleo_for_deposit;

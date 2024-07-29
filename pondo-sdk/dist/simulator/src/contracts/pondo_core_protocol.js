@@ -646,6 +646,7 @@ export class pondo_core_protocolProgram {
         // Calculate credits value of burned pALEO
         let withdrawal_calculation = BigInt.asUintN(128, (paleo_burn_amount * full_pool) / total_paleo_minted);
         let withdrawal = BigInt.asUintN(64, withdrawal_calculation);
+        this.computed_credits_withdrawal = withdrawal_calculation;
         // Update bonded withdrawals
         this.balances.set(this.BONDED_WITHDRAWALS, bonded_withdrawals + withdrawal);
         // Update total balance to reflect withdrawal
@@ -660,7 +661,6 @@ export class pondo_core_protocolProgram {
         // Update total for batch
         let batch_total = BigInt.asUintN(64, this.withdrawal_batches.get(batch_height[0]) || BigInt('0'));
         this.withdrawal_batches.set(batch_height[0], batch_total + withdrawal);
-        this.computed_credits_withdrawal = withdrawal_calculation;
     }
     inline_get_withdrawal_batch(height) {
         let min_block_height = BigInt.asUintN(32, height + this.WITHDRAW_WAIT_MINIMUM);
@@ -692,6 +692,7 @@ export class pondo_core_protocolProgram {
                 microcredits: withdrawal.microcredits - amount,
                 claim_block: withdrawal.claim_block,
             };
+            assert(withdrawal.microcredits >= amount);
             this.withdrawals.set(owner, new_withdrawal);
         }
         // Update balance reserved for withdrawal

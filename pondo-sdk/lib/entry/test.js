@@ -5,23 +5,13 @@ import {
   withdrawPublic,
   LiveRpcProvider,
   TestRpcProvider,
-  getWithdralCredits
+  getWithdralCredits,
+  claimWithdrawalPublic,
+  getClaimableWithdrawal
 } from './index.js';
 
 import { PROGRAMS } from '../config/index.js';
 
-
-/* Usage Example 
-const RPC_URL = 'https://testnetbeta.aleorpc.com';
-const rpcProvider = await LiveRpcProvider.from_url(RPC_URL);
-
-await depositPublic(
-  rpcProvider,
-  "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7",
-  10000000000000,
-  "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc"
-);
-*/
 
 async function testDepositPublic() {
   const mappingValues = [
@@ -88,10 +78,64 @@ async function testWithdrawPublic() {
   ];
   const rpcProvider = new TestRpcProvider(mappingValues);
   console.log(
-    await instantWithdrawPublic(
+    await withdrawPublic(
       rpcProvider,
       "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7",
       100000000,
+    )
+  );
+}
+
+
+async function testClaimWithdrawalPublicFailNotClaimable() {
+  const mappingValues = [
+    [PROGRAMS.coreProtocol.id, "balances", "2u8", "10000000u64"],
+    [PROGRAMS.coreProtocol.id, "withdrawals", "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4", "{microcredits: 1000u64,claim_block: 1000u32}"],
+    [PROGRAMS.credits.id, "account", PROGRAMS.coreProtocol.address, "1000000000000000000000000000000u64"],
+  ];
+  const rpcProvider = new TestRpcProvider(mappingValues, 999);
+  console.log(
+    await claimWithdrawalPublic(
+      rpcProvider,
+      "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7",
+      "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4",
+      10000000000,
+    )
+  );
+}
+
+
+async function testClaimWithdrawalPublicFailAmountTooHigh() {
+  const mappingValues = [
+    [PROGRAMS.coreProtocol.id, "balances", "2u8", "10000000u64"],
+    [PROGRAMS.coreProtocol.id, "withdrawals", "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4", "{microcredits: 1000000u64,claim_block: 1000u32}"],
+    [PROGRAMS.credits.id, "account", PROGRAMS.coreProtocol.address, "1000000000000000000000000000000u64"],
+  ];
+  const rpcProvider = new TestRpcProvider(mappingValues, 1001);
+  console.log(
+    await claimWithdrawalPublic(
+      rpcProvider,
+      "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7",
+      "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4",
+      1,
+    )
+  );
+}
+
+
+async function testClaimWithdrawalPublic() {
+  const mappingValues = [
+    [PROGRAMS.coreProtocol.id, "balances", "2u8", "10000000u64"],
+    [PROGRAMS.coreProtocol.id, "withdrawals", "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4", "{microcredits: 1000000u64,claim_block: 1000u32}"],
+    [PROGRAMS.credits.id, "account", PROGRAMS.coreProtocol.address, "1000000000000000u64"],
+  ];
+  const rpcProvider = new TestRpcProvider(mappingValues, 1001);
+  console.log(
+    await claimWithdrawalPublic(
+      rpcProvider,
+      "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7",
+      "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4",
+      1,
     )
   );
 }
@@ -121,7 +165,26 @@ async function testGetWithdralCredits() {
   );
 }
 
+
+async function testGetClaimableWithdrawal() {
+  const mappingValues = [
+    [PROGRAMS.coreProtocol.id, "withdrawals", "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4", "{microcredits: 1000000u64,claim_block: 1000u32}"],
+  ];
+  const rpcProvider = new TestRpcProvider(mappingValues);
+  console.log(
+    await getClaimableWithdrawal(
+      rpcProvider,
+      "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4",
+    )
+  );
+}
+
+
 // await testDepositPublic();
 // await testInstantWithdrawPublic();
 // await testWithdrawPublic();
-await testGetWithdralCredits();
+// await testGetWithdralCredits();
+// await testClaimWithdrawalPublicFailNotClaimable();
+// await testClaimWithdrawalPublicFailAmountTooHigh();
+// await testClaimWithdrawalPublic();
+// await testGetClaimableWithdrawal();

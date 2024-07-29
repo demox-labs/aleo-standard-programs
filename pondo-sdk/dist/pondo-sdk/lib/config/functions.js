@@ -15,4 +15,9 @@ export const FUNCTIONS = {
         functionName: "withdraw_public",
         feeCredits: 10
     },
+    claimWithdrawalPublic: {
+        programId: PROGRAMS.coreProtocol.id,
+        functionName: "claim_withdrawal_public",
+        feeCredits: 10
+    }
 };

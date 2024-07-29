@@ -108,13 +108,27 @@ console.log(`Credits to be withdrawn: '${withdralCredits}'.`);
 
 #### Wait period
 
-You must wait for 43,200 blocks (or 2.5 days, assuming 5 sec per block), before you can claim credits associated with the withdrawal.
+You must wait **43,200 blocks** (or 2.5 days, assuming 5 sec per block), before you can claim credits associated with the withdrawal.
 
-**TODO:** Get time left SDK function.
+To get the exact block when your credits will be available as well as the amount of credtis you will be able to claim, you can use the following method:
+
+```js
+import { getClaimableWithdrawal, LiveRpcProvider } from '@demox-labs/pondo-sdk';
+
+const RPC_URL = 'https://testnetbeta.aleorpc.com';
+
+const rpcProvider = await LiveRpcProvider.from_url(RPC_URL);
+const privateKeyString = "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7";
+
+const { availableAtBlock, amountCredits } = await getClaimableWithdrawal();
+const currentBlock = await rpcProvider.latest_height();
+
+console.log(`'${amountCredits}' credits available at height: '${currentBlock}'. Current block height: '${currentBlock}'.`);
+```
 
 #### Claim Withdrawal
 
-**TODO:** Implement **`claimWithdrawalPublic`**.
+After the wait period, you can claim credits due to you by using the following method:
 
 ```js
 import { claimWithdrawalPublic, LiveRpcProvider } from '@demox-labs/pondo-sdk';
@@ -123,17 +137,16 @@ const RPC_URL = 'https://testnetbeta.aleorpc.com';
 
 const rpcProvider = await LiveRpcProvider.from_url(RPC_URL);
 const privateKeyString = "APrivateKey1zkpBz6J75Ndv4MwcFb6pccC1teFfMTb6BNNMwLkssp1xcH7";
-const paleoBurnAmount = 10;
+const withdralCredits = 100;
 
-const { transactionUUID, withdralCredits } = await claimWithdrawalPublic(
+const { transactionUUID } = await claimWithdrawalPublic(
   rpcProvider,
   privateKeyString,
-  paleoBurnAmount,
+  withdralCredits,
 );
 const { status } = await rpcProvider.getGeneratedTransaction(transactionUUID);
 
 console.log(`Transaction '${transactionUUID}' submitted, current status: '${status}'.`);
-console.log(`Credits to be withdrawn: '${withdralCredits}'.`);
 ```
 
 ### Get ALEO credits for pALEO burnt

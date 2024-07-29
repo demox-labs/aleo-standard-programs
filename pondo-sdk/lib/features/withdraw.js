@@ -1,14 +1,12 @@
 import { PrivateKey } from '@demox-labs/aleo-sdk';
 
 import { delegateTransaction } from '../aleo/index.js';
+import { initializeMappings, initializeContracts } from '../aleo/simulator.js';
+import { pondoProgramResolver, pondoDependencyResolver } from '../aleo/pondo.js';
+import { hashNonNestedStruct, snarkVMToJs } from '../aleo/snarkvm.js';
+
 import { FUNCTIONS } from '../config/index.js';
 import { PROGRAMS } from '../config/index.js';
-
-import { initializeMappings, initializeContracts } from '../aleo/simulator.js';
-
-import { pondoProgramResolver, pondoDependencyResolver } from '../aleo/pondo.js';
-
-import { hashNonNestedStruct } from '../aleo/snarkvm.js';
 
 
 export async function instantWithdrawPublic(
@@ -35,7 +33,7 @@ export async function instantWithdrawPublic(
   );
   return {
     transactionUUID,
-    withdralCredits: BigInt(inputs[1].slice(0, -3))
+    withdralCredits: Number(inputs[1].slice(0, -3)) / 1_000_000
   };
 }
 
@@ -48,29 +46,29 @@ async function getInstantWithdrawPublicInputs(
   const pondoTokenOwnerJson = JSON.stringify({ account: aleoAddress, token_id: contracts.PNDOInstance.PALEO_TOKEN_ID })
   const pondoTokenOwnerHash = await hashNonNestedStruct(pondoTokenOwner);
 
-  let prevWithdrawalCredits = null;
-  let withdrawalCredits = BigInt("1");
+  let prevWithdrawalMicrocredits = null;
+  let withdrawalMicrocredits = BigInt("1");
 
-  // get withdrawal credits until converges 
-  while (prevWithdrawalCredits !== withdrawalCredits) {
-    prevWithdrawalCredits = withdrawalCredits
-    withdrawalCredits = await getInstantWithdrawalCredits(
-      rpcProvider, aleoAddress, paleoBurnAmount, withdrawalCredits, pondoTokenOwnerJson, pondoTokenOwnerHash
+  // get withdrawal microcredits until converges
+  while (prevWithdrawalMicrocredits !== withdrawalMicrocredits) {
+    prevWithdrawalMicrocredits = withdrawalMicrocredits
+    withdrawalMicrocredits = await getInstantWithdrawalMicocredits(
+      rpcProvider, aleoAddress, paleoBurnAmount, withdrawalMicrocredits, pondoTokenOwnerJson, pondoTokenOwnerHash
     )
   }
 
   const paleoBurnAmountU64 = `${paleoBurnAmount}u64`;
-  const withdrawalCreditsU64 = `${withdrawalCredits}u64`;
+  const withdrawalMicoreditsU64 = `${withdrawalMicrocredits}u64`;
 
   return [
     paleoBurnAmountU64,
-    withdrawalCreditsU64
+    withdrawalMicoreditsU64
   ];
 }
 
 
-async function getInstantWithdrawalCredits(
-  rpcProvider, aleoAddress, paleoBurnAmount, formerWithdrawalCredits, pondoTokenOwnerJson, pondoTokenOwnerHash,
+async function getInstantWithdrawalMicocredits(
+  rpcProvider, aleoAddress, paleoBurnAmount, formerWithdrawalMicrocredits, pondoTokenOwnerJson, pondoTokenOwnerHash,
 ) {
   let contracts = await initializeContracts();
   await initializeMappings(
@@ -82,8 +80,7 @@ async function getInstantWithdrawalCredits(
   contracts.coreProtocolInstance.caller = aleoAddress;
   contracts.coreProtocolInstance.instant_withdraw_public(
     BigInt(paleoBurnAmount),
-    formerWithdrawalCredits,
-    ''
+    formerWithdrawalMicrocredits,
   );
   return contracts.coreProtocolInstance.computed_credits_withdrawal;
 }
@@ -121,7 +118,6 @@ function instantWithdrawPublicPresetMappingKeys(contracts, signer, tokenOwnerHas
 }
 
 
-
 export async function withdrawPublic(
   rpcProvider,
   privateKeyString,
@@ -155,7 +151,7 @@ export async function withdrawPublic(
 async function getWithdrawPublicInputs(paleoBurnAmount) {
   const paleoBurnAmountU64 = `${paleoBurnAmount}u64`;
 
-  return [paleoBurnAmountU64,];
+  return [paleoBurnAmountU64];
 }
 
 
@@ -176,38 +172,88 @@ export async function getWithdralCredits(
   contracts.coreProtocolInstance.caller = aleoAddress;
   contracts.coreProtocolInstance.withdraw_public(
     BigInt(paleoBurnAmount),
-    ''
   );
-  return contracts.coreProtocolInstance.computed_credits_withdrawal;
+  return Number(
+    contracts.coreProtocolInstance.computed_credits_withdrawal.toString()
+  ) / 1_000_000;
 }
 
 
-/*
+
 export async function claimWithdrawalPublic(
   rpcProvider,
   privateKeyString,
-  paleoBurnAmount,
+  destination,
+  creditsWithdrawal,
   network = "TestnetV0"
 ) {
+  const microcreditsWithdrawal = creditsWithdrawal * 1_000_000;
   const privateKey = PrivateKey.from_string(network, privateKeyString);
   const address = privateKey.to_address().to_string();
-  const inputs = await getWithdrawPublicInputs(paleoBurnAmount);
-  const withdralCredits = await getWithdralCredits(
-    rpcProvider, address, paleoBurnAmount
+  const inputs = await getClaimWithdrawalPublicInputs(destination, microcreditsWithdrawal);
+  await checkClaimWithdrawalPublicSucceeds(
+    rpcProvider, address, destination, microcreditsWithdrawal
   );
   const transactionUUID = await delegateTransaction(
     rpcProvider,
     {
       privateKey,
-      ...FUNCTIONS.withdrawPublic,
+      ...FUNCTIONS.claimWithdrawalPublic,
       inputs,
-      feeCredits: FUNCTIONS.withdrawPublic.feeCredits,
+      feeCredits: FUNCTIONS.claimWithdrawalPublic.feeCredits,
     },
     pondoProgramResolver,
     pondoDependencyResolver
   );
-  return {
-    transactionUUID,
-    withdralCredits
-  };
-*/
+  return { transactionUUID };
+}
+
+
+async function getClaimWithdrawalPublicInputs(destination, microcreditsWithdrawal) {
+  const microcreditsWithdrawalU64 = `${microcreditsWithdrawal}u64`;
+  return [destination, microcreditsWithdrawalU64];
+}
+
+
+export async function checkClaimWithdrawalPublicSucceeds(
+  rpcProvider, aleoAddress, destination, microcreditsWithdrawal,
+) {
+  let contracts = await initializeContracts();
+
+  contracts.coreProtocolInstance.block.height = BigInt(
+    await rpcProvider.latest_height()
+  );
+  await initializeMappings(
+    rpcProvider,
+    claimWithdrawalPublicPresetMappingKeys(contracts, destination)
+  );
+  contracts.coreProtocolInstance.signer = aleoAddress;
+  contracts.coreProtocolInstance.caller = aleoAddress;
+  contracts.coreProtocolInstance.claim_withdrawal_public(
+    destination,
+    BigInt(microcreditsWithdrawal),
+  );
+  return contracts.coreProtocolInstance.computed_credits_withdrawal;
+}
+
+
+function claimWithdrawalPublicPresetMappingKeys(contracts, destination) {
+  return [
+    [PROGRAMS.coreProtocol.id, "balances", `${contracts.coreProtocolInstance.CLAIMABLE_WITHDRAWALS}u8`],
+    [PROGRAMS.credits.id, "account", PROGRAMS.coreProtocol.address],
+    [PROGRAMS.coreProtocol.id, "withdrawals", destination],
+  ];
+}
+
+export async function getClaimableWithdrawal(rpcProvider, addressString) {
+  const withdrawal = await rpcProvider.getMappingValue(
+    PROGRAMS.coreProtocol.id, "withdrawals", addressString
+  );
+  if (withdrawal == null) {
+    return null
+  }
+  const { microcredits, claim_block } = snarkVMToJs(withdrawal);
+  const availableAtBlock = Number(claim_block.toString());
+  const amountCredits = Number(microcredits.toString()) / 1_000_000;
+  return { amountCredits, availableAtBlock };
+}

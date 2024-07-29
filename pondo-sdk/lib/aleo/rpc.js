@@ -82,6 +82,10 @@ export class LiveRpcProvider {
     });
   }
 
+  async latest_height() {
+    return await this.callRPC('latest/height');
+  }
+
   async chainStatus() {
     return await this.callRPC("chainStatus");
   }
@@ -102,13 +106,14 @@ LiveRpcProvider.from_url = async (url) => {
 
 
 export class TestRpcProvider {
-  constructor(mappingValues) {
+  constructor(mappingValues, height = 0) {
     mappingValues = mappingValues || [];
     this.mappings = {};
     for (const [programId, mappingName, key, value] of mappingValues) {
       const localKey = `${programId};${mappingName};${key}`
       this.mappings[localKey] = value;
     }
+    this.height = height;
   }
 
   async getProgramCode(programId) {
@@ -118,6 +123,10 @@ export class TestRpcProvider {
   async getMappingValue(programId, mappingName, key) {
     const localKey = `${programId};${mappingName};${key}`
     return this.mappings?.[localKey];
+  }
+
+  async latest_height() {
+    return this.height;
   }
 
   async generateTransaction(

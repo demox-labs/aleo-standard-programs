@@ -43,7 +43,7 @@ async function getDepositPublicInputs(
 ) {
   const depositMicrocredits = depositCredits * 1_000_000;
   let contracts = await initializeContracts();
-  const presetMappingValues = await initializeMappings(
+  await initializeMappings(
     rpcProvider,
     depositPublicPresetMappingKeys(contracts, aleoAddress),
   );
