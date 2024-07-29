@@ -112,7 +112,9 @@ You must wait for 43,200 blocks (or 2.5 days, assuming 5 sec per block), before 
 
 **TODO:** Get time left SDK function.
 
-#### Withdraw Credits
+#### Claim Withdrawal
+
+**TODO:** Implement **`claimWithdrawalPublic`**.
 
 ```js
 import { claimWithdrawalPublic, LiveRpcProvider } from '@demox-labs/pondo-sdk';
