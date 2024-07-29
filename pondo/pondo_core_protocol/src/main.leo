@@ -17,6 +17,9 @@ program pondo_core_protocol.aleo {
   const PORTION_4: u128 = 1200u128;
   const PORTION_5: u128 = 900u128;
 
+  // The minimum amount of credits for increasing an existing bond, set in credits.aleo
+  const MINIMUM_BOND_INCREASE: u64 = 1_000_000u64; // 1 credit
+
   // The number of blocks in an epoch
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
   const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
@@ -403,6 +406,10 @@ program pondo_core_protocol.aleo {
   async transition distribute_deposits(
     public transfer_amounts: [u64; 5]
   ) -> Future {
+    for i: u8 in 0u8..5u8 {
+      assert(transfer_amounts[i] >= MINIMUM_BOND_INCREASE); // ensure that each transfer amount is at least 1 whole credit
+    }
+
     // Transfer to each delegator
     let f0: Future = credits.aleo/transfer_public(pondo_delegator1.aleo, transfer_amounts[0u8]);
     let f1: Future = credits.aleo/transfer_public(pondo_delegator2.aleo, transfer_amounts[1u8]);
@@ -410,7 +417,7 @@ program pondo_core_protocol.aleo {
     let f3: Future = credits.aleo/transfer_public(pondo_delegator4.aleo, transfer_amounts[3u8]);
     let f4: Future = credits.aleo/transfer_public(pondo_delegator5.aleo, transfer_amounts[4u8]);
 
-    return finalize_distribute_deposits(f0, f1, f2, f3, f4);
+    return finalize_distribute_deposits(f0, f1, f2, f3, f4, transfer_amounts);
   }
 
   async function finalize_distribute_deposits(
@@ -418,13 +425,17 @@ program pondo_core_protocol.aleo {
     f1: Future,
     f2: Future,
     f3: Future,
-    f4: Future
+    f4: Future,
+    transfer_amounts: [u64; 5]
   ) {
     f0.await();
     f1.await();
     f2.await();
     f3.await();
     f4.await();
+
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state == NORMAL_STATE); // Assert that the protocol is in the normal state
 
     // Confirm that there are enough credits left for the liquidity pool
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE);
@@ -434,17 +445,33 @@ program pondo_core_protocol.aleo {
     let optimal_liquidity: u64 = calculate_optimal_liquidity(currently_delegated as u128);
     assert(liquidity_pool >= optimal_liquidity);
 
-    // Confirm each delegator is already bonded and in the correct state
-    let delegator1_state: u8 = pondo_delegator1.aleo/state_mapping.get(0u8);
-    let delegator2_state: u8 = pondo_delegator2.aleo/state_mapping.get(0u8);
-    let delegator3_state: u8 = pondo_delegator3.aleo/state_mapping.get(0u8);
-    let delegator4_state: u8 = pondo_delegator4.aleo/state_mapping.get(0u8);
-    let delegator5_state: u8 = pondo_delegator5.aleo/state_mapping.get(0u8);
-    assert(delegator1_state == BOND_ALLOWED || delegator1_state == UNBOND_NOT_ALLOWED); // Assert that delegator1 is in the correct state
-    assert(delegator2_state == BOND_ALLOWED || delegator2_state == UNBOND_NOT_ALLOWED); // Assert that delegator2 is in the correct state
-    assert(delegator3_state == BOND_ALLOWED || delegator3_state == UNBOND_NOT_ALLOWED); // Assert that delegator3 is in the correct state
-    assert(delegator4_state == BOND_ALLOWED || delegator4_state == UNBOND_NOT_ALLOWED); // Assert that delegator4 is in the correct state
-    assert(delegator5_state == BOND_ALLOWED || delegator5_state == UNBOND_NOT_ALLOWED); // Assert that delegator5 is in the correct state
+        // Check that each validator has the correct portion of credits
+    let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(
+      0u8,
+      [
+        PORTION_1,
+        PORTION_2,
+        PORTION_3,
+        PORTION_4,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5,
+        PORTION_5
+      ]);
+    let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
+    let total_credits_128: u128 = total_credits as u128;
+    let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator2_portion: u128 = (transfer_amounts[1u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator3_portion: u128 = (transfer_amounts[2u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator4_portion: u128 = (transfer_amounts[3u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    let validator5_portion: u128 = (transfer_amounts[4u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
+    assert(delegator_allocation[0u8] - validator1_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[1u8] - validator2_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[2u8] - validator3_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[3u8] - validator4_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+    assert(delegator_allocation[4u8] - validator5_portion <= 2u128); // ensure that the validator portion is close to the expected portion
   }
 
   inline calculate_optimal_liquidity(total_balance: u128) -> u64 {

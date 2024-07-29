@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/demox-labs/aleo-standard-programs#readme",
   "dependencies": {
-    "@demox-labs/aleo-sdk": "^0.3.35",
+    "@demox-labs/aleo-sdk": "^0.3.36",
     "dotenv": "^16.0.3",
     "json-rpc-2.0": "^1.7.0",
     "threads": "^1.7.0",

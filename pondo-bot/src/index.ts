@@ -6,7 +6,7 @@ import {
   deployReferenceDelegatorsIfNecessary,
 } from './protocol/referenceDelegators';
 import { runProtocol } from './protocol/runProtocol';
-import { runUserActions } from './protocol/userActions';
+import { fundTestAccountsIfNecessary, runTests } from './tests/runTests';
 import { delay } from './util';
 
 async function main() {
@@ -19,6 +19,10 @@ async function main() {
 
   console.log('All programs have been deployed and initialized');
 
+  if (TEST) {
+    await fundTestAccountsIfNecessary();
+  }
+
   while (true) {
     try {
       if (ORACLE_PRIVATE_KEY) {
@@ -29,7 +33,7 @@ async function main() {
       await runProtocol();
 
       if (TEST) {
-        await runUserActions();
+        await runTests();
       }
 
       // Sleep for 15 seconds
