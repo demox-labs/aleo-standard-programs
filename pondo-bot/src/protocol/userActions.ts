@@ -53,6 +53,7 @@ export const depositAsSigner = async (deposit: bigint, privateKey?: string) => {
     undefined,
     resolvedImports
   );
+  console.log('deposit_public_as_signer transaction submitted');
 };
 
 export const depositViaAllowance = async (
@@ -102,6 +103,7 @@ export const depositViaAllowance = async (
     undefined,
     coreProtocolImports
   );
+  console.log('deposit_public transaction submitted');
 };
 
 const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
@@ -115,6 +117,7 @@ const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
  * @returns { totalAleo: bigint, totalPaleo: bigint }
  */
 const calculateAleoAndPaleoPools = async () => {
+  console.log('Calculating aleo and paleo pools');
   let totalProtocolBalance = BigInt(0);
   // Handle updating all of the delegators
   for (let index = 1; index < 6; index++) {
@@ -161,9 +164,12 @@ const calculateAleoAndPaleoPools = async () => {
       : BigInt(0);
   const earnedCommission =
     (earnedRewards * PONDO_COMMISSION) / PRECISION_UNSIGNED;
-  console.log('Earned commission: ', earnedCommission);
+  console.log('Earned commission: ', earnedCommission.toLocaleString());
   const nonCommissionedRewards = earnedRewards - earnedCommission;
-  console.log('Non-commissioned rewards: ', nonCommissionedRewards);
+  console.log(
+    'Non-commissioned rewards: ',
+    nonCommissionedRewards.toLocaleString()
+  );
 
   const reservedForWithdrawalsString = await getMappingValue(
     '2u8',
@@ -187,9 +193,12 @@ const calculateAleoAndPaleoPools = async () => {
         lastDelegatedBalance -
         reservedForWithdrawals
       : coreProtocolAccountBalance - reservedForWithdrawals;
-  console.log('Deposit pool: ', depositPool);
+  console.log('Deposit pool: ', depositPool.toLocaleString());
   let totalAleo = lastDelegatedBalance + depositPool;
-  console.log('Last delegated balance: ', lastDelegatedBalance);
+  console.log(
+    'Last delegated balance: ',
+    lastDelegatedBalance.toLocaleString()
+  );
 
   const paleoMetadata = await getMappingValue(
     PALEO_TOKEN_ID,
@@ -205,8 +214,8 @@ const calculateAleoAndPaleoPools = async () => {
     'owed_commission'
   );
   const owedComission = BigInt(owedCommissionString.slice(0, -3));
-  console.log('Owed commission: ', owedComission);
-  console.log('Minted paleo: ', mintedPaleo);
+  console.log('Owed commission: ', owedComission.toLocaleString());
+  console.log('Minted paleo: ', mintedPaleo.toLocaleString());
   const totalPaleo = mintedPaleo + owedComission;
 
   const paleoForCommission = calculatePaleoMint(
@@ -214,14 +223,17 @@ const calculateAleoAndPaleoPools = async () => {
     totalPaleo,
     earnedCommission
   );
-  console.log('Paleo for commission: ', paleoForCommission);
+  console.log('Paleo for commission: ', paleoForCommission.toLocaleString());
 
   totalAleo += nonCommissionedRewards;
   const paleoAfterCommission =
     (totalPaleo * (totalAleo + earnedCommission)) / totalAleo;
   const aleoAfterCommission = totalAleo + earnedCommission;
-  console.log('Aleo after commission: ', aleoAfterCommission); // TODO: add buffer for additional rewards earned in the interceding blocks
-  console.log('Paleo after commission: ', paleoAfterCommission);
+  console.log('Aleo after commission: ', aleoAfterCommission.toLocaleString()); // TODO: add buffer for additional rewards earned in the interceding blocks
+  console.log(
+    'Paleo after commission: ',
+    paleoAfterCommission.toLocaleString()
+  );
 
   return { totalAleo, totalPaleo };
 };
@@ -234,7 +246,7 @@ const calculatePaleoMint = (
   let newTotalPaleo: bigint = (totalPaleo * (totalAleo + deposit)) / totalAleo;
   let diff: bigint = newTotalPaleo - totalPaleo;
   let paleoToMint: bigint = BigInt.asUintN(64, diff);
-  console.log('Paleo to mint: ', paleoToMint);
+  console.log('Paleo to mint: ', paleoToMint.toLocaleString());
   return paleoToMint;
 };
 
@@ -244,8 +256,7 @@ export const batchedWithdraw = async (
   withdrawalPaleo: bigint,
   privateKey?: string
 ) => {
-  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
-  const resolvedImports = await resolveImports(imports);
+  const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
 
   await submitTransaction(
     NETWORK!,
@@ -259,13 +270,45 @@ export const batchedWithdraw = async (
   );
 };
 
+export const claimWithdrawal = async (
+  address: string,
+  withdrawAll: boolean = false,
+  privateKey?: string
+) => {
+  const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
+  const withdrawalMappingValue = await getMappingValue(
+    address,
+    CORE_PROTOCOL_PROGRAM,
+    'withdrawals'
+  );
+  const availableToWithdraw = BigInt(
+    JSON.parse(formatAleoString(withdrawalMappingValue))['microcredits'].slice(
+      0,
+      -3
+    )
+  );
+  const withdrawalAleo = withdrawAll
+    ? availableToWithdraw
+    : availableToWithdraw - BigInt(1000);
+
+  await submitTransaction(
+    NETWORK!,
+    privateKey || PRIVATE_KEY!,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'claim_withdrawal_public',
+    [address, `${withdrawalAleo}u64`],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
 export const instantWithdraw = async (
   withdrawalPaleo: bigint,
   privateKey?: string
 ) => {
   const aleoForWithdrawal = await calculateAleoForWithdrawal(withdrawalPaleo);
-  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
-  const resolvedImports = await resolveImports(imports);
+  const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
 
   await submitTransaction(
     NETWORK!,
