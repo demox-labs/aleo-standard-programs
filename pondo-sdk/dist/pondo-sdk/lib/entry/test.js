@@ -1,5 +1,5 @@
 import '../utils/fetch.js';
-import { depositPublic, instantWithdrawPublic, withdrawPublic, LiveRpcProvider, TestRpcProvider, getWithdralCredits, claimWithdrawalPublic, getClaimableWithdrawal, getPaleoBalance } from './index.js';
+import { depositPublic, instantWithdrawPublic, withdrawPublic, LiveRpcProvider, TestRpcProvider, getWithdralCredits, claimWithdrawalPublic, getClaimableWithdrawal, getPaleoBalance, getCurrentValidators } from './index.js';
 import { PROGRAMS } from '../config/index.js';
 async function testDepositPublic() {
     const mappingValues = [
@@ -108,6 +108,25 @@ async function testGetPaleoBalance() {
     const rpcProvider = new TestRpcProvider(mappingValues);
     console.log(await getPaleoBalance(rpcProvider, "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4"));
 }
+async function testGetCurrentValidators() {
+    const mappingValues = [
+        [PROGRAMS.delegator1.id, "validator_mapping", "0u8", "{validator: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, commission: 1u8}"],
+        [PROGRAMS.delegator2.id, "validator_mapping", "0u8", "{validator: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, commission: 2u8}"],
+        [PROGRAMS.delegator3.id, "validator_mapping", "0u8", "{validator: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, commission: 3u8}"],
+        [PROGRAMS.delegator4.id, "validator_mapping", "0u8", "{validator: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, commission: 4u8}"],
+        [PROGRAMS.delegator5.id, "validator_mapping", "0u8", "{validator: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, commission: 5u8}"],
+    ];
+    const rpcProvider = new TestRpcProvider(mappingValues);
+    const { validators } = await getCurrentValidators(rpcProvider);
+    for (let i = 0; i < 5; i++) {
+        console.log(`Validator #${i + 1}:`);
+        const { address, commission, poolPortion } = validators[i];
+        console.log(`  - Address: ${address}`);
+        console.log(`  - Commission: ${commission}`);
+        console.log(`  - Pool portion: ${poolPortion}`);
+        console.log();
+    }
+}
 // await testDepositPublic();
 // await testInstantWithdrawPublic();
 // await testWithdrawPublic();
@@ -116,4 +135,13 @@ async function testGetPaleoBalance() {
 // await testClaimWithdrawalPublicFailAmountTooHigh();
 // await testClaimWithdrawalPublic();
 // await testGetClaimableWithdrawal();
-await testGetPaleoBalance();
+// await testGetPaleoBalance();
+await testGetCurrentValidators();
+/*
+TODO:
+- ALEO :left_right_arrow: pALEO exchange ratio
+- Current reward rate
+- Current blended commission
+- Pondo protocol fee
+- Remaining time for rebalance to end
+*/ 

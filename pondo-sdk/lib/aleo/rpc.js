@@ -58,7 +58,7 @@ export class LiveRpcProvider {
     broadcast,
     imports
   ) {
-    return await callRPC('generateTransaction', {
+    return await this.callRPC('generateTransaction', {
       authorization,
       program,
       fee_authorization: feeAuthorization,

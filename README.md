@@ -186,3 +186,27 @@ const paleoBalance = await getPaleoBalance(
 );
 console.log(`Paleo Balance: '${paleoBalance}'.`);
 ```
+
+### Get Current Selected Validators
+
+```js
+import { getCurrentValidators, LiveRpcProvider } from '@demox-labs/pondo-sdk';
+
+const RPC_URL = 'https://testnetbeta.aleorpc.com';
+
+const rpcProvider = await LiveRpcProvider.from_url(RPC_URL);
+
+const { validators } = await getCurrentValidators(rpcProvider,);
+for (let i = 0; i<5; i++){
+  console.log(`Validator #${i+1}:`);
+  const {
+    validator,
+    commission,
+    poolPortion
+  } = validators[i];
+  console.log(`  - Address: ${address}`);
+  console.log(`  - Commission: ${commission}`);
+  console.log(`  - Pool portion: ${poolPortion}`);
+  console.log();
+}
+```

@@ -32,7 +32,7 @@ export class LiveRpcProvider {
         return (await this.callRPC('program', { id: programId }));
     }
     async generateTransaction(authorization, program, feeAuthorization, functionName, broadcast, imports) {
-        return await callRPC('generateTransaction', {
+        return await this.callRPC('generateTransaction', {
             authorization,
             program,
             fee_authorization: feeAuthorization,
