@@ -114,6 +114,10 @@ const testConfig = {
   entry: {
     runTestScript:
       path.resolve(__dirname, 'src') + '/tests/scripts/runTestScript.ts',
+    getTokenOwnerHash:
+      path.resolve(__dirname, 'src') + '/tests/scripts/getTokenOwnerHash.ts',
+    runTokenActions:
+      path.resolve(__dirname, 'src') + '/tests/scripts/runTokenActions.ts',
   },
 
   // Output configuration

@@ -2,7 +2,7 @@ import * as Aleo from '@demox-labs/aleo-sdk';
 import { NETWORK } from './constants';
 
 export const delay = (ms: number) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const generateRandomCharacters = (length: number = 6): string => {
@@ -10,19 +10,24 @@ export const generateRandomCharacters = (length: number = 6): string => {
   let result = '';
 
   for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters[randomIndex];
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
   }
 
   return result;
-}
+};
 
 const normalizeProgram = (program: string): string => {
   // Remove newlines and normalize spaces
-  return program.replace(/\s+/g, '').replace(/(\d)_(\d)/g, '$1$2').trim();
-}
+  return program
+    .replace(/\s+/g, '')
+    .replace(/(\d)_(\d)/g, '$1$2')
+    .trim();
+};
 
-const extractAddresses = (program: string): { address1: string, address2: string } => {
+const extractAddresses = (
+  program: string
+): { address1: string; address2: string } => {
   const addressPattern1 = /aleo1[0-9a-z]{58}/g;
   const addresses = program.match(addressPattern1);
   if (addresses && addresses.length >= 2) {
@@ -30,14 +35,20 @@ const extractAddresses = (program: string): { address1: string, address2: string
   } else {
     throw new Error('Could not extract addresses from the program');
   }
-}
+};
 
-const replaceAddressesAndProgramName = (program: string, address1: string, address2: string): string => {
+const replaceAddressesAndProgramName = (
+  program: string,
+  address1: string,
+  address2: string
+): string => {
   // Extract the program ids
   const programId = Aleo.Program.fromString(NETWORK, program).id();
 
   // Replace addresses with placeholders
-  let result = program.replace(new RegExp(address1, 'g'), 'ADDRESS').replace(new RegExp(address2, 'g'), 'ADDRESS');
+  let result = program
+    .replace(new RegExp(address1, 'g'), 'ADDRESS')
+    .replace(new RegExp(address2, 'g'), 'ADDRESS');
   // Normalize the program name to 'reference_delegator'
   result = result.replaceAll(programId, 'reference_delegator.aleo');
   return result;
@@ -49,17 +60,25 @@ export const isProgramMatch = (program1: string, program2: string): boolean => {
   console.log(`Addresses: ${address1}, ${address2}`);
 
   // Replace addresses and normalize program names
-  const normalizedProgram1 = normalizeProgram(replaceAddressesAndProgramName(program1, 'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0', 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt'));
-  const normalizedProgram2 = normalizeProgram(replaceAddressesAndProgramName(program2, address1, address2));
+  const normalizedProgram1 = normalizeProgram(
+    replaceAddressesAndProgramName(
+      program1,
+      'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
+      'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt'
+    )
+  );
+  const normalizedProgram2 = normalizeProgram(
+    replaceAddressesAndProgramName(program2, address1, address2)
+  );
 
   return normalizedProgram1 === normalizedProgram2;
 };
 
-export const extractValidator = (input: string): string | undefined =>  {
+export const extractValidator = (input: string): string | undefined => {
   const regex = /validator:\s*([a-zA-Z0-9]+)/;
   const match = input.match(regex);
   return match[1];
-}
+};
 
 /**
  * Aleo uses funky serialization for its JSON objects. This function takes that funky representation
@@ -72,17 +91,26 @@ export const formatAleoString = (aleoString: string) => {
   const objectArrayRegex = /([a-zA-Z0-9_]+)(\s*):(\s*)(\{|\[)/g;
   const arrayElementRegex = /(\[|,)(\s*)([a-zA-Z0-9_.]+)/g;
 
-  let replacedString = aleoString.replace(objectArrayRegex, (_: any, key: any, space1: any, space2: any, open: any) => {
-    return `"${key}"${space1}:${space2}${open}`;
-  });
+  let replacedString = aleoString.replace(
+    objectArrayRegex,
+    (_: any, key: any, space1: any, space2: any, open: any) => {
+      return `"${key}"${space1}:${space2}${open}`;
+    }
+  );
 
-  replacedString = replacedString.replace(keyValueRegex, (_: any, key: any, space1: any, space2: any, value: any) => {
-    return `"${key}"${space1}:${space2}"${value}"`;
-  });
+  replacedString = replacedString.replace(
+    keyValueRegex,
+    (_: any, key: any, space1: any, space2: any, value: any) => {
+      return `"${key}"${space1}:${space2}"${value}"`;
+    }
+  );
 
-  replacedString = replacedString.replace(arrayElementRegex, (_: any, separator: any, space: any, element: any) => {
-    return `${separator}${space}"${element}"`;
-  });
+  replacedString = replacedString.replace(
+    arrayElementRegex,
+    (_: any, separator: any, space: any, element: any) => {
+      return `${separator}${space}"${element}"`;
+    }
+  );
 
   const nestedMatch = replacedString.match(objectArrayRegex);
   if (nestedMatch) {
@@ -109,4 +137,9 @@ export const formatAleoString = (aleoString: string) => {
   }
 
   return replacedString;
+};
+
+export const getTokenOwnerHash = (address: string, tokenId: string) => {
+  const tokenOwnerString = `{ account: ${address}, token_id: ${tokenId} }`;
+  return Aleo.Plaintext.fromString(NETWORK!, tokenOwnerString).hashBhp256();
 };
