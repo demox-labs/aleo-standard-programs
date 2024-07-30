@@ -3,6 +3,9 @@ name: create AWS stack
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
       region:
         type: string
         required: true
@@ -67,6 +70,7 @@ jobs:
   cd:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
 
     steps:
     - name: Check Out Code
