@@ -5,6 +5,7 @@ program pondo_token.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
   const PONDO_FOUNDATION_ADDRESS: address = aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0;
   const PRECISION: u128 = 1_000_000u128;
+  const MAX_SUPPLY: u128 = 1_000_000_000_000_000u128;
 
   // shadowed from multi_token_support_program_v02.aleo
   struct TokenMetadata {
@@ -40,22 +41,30 @@ program pondo_token.aleo {
     let name: u128 = 97240284627655645872219502u128; // "Pondo Token", ascii encoded
     let symbol: u128 = 1347306575u128; // "PNDO", ascii encoded
     let decimals: u8 = 6u8;
-    let max_supply: u128 = 1_000_000_000_000_000u128;
     let external_authorization_required: bool = false;
     let external_authorization_party: address = pondo_token.aleo;
 
-    let f0: Future = multi_token_support_program_v02.aleo/register_token(PONDO_TOKEN_ID, name, symbol, decimals, max_supply, external_authorization_required, external_authorization_party);
-    let f1: Future = multi_token_support_program_v02.aleo/mint_public(PONDO_TOKEN_ID, PONDO_FOUNDATION_ADDRESS, max_supply, 4294967295u32);
+    let f0: Future = multi_token_support_program_v02.aleo/register_token(PONDO_TOKEN_ID, name, symbol, decimals, MAX_SUPPLY, external_authorization_required, external_authorization_party);
 
-    return finalize_initialize_token(f0, f1);
+    return finalize_initialize_token(f0);
   }
 
   async function finalize_initialize_token(
-    f0: Future,
-    f1: Future
+    f0: Future
   ) {
     f0.await();
-    f1.await();
+  }
+
+  async transition mint_public() -> Future {
+    assert_eq(self.caller, PONDO_FOUNDATION_ADDRESS);
+    let f0: Future = multi_token_support_program_v02.aleo/mint_public(PONDO_TOKEN_ID, PONDO_FOUNDATION_ADDRESS, MAX_SUPPLY, 4294967295u32);
+    return finalize_mint_public(f0);
+  }
+  
+  async function finalize_mint_public(
+    f0: Future
+  ) {
+    f0.await();
   }
 
   async transition burn_public(public burner: address, public amount: u128, public paleo_amount: u128) -> Future {
