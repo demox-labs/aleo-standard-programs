@@ -635,6 +635,7 @@ finalize instant_withdraw_public:
     cast r77 into r79 as u128;
     add r52 r79 into r80;
     add r64 r61 into r81;
+    set r81 into balances[0u8];
     cast r81 into r82 as u128;
     cast r68 into r83 as u128;
     add r82 r83 into r84;

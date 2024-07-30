@@ -566,6 +566,9 @@ program pondo_core_protocol.aleo {
     total_paleo_minted += new_commission_paleo as u128;
     currently_delegated += new_commission;
 
+    // Update total balance
+    balances.set(DELEGATED_BALANCE, currently_delegated);
+
     // Calculate full pool size
     let full_pool: u128 = currently_delegated as u128 + deposit_pool as u128;
 

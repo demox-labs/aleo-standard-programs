@@ -112,13 +112,8 @@ const testConfig = {
 
   // Entry point of the application
   entry: {
-    instantWithdrawal:
-      path.resolve(__dirname, 'src') + '/tests/instantWithdrawal.ts',
-    batchedWithdrawal:
-      path.resolve(__dirname, 'src') + '/tests/batchedWithdrawal.ts',
-    distributeDeposits:
-      path.resolve(__dirname, 'src') + '/tests/distributeDeposits.ts',
-    depositPublic: path.resolve(__dirname, 'src') + '/tests/depositPublic.ts',
+    runTestScript:
+      path.resolve(__dirname, 'src') + '/tests/scripts/runTestScript.ts',
   },
 
   // Output configuration
