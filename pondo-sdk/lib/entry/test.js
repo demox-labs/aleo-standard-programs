@@ -7,7 +7,8 @@ import {
   TestRpcProvider,
   getWithdralCredits,
   claimWithdrawalPublic,
-  getClaimableWithdrawal
+  getClaimableWithdrawal,
+  getPaleoBalance
 } from './index.js';
 
 import { PROGRAMS } from '../config/index.js';
@@ -180,6 +181,21 @@ async function testGetClaimableWithdrawal() {
 }
 
 
+async function testGetPaleoBalance() {
+  const mappingValues = [
+    [PROGRAMS.mtsp.id, "balances", "3356920822463525405405595062347335658714826303408421158682726508848612583633field", "{token_id: 1751493913335802797273486270793650302076377624243810059080883537084141842600field, account: aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4, balance: 100000000u128, authorized_until: 10000000000000u32}"],
+  ];
+  const rpcProvider = new TestRpcProvider(mappingValues);
+  console.log(
+    await getPaleoBalance(
+      rpcProvider,
+      "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4",
+    )
+  );
+}
+
+
+
 // await testDepositPublic();
 // await testInstantWithdrawPublic();
 // await testWithdrawPublic();
@@ -188,3 +204,14 @@ async function testGetClaimableWithdrawal() {
 // await testClaimWithdrawalPublicFailAmountTooHigh();
 // await testClaimWithdrawalPublic();
 // await testGetClaimableWithdrawal();
+// await testGetPaleoBalance();
+
+
+/*
+- ALEO :left_right_arrow: pALEO exchange ratio
+- Current reward rate
+- Current blended commission
+- Current selected validators (the 5 used by Pondo)
+- Pondo protocol fee
+- Remaining time for rebalance to end
+*/

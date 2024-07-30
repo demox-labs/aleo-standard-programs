@@ -245,6 +245,7 @@ function claimWithdrawalPublicPresetMappingKeys(contracts, destination) {
   ];
 }
 
+
 export async function getClaimableWithdrawal(rpcProvider, addressString) {
   const withdrawal = await rpcProvider.getMappingValue(
     PROGRAMS.coreProtocol.id, "withdrawals", addressString

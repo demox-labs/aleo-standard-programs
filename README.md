@@ -169,3 +169,20 @@ const withdralCredits = await getWithdralCredits(
 );
 console.log(`Credits to be withdrawn: '${withdralCredits}'.`);
 ```
+
+### Get PALEO balance
+
+```js
+import { getPaleoBalance, LiveRpcProvider } from '@demox-labs/pondo-sdk';
+
+const RPC_URL = 'https://testnetbeta.aleorpc.com';
+
+const rpcProvider = await LiveRpcProvider.from_url(RPC_URL);
+const addressString = "aleo1q6atlm8t7x67kc98lz97fcp0n2pml2vz5wyttpsryuh32u4wwg9qvfzyt4";
+
+const paleoBalance = await getPaleoBalance(
+  rpcProvider,
+  addressString,
+);
+console.log(`Paleo Balance: '${paleoBalance}'.`);
+```
