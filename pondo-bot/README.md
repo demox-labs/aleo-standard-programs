@@ -35,3 +35,4 @@ Optionally, run Haruka's explorer:
 1. Ensure docker is installed and running
 1. Increase file descriptors if having trouble running the devnet from snarkOS: `ulimit -n` to check. 
 2. `snarkos clean` doesn't work but within the snarkOS folder: `rm -rf .ledger-* && rm -rf .logs*` does. 
+3. Use node: v18.15.0
