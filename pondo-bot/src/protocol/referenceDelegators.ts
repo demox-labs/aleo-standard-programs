@@ -1,6 +1,6 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
 
-import { getPublicTransactionsForAddress, getLatestCommittee, getProgram, getMappingValue, getHeight } from '../aleo/client';
+import { getPublicTransactionsForAddress, getLatestCommittee, getProgram, getMappingValue, getHeight, getPublicBalance } from '../aleo/client';
 import { deployProgram, deploymentCost, resolveImports } from '../aleo/deploy';
 import { MemberData, ExecuteTransaction } from '../aleo/types';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
@@ -184,14 +184,18 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
     }
 
     // Transfer some funds to the oracle to pay for the next transaction
-    await submitTransaction(
-      NETWORK,
-      PRIVATE_KEY,
-      Aleo.Program.getCreditsProgram(NETWORK).toString(),
-      'transfer_public',
-      [ORACLE_ADDRESS, '5_000_000u64'],
-      0.1
-    );
+    const publicBalance = await getPublicBalance(ORACLE_ADDRESS);
+    if (publicBalance < BigInt(5_000_000)) {
+      console.log('Transferring funds to the oracle');
+      await submitTransaction(
+        NETWORK,
+        PRIVATE_KEY,
+        Aleo.Program.getCreditsProgram(NETWORK).toString(),
+        'transfer_public',
+        [ORACLE_ADDRESS, '5_000_000u64'],
+        0.1
+      );
+    }
 
     // Wait for a bit before approving the next reference delegator
     await delay(5000);
