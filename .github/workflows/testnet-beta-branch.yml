@@ -10,6 +10,7 @@ jobs:
   pondo-bot-ap-southeast-1:
     uses: ./.github/workflows/provision-bot.yml
     with:
+      environment: TestnetBeta
       region: 'ap-southeast-1'
       github_actions_role: 'pondo-bot-role'
       default_validator_address: 'aleo15cxs366usuh0hzawudsnn7dza9jmsm6kqmpljtzq9e4529vmlcgq4dem0x'
