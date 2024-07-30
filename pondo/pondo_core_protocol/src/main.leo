@@ -559,6 +559,7 @@ program pondo_core_protocol.aleo {
 
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
+    assert(core_protocol_account >= reserved_for_withdrawal); // Ensure there are enough credits left for batched withdrawals
     let deposit_pool: u64 = core_protocol_account - reserved_for_withdrawal + withdrawal_credits;
     // Update owed commission balance
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);

@@ -21,12 +21,16 @@ async function main(script: SCRIPT_TYPES, amount: string, privateKey: string) {
   switch (script) {
     case SCRIPT_TYPES.instant_withdraw_public:
       await instantWithdrawal(amount, privateKey);
+      break;
     case SCRIPT_TYPES.withdraw_public:
       await callBatchedWithdraw(amount, privateKey);
+      break;
     case SCRIPT_TYPES.deposit_public:
       await callDepositPublic(amount, privateKey);
+      break;
     case SCRIPT_TYPES.distribute_deposits:
       await distributeDeposits();
+      break;
   }
 }
 
