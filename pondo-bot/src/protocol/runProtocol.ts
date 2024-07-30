@@ -19,6 +19,7 @@ import {
   ORACLE_UPDATE_BLOCKS,
   PRIVATE_KEY,
   REBALANCE_BLOCKS,
+  VERSION,
   ZERO_ADDRESS,
 } from '../constants';
 import { handleDelegatorUpdate } from './delegators';
@@ -57,7 +58,7 @@ const getPondoDelegatorStates = async (): Promise<string[]> => {
   for (let index = 1; index < 6; index++) {
     const pondoDelegatorState = (await getMappingValue(
       '0u8',
-      `pondo_delegator${index}.aleo`,
+      `pondo_delegator${index}${VERSION}.aleo`,
       'state_mapping'
     )) as PONDO_DELEGATOR_STATE;
     console.log(
@@ -198,7 +199,7 @@ const rebalanceRetrieveCredits = async (): Promise<void> => {
   console.log('Rebalancing and retrieving credits');
   let delegatorBalances = [];
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}.aleo`;
+    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(
       NETWORK!,
@@ -317,7 +318,7 @@ export const runProtocol = async (): Promise<void> => {
       index - 1
     ] as PONDO_DELEGATOR_STATE;
     await handleDelegatorUpdate(
-      `pondo_delegator${index}.aleo`,
+      `pondo_delegator${index}${VERSION}.aleo`,
       pondoDelegatorState
     );
   }

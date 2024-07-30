@@ -51,7 +51,7 @@ function extractValidatorAddressAndProgramName(tx: ExecuteTransaction): { valida
   let programName: string | null = null;
 
   for (const transition of transitions) {
-      if (transition.program === "pondo_oracle.aleo" && transition.function === "propose_delegator") {
+      if (transition.program.includes("pondo_oracle") && transition.function === "propose_delegator") {
           for (const input of transition.inputs) {
               if (input.type === "public" && input.value.startsWith("aleo")) {
                   validatorAddress = input.value;

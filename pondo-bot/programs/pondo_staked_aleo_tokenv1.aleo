@@ -1,6 +1,6 @@
 import credits.aleo;
 import multi_token_support_program_v02.aleo;
-program pondo_staked_aleo_token.aleo;
+program pondo_staked_aleo_tokenv1.aleo;
 
 
 struct TokenMetadata:
@@ -22,10 +22,10 @@ struct TokenOwner:
 
 
 function register_token:
-    assert.eq self.caller pondo_core_protocol.aleo;
-    call multi_token_support_program_v02.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842600field 1631421259099656974472467909989204u128 482131854671u128 6u8 1_000_000_000_000_000u128 false pondo_staked_aleo_token.aleo into r0;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
+    call multi_token_support_program_v02.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842600field 1631421259099656974472467909989204u128 482131854671u128 6u8 1_000_000_000_000_000u128 false pondo_staked_aleo_tokenv1.aleo into r0;
     async register_token r0 into r1;
-    output r1 as pondo_staked_aleo_token.aleo/register_token.future;
+    output r1 as pondo_staked_aleo_tokenv1.aleo/register_token.future;
 
 finalize register_token:
     input r0 as multi_token_support_program_v02.aleo/register_token.future;
@@ -37,11 +37,11 @@ finalize register_token:
 function mint_public:
     input r0 as u64.public;
     input r1 as address.public;
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
     cast r0 into r2 as u128;
     call multi_token_support_program_v02.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field r1 r2 4294967295u32 into r3;
     async mint_public r3 into r4;
-    output r4 as pondo_staked_aleo_token.aleo/mint_public.future;
+    output r4 as pondo_staked_aleo_tokenv1.aleo/mint_public.future;
 
 finalize mint_public:
     input r0 as multi_token_support_program_v02.aleo/mint_public.future;
@@ -53,11 +53,11 @@ finalize mint_public:
 function burn_public:
     input r0 as u64.public;
     input r1 as address.public;
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
     cast r0 into r2 as u128;
     call multi_token_support_program_v02.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field r1 r2 into r3;
     async burn_public r3 into r4;
-    output r4 as pondo_staked_aleo_token.aleo/burn_public.future;
+    output r4 as pondo_staked_aleo_tokenv1.aleo/burn_public.future;
 
 finalize burn_public:
     input r0 as multi_token_support_program_v02.aleo/burn_public.future;

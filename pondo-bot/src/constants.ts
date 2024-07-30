@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+import { pondoPrograms } from './compiledPrograms';
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,8 @@ if (!RPC_URL) {
 export const ORACLE_PRIVATE_KEY = process.env.ORACLE_PRIVATE_KEY;
 export const ORACLE_ADDRESS = process.env.ORACLE_ADDRESS;
 export const DEFAULT_VALIDATOR_ADDRESS = process.env.DEFAULT_VALIDATOR_ADDRESS;
+export const DEFAULT_PONDO_FOUNDATION_ADDRESS = 'aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0';
+export const PONDO_FOUNDATION_ADDRESS = process.env.PONDO_FOUNDATION_ADDRESS || DEFAULT_PONDO_FOUNDATION_ADDRESS;
 
 export const EPOCH_BLOCKS_DEFAULT = 120_960;
 export const EPOCH_BLOCKS = process.env.EPOCH_BLOCKS
@@ -76,6 +79,7 @@ export const PONDO_TOKEN_ID_DEFAULT =
 export const PONDO_TOKEN_ID = process.env.PONDO_TOKEN_ID
   ? process.env.PONDO_TOKEN_ID
   : PONDO_TOKEN_ID_DEFAULT;
+export const VERSION = process.env.VERSION ? process.env.VERSION : '';
 
 // Non .env constants
 export const CREDITS_PROGRAM = 'credits.aleo';
