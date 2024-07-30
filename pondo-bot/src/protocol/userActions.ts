@@ -289,7 +289,7 @@ export const claimWithdrawal = async (
   );
   const withdrawalAleo = withdrawAll
     ? availableToWithdraw
-    : availableToWithdraw - BigInt(1000);
+    : availableToWithdraw / BigInt(2);
 
   await submitTransaction(
     NETWORK!,
