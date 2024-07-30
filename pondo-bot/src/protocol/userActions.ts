@@ -291,23 +291,3 @@ export const calculateAleoForWithdrawal = async (
     PRECISION_UNSIGNED;
   return withdrawalMinusFee;
 };
-
-export const testInstantWithdrawRebalancing = async (
-  withdrawalPaleo: bigint
-) => {
-  const protocolState = await getMappingValue(
-    '0u8',
-    CORE_PROTOCOL_PROGRAM,
-    'protocol_state'
-  );
-  if (protocolState !== PONDO_PROTOCOL_STATE.REBALANCING) {
-    console.log(
-      'Protocol is not in rebalancing state, skipping instant withdrawal test'
-    );
-    return;
-  }
-  console.log(
-    'Protocol is in rebalancing state, attempting instant withdrawal, should fail'
-  );
-  await instantWithdraw(withdrawalPaleo);
-};
