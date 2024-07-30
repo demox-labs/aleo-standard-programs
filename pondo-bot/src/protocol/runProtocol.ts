@@ -64,12 +64,11 @@ const getPondoDelegatorStates = async (): Promise<string[]> => {
       `Pondo delegator ${index} state: ${PONDO_DELEGATOR_STATE_TO_VALUE[pondoDelegatorState]}`
     );
     states.push(pondoDelegatorState);
-    await delay(5_000);
   }
   return states;
 };
 
-const determineRebalanceAmounts = async (): Promise<bigint[]> => {
+export const determineRebalanceAmounts = async (): Promise<bigint[]> => {
   // Constants
   const delegatorAllocation: bigint[] = [
     BigInt(3700),

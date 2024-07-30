@@ -5,11 +5,14 @@ import { submitTransaction } from '../aleo/execute';
 import { resolveImports } from '../aleo/deploy';
 import {
   CREDITS_PROGRAM,
+  CREDITS_TOKEN_ID,
   NETWORK,
   PALEO_TOKEN_ID,
   PONDO_COMMISSION,
+  PONDO_WITHDRAW_FEE,
   PRECISION_UNSIGNED,
   PRIVATE_KEY,
+  TEST_USER0_PRIVATE_KEY,
   ZERO_ADDRESS,
 } from '../constants';
 import { PONDO_PROTOCOL_STATE } from './types';
@@ -23,10 +26,14 @@ import {
 const MTSP_PROGRAM = pondoPrograms.find((program) =>
   program.includes('multi_token_support_program')
 );
+const MTSP_PROGRAM_CODE = pondoProgramToCode[MTSP_PROGRAM!];
+
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
   program.includes('pondo_core_protocol')
 )!;
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM];
+const CORE_PROTOCOL_PROGRAM_IMPORTS =
+  pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
 
 ////// DEPOSIT //////
 
@@ -48,7 +55,66 @@ export const depositAsSigner = async (deposit: bigint, privateKey?: string) => {
   );
 };
 
+export const depositViaAllowance = async (
+  deposit: bigint,
+  privateKey?: string
+) => {
+  const mtspImports = pondoDependencyTree[MTSP_PROGRAM];
+  const mtspResolvedImports = await resolveImports(mtspImports);
+  const depositorKey = privateKey || TEST_USER0_PRIVATE_KEY;
+
+  console.log('Depositing credits into MTSP');
+  await submitTransaction(
+    NETWORK!,
+    depositorKey,
+    MTSP_PROGRAM_CODE,
+    'deposit_credits_public',
+    [`${deposit}u64`],
+    3,
+    undefined,
+    mtspResolvedImports
+  );
+
+  console.log('Creating allowance for core protocol');
+  await submitTransaction(
+    NETWORK!,
+    depositorKey,
+    MTSP_PROGRAM_CODE,
+    'approve_public',
+    [CREDITS_TOKEN_ID, 'pondo_core_protocol.aleo', `${deposit}u128`],
+    3,
+    undefined,
+    mtspResolvedImports
+  );
+
+  const paleoForDeposit =
+    (await calculatePaleoForDeposit(deposit)) - BigInt(1000);
+  const coreProtocolImports = await resolveImports(
+    CORE_PROTOCOL_PROGRAM_IMPORTS
+  );
+  await submitTransaction(
+    NETWORK!,
+    depositorKey,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'deposit_public',
+    [`${deposit}u64`, `${paleoForDeposit}u64`, ZERO_ADDRESS],
+    3,
+    undefined,
+    coreProtocolImports
+  );
+};
+
 const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
+  const { totalAleo, totalPaleo } = await calculateAleoAndPaleoPools();
+
+  return calculatePaleoMint(totalAleo, totalPaleo, deposit);
+};
+
+/**
+ * Calculates the total aleo and paleo pools, including rewards and commissions
+ * @returns { totalAleo: bigint, totalPaleo: bigint }
+ */
+const calculateAleoAndPaleoPools = async () => {
   let totalProtocolBalance = BigInt(0);
   // Handle updating all of the delegators
   for (let index = 1; index < 6; index++) {
@@ -157,7 +223,7 @@ const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
   console.log('Aleo after commission: ', aleoAfterCommission); // TODO: add buffer for additional rewards earned in the interceding blocks
   console.log('Paleo after commission: ', paleoAfterCommission);
 
-  return calculatePaleoMint(aleoAfterCommission, paleoAfterCommission, deposit);
+  return { totalAleo, totalPaleo };
 };
 
 const calculatePaleoMint = (
@@ -173,6 +239,75 @@ const calculatePaleoMint = (
 };
 
 ////// WITHDRAW //////
-export const instantWithdraw = async (withdrawalPaleo: bigint) => {};
 
-export const calculateAleoForWithdrawal = async (withdrawalPaleo: bigint) => {};
+export const batchedWithdraw = async (
+  withdrawalPaleo: bigint,
+  privateKey?: string
+) => {
+  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+  const resolvedImports = await resolveImports(imports);
+
+  await submitTransaction(
+    NETWORK!,
+    privateKey || TEST_USER0_PRIVATE_KEY!,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'withdraw_public',
+    [`${withdrawalPaleo}u64`],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
+export const instantWithdraw = async (
+  withdrawalPaleo: bigint,
+  privateKey?: string
+) => {
+  const aleoForWithdrawal = await calculateAleoForWithdrawal(withdrawalPaleo);
+  const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+  const resolvedImports = await resolveImports(imports);
+
+  await submitTransaction(
+    NETWORK!,
+    privateKey || TEST_USER0_PRIVATE_KEY!,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'instant_withdraw_public',
+    [`${withdrawalPaleo}u64`, `${aleoForWithdrawal}u64`],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
+export const calculateAleoForWithdrawal = async (
+  withdrawalPaleo: bigint
+): Promise<bigint> => {
+  const { totalAleo, totalPaleo } = await calculateAleoAndPaleoPools();
+  const totalWithdrawal =
+    (((totalPaleo * PRECISION_UNSIGNED) / totalAleo) * withdrawalPaleo) /
+    PRECISION_UNSIGNED;
+  const withdrawalMinusFee =
+    (totalWithdrawal * (PRECISION_UNSIGNED - PONDO_WITHDRAW_FEE)) /
+    PRECISION_UNSIGNED;
+  return withdrawalMinusFee;
+};
+
+export const testInstantWithdrawRebalancing = async (
+  withdrawalPaleo: bigint
+) => {
+  const protocolState = await getMappingValue(
+    '0u8',
+    CORE_PROTOCOL_PROGRAM,
+    'protocol_state'
+  );
+  if (protocolState !== PONDO_PROTOCOL_STATE.REBALANCING) {
+    console.log(
+      'Protocol is not in rebalancing state, skipping instant withdrawal test'
+    );
+    return;
+  }
+  console.log(
+    'Protocol is in rebalancing state, attempting instant withdrawal, should fail'
+  );
+  await instantWithdraw(withdrawalPaleo);
+};

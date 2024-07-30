@@ -13,9 +13,12 @@ import {
   PALEO_TOKEN_ID,
 } from '../constants';
 import { submitTransaction } from '../aleo/execute';
-import { depositAsSigner } from '../protocol/userActions';
+import {
+  depositAsSigner,
+  testInstantWithdrawRebalancing,
+} from '../protocol/userActions';
 import { pondoPrograms } from '../compiledPrograms';
-import { formatAleoString } from '../util';
+import { delay, formatAleoString } from '../util';
 
 const MTSP_PROGRAM = pondoPrograms.find((program) =>
   program.includes('multi_token_support_program')
@@ -77,12 +80,11 @@ export const runTests = async () => {
       console.log(
         `Test account 0 already has pALEO, balance: ${paleoBalanceValue}`
       );
+      console.log(
+        'Waiting 15 seconds for rebalance_retrieve_credits to complete before testing instant withdraw...'
+      );
+      await delay(15_000);
+      testInstantWithdrawRebalancing(BigInt(paleoBalanceValue));
     }
   }
 };
-
-// const protocolState = await getMappingValue(
-//   '0u8',
-//   CORE_PROTOCOL_PROGRAM,
-//   'protocol_state'
-// );
