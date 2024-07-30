@@ -12,6 +12,9 @@ on:
       default_validator_address:
         required: true
         type: string
+      pondo_foundation_address:
+        required: true
+        type: string
       network:
         required: true
         type: string
@@ -28,6 +31,15 @@ on:
         required: true
         type: string
       rebalance_blocks:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      paleo_token_id:
+        required: true
+        type: string
+      pondo_token_id:
         required: true
         type: string
     
@@ -83,12 +95,16 @@ jobs:
         echo "ORACLE_PRIVATE_KEY=${{ secrets.ORACLE_PRIVATE_KEY }}" >> .env
         echo "ORACLE_ADDRESS=${{ secrets.ORACLE_ADDRESS }}" >> .env
         echo "DEFAULT_VALIDATOR_ADDRESS=${{ inputs.default_validator_address }}" >> .env
+        echo "PONDO_FOUNDATION_ADDRESS=${{ inputs.pondo_foundation_address }}" >> .env
         echo "NETWORK=${{ inputs.network }}" >> .env
         echo "RPC_URL=${{ inputs.rpc_url }}" >> .env
         echo "CLIENT_URL=${{ inputs.client_url }}" >> .env
         echo "EPOCH_BLOCKS=${{ inputs.epoch_blocks }}" >> .env
         echo "ORACLE_UPDATE_BLOCKS=${{ inputs.oracle_update_blocks }}" >> .env
         echo "REBALANCE_BLOCKS=${{ inputs.rebalance_blocks }}" >> .env
+        echo "VERSION=${{ inputs.version }}" >> .env
+        echo "PALEO_TOKEN_ID=${{ inputs.paleo_token_id }}" >> .env
+        echo "PONDO_TOKEN_ID=${{ inputs.pondo_token_id }}" >> .env
 
     - name: Build And Tag Pondo Bot Image
       id: build-pondo-bot-image

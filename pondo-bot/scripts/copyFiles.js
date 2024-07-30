@@ -1,5 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config(); // Load the .env file
+
+// Read version number from .env file
+const versionNumber = process.env.VERSION_NUMBER || 'v1';
 
 // Source files
 const filesToCopy = [
@@ -39,20 +43,54 @@ const parseProgramName = (filePath) => {
   throw new Error(`Program name not found in ${filePath}`);
 };
 
-// Copy each file to the target directory with the calculated name
+// Function to update program name in the content
+const updateProgramNameInContent = (content, oldName, newName) => {
+  return content.replace(new RegExp(`\\b${oldName}\\b`, 'g'), newName);
+};
+
+// Function to add version number to program name
+const addVersionNumber = (programName, versionNumber) => {
+  const nameParts = programName.split('.');
+  return `${nameParts[0]}${versionNumber}.${nameParts[1]}`;
+};
+
+// Read and parse all files
+const fileContents = {};
+const programNames = {};
+filesToCopy.forEach(fileSrc => {
+  const content = fs.readFileSync(fileSrc, 'utf8');
+  const programName = parseProgramName(fileSrc);
+  let newProgramName = programName;
+
+  if (programName.startsWith('pondo_')) {
+    newProgramName = addVersionNumber(programName, versionNumber);
+  }
+
+  fileContents[fileSrc] = content;
+  programNames[programName] = newProgramName;
+});
+
+// Update content for each file with new program names and copy to the target directory
 const pondoProgramToCode = {};
 filesToCopy.forEach(fileSrc => {
   const programName = parseProgramName(fileSrc);
-  const fileDest = path.join(targetDir, programName);
-  const fileContent = fs.readFileSync(fileSrc, 'utf8');
-  pondoProgramToCode[programName] = fileContent;
-  fs.copyFileSync(fileSrc, fileDest);
-  console.log(`Copied ${fileSrc} to ${fileDest}`);
+  const newProgramName = programNames[programName];
+  let fileContent = fileContents[fileSrc];
+
+  // Update imports in the file content
+  Object.keys(programNames).forEach(oldName => {
+    const newName = programNames[oldName];
+    fileContent = updateProgramNameInContent(fileContent, oldName, newName);
+  });
+
+  const fileDest = path.join(targetDir, newProgramName);
+  pondoProgramToCode[newProgramName] = fileContent;
+  fs.writeFileSync(fileDest, fileContent);
+  console.log(`Copied and updated ${fileSrc} to ${fileDest}`);
 });
 
 // Function to parse dependencies from a program file
-const parseDependencies = (filePath) => {
-  const content = fs.readFileSync(filePath, 'utf8');
+const parseDependencies = (content) => {
   const lines = content.split('\n');
   const dependencies = [];
 
@@ -73,8 +111,12 @@ const parseDependencies = (filePath) => {
 const dependencyTree = {};
 filesToCopy.forEach(fileSrc => {
   const programName = parseProgramName(fileSrc);
-  const dependencies = parseDependencies(fileSrc);
-  dependencyTree[programName] = dependencies;
+  const newProgramName = programNames[programName];
+  const dependencies = parseDependencies(fileContents[fileSrc]).map(dep => {
+    return programNames[dep] || dep;
+  });
+
+  dependencyTree[newProgramName] = dependencies;
 });
 
 // Topological sort of the programs based on dependencies

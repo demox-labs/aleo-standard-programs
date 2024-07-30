@@ -13,6 +13,7 @@ import {
   PRECISION_UNSIGNED,
   PRIVATE_KEY,
   TEST_USER0_PRIVATE_KEY,
+  VERSION,
   ZERO_ADDRESS,
 } from '../constants';
 import { PONDO_PROTOCOL_STATE } from './types';
@@ -121,7 +122,7 @@ const calculateAleoAndPaleoPools = async () => {
   let totalProtocolBalance = BigInt(0);
   // Handle updating all of the delegators
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}.aleo`;
+    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(
       NETWORK!,

@@ -1,6 +1,6 @@
 import credits.aleo;
-import pondo_oracle.aleo;
-program pondo_delegator2.aleo;
+import pondo_oraclev1.aleo;
+program pondo_delegator5v1.aleo;
 
 struct committee_state:
     is_open as boolean;
@@ -28,9 +28,9 @@ mapping banned_validators:
 
 
 function initialize:
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
     async initialize into r0;
-    output r0 as pondo_delegator2.aleo/initialize.future;
+    output r0 as pondo_delegator5v1.aleo/initialize.future;
 
 finalize initialize:
     set 4u8 into state_mapping[0u8];
@@ -40,13 +40,13 @@ finalize initialize:
 
 function ban_validator:
     input r0 as address.public;
-    call pondo_oracle.aleo/pondo_ban_validator r0 into r1;
+    call pondo_oraclev1.aleo/pondo_ban_validator r0 into r1;
     async ban_validator r0 r1 into r2;
-    output r2 as pondo_delegator2.aleo/ban_validator.future;
+    output r2 as pondo_delegator5v1.aleo/ban_validator.future;
 
 finalize ban_validator:
     input r0 as address.public;
-    input r1 as pondo_oracle.aleo/pondo_ban_validator.future;
+    input r1 as pondo_oraclev1.aleo/pondo_ban_validator.future;
     await r1;
     contains banned_validators[r0] into r2;
     assert.eq r2 true;
@@ -55,9 +55,9 @@ finalize ban_validator:
 
 
 function prep_rebalance:
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
     async prep_rebalance into r0;
-    output r0 as pondo_delegator2.aleo/prep_rebalance.future;
+    output r0 as pondo_delegator5v1.aleo/prep_rebalance.future;
 
 finalize prep_rebalance:
     get state_mapping[0u8] into r0;
@@ -78,11 +78,11 @@ finalize prep_rebalance:
 function set_validator:
     input r0 as address.public;
     input r1 as u8.public;
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
     lte r1 50u8 into r2;
     assert.eq r2 true;
     async set_validator r0 r1 into r3;
-    output r3 as pondo_delegator2.aleo/set_validator.future;
+    output r3 as pondo_delegator5v1.aleo/set_validator.future;
 
 finalize set_validator:
     input r0 as address.public;
@@ -100,9 +100,9 @@ finalize set_validator:
 function bond:
     input r0 as address.public;
     input r1 as u64.public;
-    call credits.aleo/bond_public r0 pondo_delegator2.aleo r1 into r2;
+    call credits.aleo/bond_public r0 pondo_delegator5v1.aleo r1 into r2;
     async bond r0 r2 into r3;
-    output r3 as pondo_delegator2.aleo/bond.future;
+    output r3 as pondo_delegator5v1.aleo/bond.future;
 
 finalize bond:
     input r0 as address.public;
@@ -110,7 +110,7 @@ finalize bond:
     await r1;
     get validator_mapping[0u8] into r2;
     assert.eq r0 r2.validator;
-    get credits.aleo/account[pondo_delegator2.aleo] into r3;
+    get credits.aleo/account[pondo_delegator5v1.aleo] into r3;
     assert.eq r3 0u64;
     get state_mapping[0u8] into r4;
     is.eq r4 0u8 into r5;
@@ -124,14 +124,14 @@ finalize bond:
 
 function unbond:
     input r0 as u64.public;
-    call credits.aleo/unbond_public pondo_delegator2.aleo r0 into r1;
+    call credits.aleo/unbond_public pondo_delegator5v1.aleo r0 into r1;
     async unbond r1 into r2;
-    output r2 as pondo_delegator2.aleo/unbond.future;
+    output r2 as pondo_delegator5v1.aleo/unbond.future;
 
 finalize unbond:
     input r0 as credits.aleo/unbond_public.future;
     await r0;
-    contains credits.aleo/bonded[pondo_delegator2.aleo] into r1;
+    contains credits.aleo/bonded[pondo_delegator5v1.aleo] into r1;
     assert.eq r1 false;
     get validator_mapping[0u8] into r2;
     cast true 0u8 into r3 as committee_state;
@@ -154,12 +154,12 @@ finalize unbond:
 
 function terminal_state:
     async terminal_state into r0;
-    output r0 as pondo_delegator2.aleo/terminal_state.future;
+    output r0 as pondo_delegator5v1.aleo/terminal_state.future;
 
 finalize terminal_state:
-    contains credits.aleo/bonded[pondo_delegator2.aleo] into r0;
+    contains credits.aleo/bonded[pondo_delegator5v1.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[pondo_delegator2.aleo] into r1;
+    contains credits.aleo/unbonding[pondo_delegator5v1.aleo] into r1;
     assert.eq r1 false;
     get state_mapping[0u8] into r2;
     is.neq r2 0u8 into r3;
@@ -178,15 +178,15 @@ finalize terminal_state:
 
 function transfer_to_core_protocol:
     input r0 as u64.public;
-    assert.eq self.caller pondo_core_protocol.aleo;
-    call credits.aleo/transfer_public pondo_core_protocol.aleo r0 into r1;
+    assert.eq self.caller pondo_core_protocolv1.aleo;
+    call credits.aleo/transfer_public pondo_core_protocolv1.aleo r0 into r1;
     async transfer_to_core_protocol r1 into r2;
-    output r2 as pondo_delegator2.aleo/transfer_to_core_protocol.future;
+    output r2 as pondo_delegator5v1.aleo/transfer_to_core_protocol.future;
 
 finalize transfer_to_core_protocol:
     input r0 as credits.aleo/transfer_public.future;
     await r0;
-    get credits.aleo/account[pondo_delegator2.aleo] into r1;
+    get credits.aleo/account[pondo_delegator5v1.aleo] into r1;
     assert.eq r1 0u64;
     get state_mapping[0u8] into r2;
     assert.eq r2 4u8;
@@ -196,12 +196,12 @@ finalize transfer_to_core_protocol:
 
 function bond_failed:
     async bond_failed into r0;
-    output r0 as pondo_delegator2.aleo/bond_failed.future;
+    output r0 as pondo_delegator5v1.aleo/bond_failed.future;
 
 finalize bond_failed:
-    contains credits.aleo/bonded[pondo_delegator2.aleo] into r0;
+    contains credits.aleo/bonded[pondo_delegator5v1.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[pondo_delegator2.aleo] into r1;
+    contains credits.aleo/unbonding[pondo_delegator5v1.aleo] into r1;
     assert.eq r1 false;
     get validator_mapping[0u8] into r2;
     get credits.aleo/committee[r2.validator] into r3;
@@ -225,14 +225,14 @@ finalize bond_failed:
 
 function insufficient_balance:
     async insufficient_balance into r0;
-    output r0 as pondo_delegator2.aleo/insufficient_balance.future;
+    output r0 as pondo_delegator5v1.aleo/insufficient_balance.future;
 
 finalize insufficient_balance:
-    contains credits.aleo/bonded[pondo_delegator2.aleo] into r0;
+    contains credits.aleo/bonded[pondo_delegator5v1.aleo] into r0;
     assert.eq r0 false;
-    contains credits.aleo/unbonding[pondo_delegator2.aleo] into r1;
+    contains credits.aleo/unbonding[pondo_delegator5v1.aleo] into r1;
     assert.eq r1 false;
-    get credits.aleo/account[pondo_delegator2.aleo] into r2;
+    get credits.aleo/account[pondo_delegator5v1.aleo] into r2;
     lt r2 10_000_000_000u64 into r3;
     assert.eq r3 true;
     get state_mapping[0u8] into r4;

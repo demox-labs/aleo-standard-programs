@@ -34,6 +34,12 @@ import {
   MIN_LIQUIDITY_PERCENT,
   MIN_LIQUIDITY_PERCENT_DEFAULT,
   ORACLE_ADDRESS,
+  PALEO_TOKEN_ID_DEFAULT,
+  PALEO_TOKEN_ID,
+  PONDO_TOKEN_ID_DEFAULT,
+  PONDO_TOKEN_ID,
+  DEFAULT_PONDO_FOUNDATION_ADDRESS,
+  PONDO_FOUNDATION_ADDRESS,
 } from '../constants';
 
 type AuthorizePool = Pool<
@@ -73,6 +79,16 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
       REBALANCE_BLOCKS.toString()
     );
   }
+  if (PALEO_TOKEN_ID !== PALEO_TOKEN_ID_DEFAULT) {
+    updatedProgramCode = updatedProgramCode.replaceAll(PALEO_TOKEN_ID_DEFAULT, PALEO_TOKEN_ID);
+  }
+  if (PONDO_TOKEN_ID !== PONDO_TOKEN_ID_DEFAULT) {
+    updatedProgramCode = updatedProgramCode.replaceAll(PONDO_TOKEN_ID_DEFAULT, PONDO_TOKEN_ID);
+  }
+  if (DEFAULT_PONDO_FOUNDATION_ADDRESS !== PONDO_FOUNDATION_ADDRESS) {
+    updatedProgramCode = updatedProgramCode.replaceAll(DEFAULT_PONDO_FOUNDATION_ADDRESS, PONDO_FOUNDATION_ADDRESS);
+  }
+    
   updatedProgramCode = updatedProgramCode.replaceAll(
     'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
     ORACLE_ADDRESS
@@ -203,7 +219,7 @@ export const deploymentCost = (program: string) => {
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
     fee = 8; // At time of writing, the fee for deploying the pondo token program is 7779900 microcredits
   } else if (program.indexOf('pondo_token') !== -1) {
-    fee = 8; // At time of writing, the fee for deploying the pondo token program is 7190475 microcredits
+    fee = 10; // At time of writing, the fee for deploying the pondo token program is 7190475 microcredits
   } else if (program.indexOf('pondo_delegator') !== -1) {
     fee = 21; // At time of writing, the fee for deploying the pondo vault program is 20008475 microcredits
   } else if (program.indexOf('pondo_core_protocol') !== -1) {
