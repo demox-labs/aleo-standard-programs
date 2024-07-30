@@ -18,6 +18,8 @@ They're initialized to the `TERMINAL` state
 
 ### Normal State (0u8)
 
+The protocol spends the vast majority of an epoch in this state
+
 _What happens in the core protocol?_
 
 If we are within the `REBALANCE_PERIOD` we attempt to rebalance (see: Prep Rebalance State)
@@ -32,6 +34,8 @@ They are in the `BOND_ALLOWED` or `UNBOND_NOT_ALLOWED` state
 - If in the `BOND_ALLOWED` state, the bot will call `bond` on each of them
 
 ### Prep Rebalance State (1u8)
+
+`prep_rebalance` is only allowed to begin within the `REBALANCE_PERIOD` (the first day of an epoch by default), but once it is prepped, the protocol can progress through the rest of a rebalance
 
 _What happens in the core protocol?_
 
@@ -50,6 +54,8 @@ They are all moved from `UNBOND_NOT_ALLOWED` to `UNBOND_ALLOWED` and the bot wil
 3. And finally calling `terminal_state` on each
 
 ### Rebalancing State (2u8)
+
+The protocol should spend very little time in this state, <=1 block ideally
 
 _What happens in the core protocol?_
 
