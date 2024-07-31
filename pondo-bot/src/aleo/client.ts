@@ -50,7 +50,7 @@ export async function getMappingValue(
   mappingKey: string,
   programId: string = 'credits.aleo',
   mappingName: string = 'account',
-  maxRetries: number = 5,
+  maxRetries: number = 6,
   baseDelay: number = 200
 ): Promise<string> {
   const client = getClient();
@@ -101,7 +101,7 @@ function parseBalanceString(balanceString: string): bigint {
 }
 
 const MAX_TRANSACTION_PER_REQUEST = 1000;
-export const getPublicTransactionsForAddress = async (
+export const getPublicTransactionsForProgram = async (
   programId: string,
   functionName: string,
   page: number = 0,

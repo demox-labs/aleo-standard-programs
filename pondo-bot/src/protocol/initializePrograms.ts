@@ -1,10 +1,10 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
 
-import { getProgram, getPublicTransactionsForAddress } from "../aleo/client";
+import { getProgram, getPublicTransactionsForProgram } from "../aleo/client";
 import { resolveImports } from '../aleo/deploy';
 import { submitTransaction } from '../aleo/execute';
 import { pondoDependencyTree, pondoPrograms } from "../compiledPrograms";
-import { NETWORK, PRIVATE_KEY } from '../constants';
+import { NETWORK, ORACLE_ONLY, PRIVATE_KEY } from '../constants';
 
 
 const getInitializationFunction = (programCode: string): string | undefined => {
@@ -23,7 +23,7 @@ const hasProgramBeenInitialized = async (programId: string, programCode: string)
     return true;
   }
 
-  const transactions = await getPublicTransactionsForAddress(programId, initializeFunction, 0);
+  const transactions = await getPublicTransactionsForProgram(programId, initializeFunction, 0);
   return transactions.length > 0;
 }
 
@@ -33,6 +33,11 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
   for (const program of pondoPrograms) {
     // Only the multi_token_support_program, pondo_oracle, and pondo_core_protocol programs have initialization functions
     if (!program.includes('multi_token_support_program') && !program.includes('pondo_oracle') && !program.includes('pondo_core_protocol')) {
+      continue;
+    }
+
+    // Skip every program but the oracle program if ORACLE_ONLY is set to true
+    if (ORACLE_ONLY && !program.includes('pondo_oracle')) {
       continue;
     }
 

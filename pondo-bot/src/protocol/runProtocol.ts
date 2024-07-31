@@ -323,3 +323,13 @@ export const runProtocol = async (): Promise<void> => {
     );
   }
 };
+
+export const runOracleProtocol = async (): Promise<void> => {
+  const blockHeight = await getHeight();
+  const epochPeriod = await getEpochPeriod(blockHeight);
+  console.log(`Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
+
+  if (epochPeriod == 'updateOracle') {
+    await updateReferenceDelegatorsIfNecessary();
+  }
+}

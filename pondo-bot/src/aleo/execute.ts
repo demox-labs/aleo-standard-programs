@@ -11,7 +11,8 @@ type AuthorizePool = Pool<
     [key: string]: string;
   }]>>;
 
-const poolSize = Math.max(1, Math.floor(require('os').cpus().length / 2));
+// const poolSize = Math.max(1, Math.floor(require('os').cpus().length / 2));
+const poolSize = 1;
 let pool: AuthorizePool;
 
 export const authorizeTransaction = async (
