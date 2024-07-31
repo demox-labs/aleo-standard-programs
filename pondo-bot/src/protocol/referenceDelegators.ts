@@ -1,6 +1,6 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
 
-import { getPublicTransactionsForAddress, getLatestCommittee, getProgram, getMappingValue, getHeight, getPublicBalance } from '../aleo/client';
+import { getPublicTransactionsForProgram, getLatestCommittee, getProgram, getMappingValue, getHeight, getPublicBalance } from '../aleo/client';
 import { deployProgram, deploymentCost, resolveImports } from '../aleo/deploy';
 import { MemberData, ExecuteTransaction } from '../aleo/types';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
@@ -42,7 +42,7 @@ const getOracleProposalTransactionHistory = async () => {
   if (!pondoOracleProgramId) {
     throw new Error('Pondo oracle program not found');
   }
-  return await getPublicTransactionsForAddress(pondoOracleProgramId, 'propose_delegator', 0);
+  return await getPublicTransactionsForProgram(pondoOracleProgramId, 'propose_delegator', 0);
 }
 
 function extractValidatorAddressAndProgramName(tx: ExecuteTransaction): { validatorAddress: string | null, programName: string | null } {
@@ -192,7 +192,7 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
         PRIVATE_KEY,
         Aleo.Program.getCreditsProgram(NETWORK).toString(),
         'transfer_public',
-        [ORACLE_ADDRESS, '5_000_000u64'],
+        [ORACLE_ADDRESS, '50_000_000u64'],
         0.1
       );
     }
@@ -220,7 +220,7 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
 export const updateReferenceDelegatorsIfNecessary = async () => {
   console.log('Updating reference delegators data if necessary');
 
-  const transactionHistory = await getPublicTransactionsForAddress(PONDO_ORACLE_PROGRAM, 'add_delegator', 0) as ExecuteTransaction[];
+  const transactionHistory = await getPublicTransactionsForProgram(PONDO_ORACLE_PROGRAM, 'add_delegator', 0) as ExecuteTransaction[];
   const delegators = transactionHistory.map(tx => tx.transaction.execution.transitions[0].inputs[0].value);
   console.log('Delegators:', JSON.stringify(delegators));
   

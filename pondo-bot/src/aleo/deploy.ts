@@ -40,6 +40,7 @@ import {
   PONDO_TOKEN_ID,
   DEFAULT_PONDO_FOUNDATION_ADDRESS,
   PONDO_FOUNDATION_ADDRESS,
+  ORACLE_ONLY,
 } from '../constants';
 
 type AuthorizePool = Pool<
@@ -54,7 +55,8 @@ type AuthorizePool = Pool<
   >
 >;
 
-const poolSize = Math.max(1, Math.floor(require('os').cpus().length / 2));
+// const poolSize = Math.max(1, Math.floor(require('os').cpus().length / 2));
+const poolSize = 1;
 let pool: AuthorizePool;
 
 const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
@@ -215,7 +217,7 @@ export const deploymentCost = (program: string) => {
   if (program.indexOf('multi_token_support') !== -1) {
     fee = 75; // At time of writing, the fee for deploying the multi-token support program is 69632150 microcredits
   } else if (program.indexOf('pondo_oracle') !== -1) {
-    fee = 98; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
+    fee = 110; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
     fee = 8; // At time of writing, the fee for deploying the pondo token program is 7779900 microcredits
   } else if (program.indexOf('pondo_token') !== -1) {
@@ -237,6 +239,10 @@ export const deployAllProgramsIfNecessary = async (
 ): Promise<any> => {
   // For each of the pondo programs, deploy them if they haven't been deployed yet
   for (const program of pondoPrograms) {
+    // Skip every program but the oracle program if ORACLE_ONLY is set to true
+    if (ORACLE_ONLY && !program.includes('pondo_oracle')) {
+      continue;
+    }
     // Skip the reference delegator program, this needs to be customized for each deployment
     if (program.indexOf('reference_delegator') !== -1) {
       continue;

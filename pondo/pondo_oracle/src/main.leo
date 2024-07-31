@@ -8,8 +8,6 @@ program pondo_oracle.aleo {
   const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
   // The Zero Group Address
   const ZERO_GROUP_ADDRESS: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
-  // The One Group Address
-  const ONE_GROUP_ADDRESS: address = aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch
@@ -97,16 +95,16 @@ program pondo_oracle.aleo {
     ]);
     top_validators.set(0u8,
       [
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS,
-        ONE_GROUP_ADDRESS
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS,
+        ZERO_GROUP_ADDRESS
       ]
     );
   }
@@ -340,7 +338,6 @@ program pondo_oracle.aleo {
       commission: validator_committee_state.commission,
       boost: boost_amount
     };
-    validator_data.set(delegator, new_validator_datum);
 
     // Get the array of top validators
     let top_validators_addresses: [address; 10] = top_validators.get(0u8);
@@ -372,33 +369,37 @@ program pondo_oracle.aleo {
     // Get the boost multiple
     let allocations: [u128; 10] = delegator_allocation.get(0u8);
 
-    // Perform swaps and drop the last element
-    // The order of the swap_validator_data is subtle but very important.
-    let swap_result_0: (validator_datum, validator_datum, bool) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, false, allocations[0u8]);
-    let swap_result_1: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, swap_result_0.2, allocations[1u8]);
-    let swap_result_2: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, swap_result_1.2, allocations[2u8]);
-    let swap_result_3: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, swap_result_2.2, allocations[3u8]);
-    let swap_result_4: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, swap_result_3.2, allocations[4u8]);
-    let swap_result_5: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, swap_result_4.2, allocations[5u8]);
-    let swap_result_6: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, swap_result_5.2, allocations[6u8]);
-    let swap_result_7: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, swap_result_6.2, allocations[7u8]);
-    let swap_result_8: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, swap_result_7.2, allocations[8u8]);
-    let swap_result_9: (validator_datum, validator_datum, bool) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, swap_result_8.2, allocations[9u8]);
-    let new_top_10: [address; 10] = [
-      swap_result_0.0.delegator,
-      swap_result_1.0.delegator,
-      swap_result_2.0.delegator,
-      swap_result_3.0.delegator,
-      swap_result_4.0.delegator,
-      swap_result_5.0.delegator,
-      swap_result_6.0.delegator,
-      swap_result_7.0.delegator,
-      swap_result_8.0.delegator,
-      swap_result_9.0.delegator
+    // Perform swaps
+    let swap_result_0: (validator_datum, validator_datum) = swap_validator_data(new_validator_datum, datum_0, epoch_start_height, allocations[0u8]);
+    let swap_result_1: (validator_datum, validator_datum) = swap_validator_data(swap_result_0.1, datum_1, epoch_start_height, allocations[1u8]);
+    let swap_result_2: (validator_datum, validator_datum) = swap_validator_data(swap_result_1.1, datum_2, epoch_start_height, allocations[2u8]);
+    let swap_result_3: (validator_datum, validator_datum) = swap_validator_data(swap_result_2.1, datum_3, epoch_start_height, allocations[3u8]);
+    let swap_result_4: (validator_datum, validator_datum) = swap_validator_data(swap_result_3.1, datum_4, epoch_start_height, allocations[4u8]);
+    let swap_result_5: (validator_datum, validator_datum) = swap_validator_data(swap_result_4.1, datum_5, epoch_start_height, allocations[5u8]);
+    let swap_result_6: (validator_datum, validator_datum) = swap_validator_data(swap_result_5.1, datum_6, epoch_start_height, allocations[6u8]);
+    let swap_result_7: (validator_datum, validator_datum) = swap_validator_data(swap_result_6.1, datum_7, epoch_start_height, allocations[7u8]);
+    let swap_result_8: (validator_datum, validator_datum) = swap_validator_data(swap_result_7.1, datum_8, epoch_start_height, allocations[8u8]);
+    let swap_result_9: (validator_datum, validator_datum) = swap_validator_data(swap_result_8.1, datum_9, epoch_start_height, allocations[9u8]);
+    let new_top_11: [validator_datum; 11] = [
+      swap_result_0.0,
+      swap_result_1.0,
+      swap_result_2.0,
+      swap_result_3.0,
+      swap_result_4.0,
+      swap_result_5.0,
+      swap_result_6.0,
+      swap_result_7.0,
+      swap_result_8.0,
+      swap_result_9.0,
+      swap_result_9.1
     ];
+    // Remove the duplicate if there is one, otherwise drop the last element
+    let new_top_10: [address; 10] = remove_duplicate(new_validator_datum, new_top_11);
 
     // Set the new top 10
     top_validators.set(0u8, new_top_10);
+    // Set the new validator data
+    validator_data.set(delegator, new_validator_datum);
   }
 
   // Remove the reference delegator
@@ -475,7 +476,6 @@ program pondo_oracle.aleo {
   ) -> Future {
     // Check that 1Group and 0Group addresses cannot be banned
     assert_neq(validator, ZERO_GROUP_ADDRESS);
-    assert_neq(validator, ONE_GROUP_ADDRESS);
 
     return finalize_pondo_ban_validator(validator, self.caller);
   }
@@ -604,6 +604,50 @@ program pondo_oracle.aleo {
     validator_boosting.set(validator, new_boost);
   }
 
+  // If there's a duplicate delegator or validator, remove it
+  inline remove_duplicate(
+    new_validator_datum: validator_datum,
+    top_eleven: [validator_datum; 11],
+  ) -> [address; 10] {
+    // Set found index to 11 to indicate not found
+    let found_index: i8 = 11i8;
+    let count: u8 = 0u8;
+
+    for i: u8 in 0u8..10u8 {
+      let datum: validator_datum = top_eleven[i];
+      if (datum.delegator == new_validator_datum.delegator || datum.validator == new_validator_datum.validator) {
+        found_index = i as i8;
+        count += 1u8;
+      }
+    }
+
+    // If there's no duplicate, drop the last element
+    let duplicate_index: i8 = count > 1u8 ? found_index : 11i8;
+    let delegator_0: address = top_eleven[0u8].delegator;
+    let delegator_1: address = duplicate_index < 2i8 ? top_eleven[2u8].delegator : top_eleven[1u8].delegator;
+    let delegator_2: address = duplicate_index < 3i8 ? top_eleven[3u8].delegator : top_eleven[2u8].delegator;
+    let delegator_3: address = duplicate_index < 4i8 ? top_eleven[4u8].delegator : top_eleven[3u8].delegator;
+    let delegator_4: address = duplicate_index < 5i8 ? top_eleven[5u8].delegator : top_eleven[4u8].delegator;
+    let delegator_5: address = duplicate_index < 6i8 ? top_eleven[6u8].delegator : top_eleven[5u8].delegator;
+    let delegator_6: address = duplicate_index < 7i8 ? top_eleven[7u8].delegator : top_eleven[6u8].delegator;
+    let delegator_7: address = duplicate_index < 8i8 ? top_eleven[8u8].delegator : top_eleven[7u8].delegator;
+    let delegator_8: address = duplicate_index < 9i8 ? top_eleven[9u8].delegator : top_eleven[8u8].delegator;
+    let delegator_9: address = duplicate_index < 10i8 ? top_eleven[10u8].delegator : top_eleven[9u8].delegator;
+
+    return [
+      delegator_0,
+      delegator_1,
+      delegator_2,
+      delegator_3,
+      delegator_4,
+      delegator_5,
+      delegator_6,
+      delegator_7,
+      delegator_8,
+      delegator_9
+    ];
+  }
+
   // Swap the positions of each datum given:
   // 1. If auto swap bit is on, always swap
   // 2. If one is outdated (if both are outdated, preference no swap)
@@ -613,38 +657,24 @@ program pondo_oracle.aleo {
     datum_0: validator_datum,
     datum_1: validator_datum,
     epoch_start_block: u32,
-    auto_swap: bool,
     boost_multiple: u128,
-  ) -> (validator_datum, validator_datum, bool) {
-    if (auto_swap) {
-      return (datum_1, datum_0, true);
-    }
-
-    // If the delegator are the same, don't swap and turn auto_swap on afterwards
-    // This keeps the new delegator and forces out the old one
-    if (datum_0.delegator == datum_1.delegator) {
-      return (datum_0, datum_1, true);
-    }
-
-    // If the validator is the same, automatically swap down the loser of this check out of the list
-    let new_auto_swap: bool = datum_0.validator == datum_1.validator;
-
+  ) -> (validator_datum, validator_datum) {
     // Check if either one is outdated
     // The default validator datum used for 0group addresses uses 0u32 for the block_height
     // So we will catch any 0group addresses here
     if (datum_1.block_height < epoch_start_block) {
-      return (datum_0, datum_1, new_auto_swap);
+      return (datum_0, datum_1);
     }
     if (datum_0.block_height < epoch_start_block) {
-      return (datum_1, datum_0, new_auto_swap);
+      return (datum_1, datum_0);
     }
 
     // Handle the edge case of one of the yields being 0 as 0 is automatically used when the validator wasn't updated last epoch
     if (datum_1.microcredits_yield_per_epoch == 0u128) {
-      return (datum_0, datum_1, new_auto_swap);
+      return (datum_0, datum_1);
     }
     if (datum_0.microcredits_yield_per_epoch == 0u128) {
-      return (datum_1, datum_0, new_auto_swap);
+      return (datum_1, datum_0);
     }
 
     // Calculate the yields
@@ -662,9 +692,10 @@ program pondo_oracle.aleo {
     // The alternative is that if we choose the lower one, it's much more difficult and expensive for competing validators
     // to keep around many delegators with slightly different ranges and try to choose the worst one for their competitors.
     // all the while paying transaction fees while giving their competitors commissions from delegations.
-    let should_swap: bool = new_auto_swap ? first_yield > second_yield : first_yield < second_yield;
+    let is_same_validator: bool = datum_0.validator == datum_1.validator;
+    let should_swap: bool = is_same_validator ? first_yield > second_yield : first_yield < second_yield;
 
-    return should_swap ? (datum_1, datum_0, new_auto_swap) : (datum_0, datum_1, new_auto_swap);
+    return should_swap ? (datum_1, datum_0) : (datum_0, datum_1);
   }
 
   // Swap the zero group address to the end of the list

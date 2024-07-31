@@ -1,11 +1,11 @@
 import { deployAllProgramsIfNecessary } from './aleo/deploy';
-import { NETWORK, ORACLE_PRIVATE_KEY, PRIVATE_KEY, TEST } from './constants';
+import { NETWORK, ORACLE_ONLY, ORACLE_PRIVATE_KEY, PRIVATE_KEY, TEST } from './constants';
 import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
 import {
   approveReferenceDelegatorsIfNecessary,
   deployReferenceDelegatorsIfNecessary,
 } from './protocol/referenceDelegators';
-import { runProtocol } from './protocol/runProtocol';
+import { runOracleProtocol, runProtocol } from './protocol/runProtocol';
 import { fundTestAccountsIfNecessary, runTests } from './tests/runTests';
 import { delay } from './util';
 
@@ -30,7 +30,11 @@ async function main() {
         await approveReferenceDelegatorsIfNecessary();
       }
       // Run the protocol
-      await runProtocol();
+      if (ORACLE_ONLY) {
+        await runOracleProtocol();
+      } else {
+        await runProtocol();
+      }
 
       if (TEST) {
         await runTests();

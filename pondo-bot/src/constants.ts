@@ -80,6 +80,7 @@ export const PONDO_TOKEN_ID = process.env.PONDO_TOKEN_ID
   ? process.env.PONDO_TOKEN_ID
   : PONDO_TOKEN_ID_DEFAULT;
 export const VERSION = process.env.VERSION ? process.env.VERSION : '';
+export const ORACLE_ONLY = process.env.ORACLE_ONLY === 'true' || false;
 
 // Non .env constants
 export const CREDITS_PROGRAM = 'credits.aleo';
