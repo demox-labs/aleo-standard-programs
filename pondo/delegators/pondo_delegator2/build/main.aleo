@@ -79,10 +79,8 @@ function set_validator:
     input r0 as address.public;
     input r1 as u8.public;
     assert.eq self.caller pondo_core_protocol.aleo;
-    lte r1 50u8 into r2;
-    assert.eq r2 true;
-    async set_validator r0 r1 into r3;
-    output r3 as pondo_delegator2.aleo/set_validator.future;
+    async set_validator r0 r1 into r2;
+    output r2 as pondo_delegator2.aleo/set_validator.future;
 
 finalize set_validator:
     input r0 as address.public;

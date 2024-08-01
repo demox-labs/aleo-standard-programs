@@ -326,7 +326,7 @@ program pondo_oracle.aleo {
     // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
     let previous_update_epoch: u32 = existing_validator_datum.block_height / BLOCKS_PER_EPOCH;
     let did_update_last_epoch: bool = (previous_update_epoch + 1u32) == current_epoch;
-    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch + normalized_boost_amount : 0u128;
+    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
 
     // Construct and save the new validator_datum for the delegator
     let new_validator_datum: validator_datum = validator_datum {
@@ -336,7 +336,7 @@ program pondo_oracle.aleo {
       bonded_microcredits: bonded.microcredits,
       microcredits_yield_per_epoch: new_microcredits_yield_per_epoch,
       commission: validator_committee_state.commission,
-      boost: boost_amount
+      boost: normalized_boost_amount
     };
 
     // Get the array of top validators
@@ -474,7 +474,7 @@ program pondo_oracle.aleo {
   async transition pondo_ban_validator(
     public validator: address
   ) -> Future {
-    // Check that 1Group and 0Group addresses cannot be banned
+    // Check that 0Group addresses cannot be banned
     assert_neq(validator, ZERO_GROUP_ADDRESS);
 
     return finalize_pondo_ban_validator(validator, self.caller);

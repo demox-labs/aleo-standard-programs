@@ -72,7 +72,7 @@ finalize burn_public:
     div r8 r7.balance into r9;
     mul r2 1_000_000u128 into r10;
     div r10 r3 into r11;
-    gte r9 r11 into r12;
+    lte r9 r11 into r12;
     assert.eq r12 true;
 
 
