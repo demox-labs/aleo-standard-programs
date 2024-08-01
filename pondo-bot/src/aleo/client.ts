@@ -285,3 +285,25 @@ export const pollDelegatedDeployment = async (
   pollingCallback && (await pollingCallback());
   return await pollDelegatedDeployment(requestId);
 };
+
+export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 5): Promise<boolean> => {
+  if (retriesRemaining <= 0) {
+    return false;
+  }
+
+  const transaction = JSON.parse(transactionResult.transaction);
+  const transactionId = transaction.id;
+  const feeId = transaction.fee.transition.id;
+  console.log(`Checking if transaction was accepted or rejected with id ${transactionId} & fee id ${feeId}`);
+  const client = getClient();
+  try {
+    const foundTransactionId = await client.request('getTransactionId', {
+      transition_id: feeId
+    });
+    console.log(`Found transaction id: ${foundTransactionId}`);
+    return foundTransactionId === transactionId;
+  } catch (e: any) {
+    await delay(2_000);
+    return await isTransactionAccepted(transactionResult, retriesRemaining - 1);
+  }
+}

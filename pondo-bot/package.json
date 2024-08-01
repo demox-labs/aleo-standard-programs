@@ -12,6 +12,7 @@
     "call:protocol": "yarn build:dev && node ./dist/runTestScript.js",
     "call:token": "yarn build:dev && node ./dist/runTokenActions.js",
     "call": "yarn call:protocol",
+    "runOracleTests": "yarn build:dev && node ./dist/runOracleTests.js",
     "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js"
   },
   "repository": {

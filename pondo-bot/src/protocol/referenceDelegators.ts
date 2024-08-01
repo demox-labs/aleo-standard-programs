@@ -6,11 +6,9 @@ import { MemberData, ExecuteTransaction } from '../aleo/types';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
 import { delay, formatAleoString, generateRandomCharacters, isProgramMatch } from '../util';
 import { submitTransaction } from '../aleo/execute';
-import { EPOCH_BLOCKS, NETWORK, ORACLE_ADDRESS, ORACLE_PRIVATE_KEY, PRIVATE_KEY } from '../constants';
+import { EPOCH_BLOCKS, NETWORK, ORACLE_ADDRESS, ORACLE_PRIVATE_KEY, PONDO_ORACLE_PROGRAM, PONDO_ORACLE_PROGRAM_CODE, PRIVATE_KEY } from '../constants';
 
 
-const PONDO_ORACLE_PROGRAM = pondoPrograms.find(program => program.includes('pondo_oracle'));
-const PONDO_ORACLE_PROGRAM_CODE = pondoProgramToCode[PONDO_ORACLE_PROGRAM!];
 const REFERENCE_DELEGATOR_PROGRAM = pondoPrograms.find(program => program.includes('reference_delegator'));
 const REFERENCE_DELEGATOR_PROGRAM_CODE = pondoProgramToCode[REFERENCE_DELEGATOR_PROGRAM!];
 

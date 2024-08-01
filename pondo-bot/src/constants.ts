@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { pondoPrograms } from './compiledPrograms';
+import { pondoProgramToCode, pondoPrograms } from './compiledPrograms';
 
 // Load environment variables
 dotenv.config();
@@ -81,6 +81,8 @@ export const PONDO_TOKEN_ID = process.env.PONDO_TOKEN_ID
   : PONDO_TOKEN_ID_DEFAULT;
 export const VERSION = process.env.VERSION ? process.env.VERSION : '';
 export const ORACLE_ONLY = process.env.ORACLE_ONLY === 'true' || false;
+export const PONDO_ORACLE_PROGRAM = pondoPrograms.find(program => program.includes('pondo_oracle'));
+export const PONDO_ORACLE_PROGRAM_CODE = pondoProgramToCode[PONDO_ORACLE_PROGRAM!];
 
 // Non .env constants
 export const CREDITS_PROGRAM = 'credits.aleo';
