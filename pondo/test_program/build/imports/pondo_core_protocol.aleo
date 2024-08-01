@@ -643,6 +643,122 @@ finalize instant_withdraw_public:
 
 
 
+function instant_withdraw_public_signer:
+    input r0 as u64.public;
+    input r1 as u64.public;
+    call pondo_staked_aleo_token.aleo/burn_public r0 self.signer into r2;
+    call credits.aleo/transfer_public self.signer r1 into r3;
+    async instant_withdraw_public_signer r2 r3 r0 r1 self.signer into r4;
+    output r4 as pondo_core_protocol.aleo/instant_withdraw_public_signer.future;
+
+finalize instant_withdraw_public_signer:
+    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r1 as credits.aleo/transfer_public.future;
+    input r2 as u64.public;
+    input r3 as u64.public;
+    input r4 as address.public;
+    await r0;
+    await r1;
+    get protocol_state[0u8] into r5;
+    is.neq r5 2u8 into r6;
+    assert.eq r6 true;
+    contains withdrawals[r4] into r7;
+    not r7 into r8;
+    assert.eq r8 true;
+    cast pondo_core_protocol.aleo 0u64 into r9 as bond_state;
+    get.or_use credits.aleo/bonded[pondo_delegator1.aleo] r9 into r10;
+    get.or_use credits.aleo/bonded[pondo_delegator2.aleo] r9 into r11;
+    get.or_use credits.aleo/bonded[pondo_delegator3.aleo] r9 into r12;
+    get.or_use credits.aleo/bonded[pondo_delegator4.aleo] r9 into r13;
+    get.or_use credits.aleo/bonded[pondo_delegator5.aleo] r9 into r14;
+    cast 0u64 0u32 into r15 as unbond_state;
+    get.or_use credits.aleo/unbonding[pondo_delegator1.aleo] r15 into r16;
+    get.or_use credits.aleo/unbonding[pondo_delegator2.aleo] r15 into r17;
+    get.or_use credits.aleo/unbonding[pondo_delegator3.aleo] r15 into r18;
+    get.or_use credits.aleo/unbonding[pondo_delegator4.aleo] r15 into r19;
+    get.or_use credits.aleo/unbonding[pondo_delegator5.aleo] r15 into r20;
+    get.or_use credits.aleo/account[pondo_delegator1.aleo] 0u64 into r21;
+    get.or_use credits.aleo/account[pondo_delegator2.aleo] 0u64 into r22;
+    get.or_use credits.aleo/account[pondo_delegator3.aleo] 0u64 into r23;
+    get.or_use credits.aleo/account[pondo_delegator4.aleo] 0u64 into r24;
+    get.or_use credits.aleo/account[pondo_delegator5.aleo] 0u64 into r25;
+    add r10.microcredits r11.microcredits into r26;
+    add r26 r12.microcredits into r27;
+    add r27 r13.microcredits into r28;
+    add r28 r14.microcredits into r29;
+    add r21 r22 into r30;
+    add r30 r23 into r31;
+    add r31 r24 into r32;
+    add r32 r25 into r33;
+    add r16.microcredits r17.microcredits into r34;
+    add r34 r18.microcredits into r35;
+    add r35 r19.microcredits into r36;
+    add r36 r20.microcredits into r37;
+    get balances[1u8] into r38;
+    add r29 r33 into r39;
+    add r39 r37 into r40;
+    sub r40 r38 into r41;
+    get balances[0u8] into r42;
+    get owed_commission[0u8] into r43;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r44;
+    cast r43 into r45 as u128;
+    add r44.supply r45 into r46;
+    cast r2 into r47 as u128;
+    add r46 r47 into r48;
+    gt r41 r42 into r49;
+    cast r41 into r50 as i64;
+    cast r42 into r51 as i64;
+    sub r50 r51 into r52;
+    ternary r49 r52 0i64 into r53;
+    cast r53 into r54 as u128;
+    mul r54 1000u128 into r55;
+    div r55 10_000u128 into r56;
+    cast r56 into r57 as u64;
+    cast r53 into r58 as u64;
+    sub r58 r57 into r59;
+    add r42 r59 into r60;
+    get.or_use credits.aleo/account[pondo_core_protocol.aleo] 0u64 into r61;
+    get balances[2u8] into r62;
+    gte r61 r62 into r63;
+    assert.eq r63 true;
+    sub r61 r62 into r64;
+    add r64 r3 into r65;
+    cast r60 into r66 as u128;
+    cast r65 into r67 as u128;
+    cast r57 into r68 as u128;
+    add r66 r67 into r69;
+    add r69 r68 into r70;
+    mul r48 r70 into r71;
+    div r71 r69 into r72;
+    sub r72 r48 into r73;
+    cast r73 into r74 as u64;
+    add r43 r74 into r75;
+    cast r74 into r76 as u128;
+    add r48 r76 into r77;
+    add r60 r57 into r78;
+    set r78 into balances[0u8];
+    cast r78 into r79 as u128;
+    cast r65 into r80 as u128;
+    add r79 r80 into r81;
+    cast r2 into r82 as u128;
+    mul r82 025u128 into r83;
+    div r83 10_000u128 into r84;
+    cast r84 into r85 as u64;
+    sub r2 r85 into r86;
+    cast r86 into r87 as u128;
+    cast r81 into r88 as u128;
+    mul r87 r88 into r89;
+    cast r77 into r90 as u128;
+    div r89 r90 into r91;
+    cast r91 into r92 as u64;
+    lte r3 r92 into r93;
+    assert.eq r93 true;
+    add r75 r85 into r94;
+    set r94 into owed_commission[0u8];
+
+
+
+
 
 
 function withdraw_public:
@@ -652,6 +768,121 @@ function withdraw_public:
     output r2 as pondo_core_protocol.aleo/withdraw_public.future;
 
 finalize withdraw_public:
+    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r1 as u64.public;
+    input r2 as address.public;
+    await r0;
+    get protocol_state[0u8] into r3;
+    is.neq r3 2u8 into r4;
+    assert.eq r4 true;
+    contains withdrawals[r2] into r5;
+    not r5 into r6;
+    assert.eq r6 true;
+    cast pondo_core_protocol.aleo 0u64 into r7 as bond_state;
+    get.or_use credits.aleo/bonded[pondo_delegator1.aleo] r7 into r8;
+    get.or_use credits.aleo/bonded[pondo_delegator2.aleo] r7 into r9;
+    get.or_use credits.aleo/bonded[pondo_delegator3.aleo] r7 into r10;
+    get.or_use credits.aleo/bonded[pondo_delegator4.aleo] r7 into r11;
+    get.or_use credits.aleo/bonded[pondo_delegator5.aleo] r7 into r12;
+    cast 0u64 0u32 into r13 as unbond_state;
+    get.or_use credits.aleo/unbonding[pondo_delegator1.aleo] r13 into r14;
+    get.or_use credits.aleo/unbonding[pondo_delegator2.aleo] r13 into r15;
+    get.or_use credits.aleo/unbonding[pondo_delegator3.aleo] r13 into r16;
+    get.or_use credits.aleo/unbonding[pondo_delegator4.aleo] r13 into r17;
+    get.or_use credits.aleo/unbonding[pondo_delegator5.aleo] r13 into r18;
+    get.or_use credits.aleo/account[pondo_delegator1.aleo] 0u64 into r19;
+    get.or_use credits.aleo/account[pondo_delegator2.aleo] 0u64 into r20;
+    get.or_use credits.aleo/account[pondo_delegator3.aleo] 0u64 into r21;
+    get.or_use credits.aleo/account[pondo_delegator4.aleo] 0u64 into r22;
+    get.or_use credits.aleo/account[pondo_delegator5.aleo] 0u64 into r23;
+    add r8.microcredits r9.microcredits into r24;
+    add r24 r10.microcredits into r25;
+    add r25 r11.microcredits into r26;
+    add r26 r12.microcredits into r27;
+    add r19 r20 into r28;
+    add r28 r21 into r29;
+    add r29 r22 into r30;
+    add r30 r23 into r31;
+    add r14.microcredits r15.microcredits into r32;
+    add r32 r16.microcredits into r33;
+    add r33 r17.microcredits into r34;
+    add r34 r18.microcredits into r35;
+    get balances[1u8] into r36;
+    cast r27 into r37 as i64;
+    cast r31 into r38 as i64;
+    add r37 r38 into r39;
+    cast r35 into r40 as i64;
+    add r39 r40 into r41;
+    cast r36 into r42 as i64;
+    sub r41 r42 into r43;
+    get balances[0u8] into r44;
+    get owed_commission[0u8] into r45;
+    get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842600field] into r46;
+    cast r45 into r47 as u128;
+    add r46.supply r47 into r48;
+    cast r1 into r49 as u128;
+    add r48 r49 into r50;
+    cast r44 into r51 as i64;
+    gt r43 r51 into r52;
+    cast r44 into r53 as i64;
+    sub r43 r53 into r54;
+    ternary r52 r54 0i64 into r55;
+    cast r55 into r56 as u128;
+    mul r56 1000u128 into r57;
+    div r57 10_000u128 into r58;
+    cast r58 into r59 as u64;
+    cast r55 into r60 as u64;
+    sub r60 r59 into r61;
+    add r44 r61 into r62;
+    get.or_use credits.aleo/account[pondo_core_protocol.aleo] 0u64 into r63;
+    get balances[2u8] into r64;
+    sub r63 r64 into r65;
+    cast r62 into r66 as u128;
+    cast r65 into r67 as u128;
+    cast r59 into r68 as u128;
+    add r66 r67 into r69;
+    add r69 r68 into r70;
+    mul r50 r70 into r71;
+    div r71 r69 into r72;
+    sub r72 r50 into r73;
+    cast r73 into r74 as u64;
+    add r45 r74 into r75;
+    set r75 into owed_commission[0u8];
+    cast r74 into r76 as u128;
+    add r50 r76 into r77;
+    add r62 r59 into r78;
+    cast r78 into r79 as u128;
+    cast r65 into r80 as u128;
+    add r79 r80 into r81;
+    cast r1 into r82 as u128;
+    cast r81 into r83 as u128;
+    mul r82 r83 into r84;
+    cast r77 into r85 as u128;
+    div r84 r85 into r86;
+    cast r86 into r87 as u64;
+    add r36 r87 into r88;
+    set r88 into balances[1u8];
+    sub r78 r87 into r89;
+    set r89 into balances[0u8];
+    add block.height 43_200u32 into r90;
+    div r90 120_960u32 into r91;
+    add r91 1u32 into r92;
+    mul r92 120_960u32 into r93;
+    add r93 17_280u32 into r94;
+    add r94 1u32 into r95;
+    cast r87 r95 into r96 as withdrawal_state;
+    set r96 into withdrawals[r2];
+
+
+
+
+function withdraw_public_as_signer:
+    input r0 as u64.public;
+    call pondo_staked_aleo_token.aleo/burn_public r0 self.signer into r1;
+    async withdraw_public_as_signer r1 r0 self.signer into r2;
+    output r2 as pondo_core_protocol.aleo/withdraw_public_as_signer.future;
+
+finalize withdraw_public_as_signer:
     input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
     input r1 as u64.public;
     input r2 as address.public;
@@ -797,14 +1028,16 @@ finalize claim_withdrawal_public:
 function rebalance_retrieve_credits:
     input r0 as [u64; 5u32].public;
     input r1 as u64.public;
-    call pondo_delegator1.aleo/transfer_to_core_protocol r0[0u32] into r2;
-    call pondo_delegator2.aleo/transfer_to_core_protocol r0[1u32] into r3;
-    call pondo_delegator3.aleo/transfer_to_core_protocol r0[2u32] into r4;
-    call pondo_delegator4.aleo/transfer_to_core_protocol r0[3u32] into r5;
-    call pondo_delegator5.aleo/transfer_to_core_protocol r0[4u32] into r6;
-    call pondo_staked_aleo_token.aleo/mint_public r1 pondo_token.aleo into r7;
-    async rebalance_retrieve_credits r2 r3 r4 r5 r6 r7 r0 r1 into r8;
-    output r8 as pondo_core_protocol.aleo/rebalance_retrieve_credits.future;
+    gte r1 0u64 into r2;
+    assert.eq r2 true;
+    call pondo_delegator1.aleo/transfer_to_core_protocol r0[0u32] into r3;
+    call pondo_delegator2.aleo/transfer_to_core_protocol r0[1u32] into r4;
+    call pondo_delegator3.aleo/transfer_to_core_protocol r0[2u32] into r5;
+    call pondo_delegator4.aleo/transfer_to_core_protocol r0[3u32] into r6;
+    call pondo_delegator5.aleo/transfer_to_core_protocol r0[4u32] into r7;
+    call pondo_staked_aleo_token.aleo/mint_public r1 pondo_token.aleo into r8;
+    async rebalance_retrieve_credits r3 r4 r5 r6 r7 r8 r0 r1 into r9;
+    output r9 as pondo_core_protocol.aleo/rebalance_retrieve_credits.future;
 
 finalize rebalance_retrieve_credits:
     input r0 as pondo_delegator1.aleo/transfer_to_core_protocol.future;
