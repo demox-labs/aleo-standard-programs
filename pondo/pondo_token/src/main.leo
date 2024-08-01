@@ -34,6 +34,8 @@ program pondo_token.aleo {
     authorized_until: u32
   }
 
+  mapping has_minted: u8 => bool;
+
   // The Pondo token is only minted once and the total supply is fixed.
   async transition initialize_token() -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
@@ -65,6 +67,10 @@ program pondo_token.aleo {
     f0: Future
   ) {
     f0.await();
+
+    let has_already_minted: bool = has_minted.contains(0u8);
+    assert(!has_already_minted);
+    has_minted.set(0u8, true);
   }
 
   async transition burn_public(public burner: address, public amount: u128, public paleo_amount: u128) -> Future {
