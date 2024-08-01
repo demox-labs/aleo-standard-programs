@@ -528,11 +528,11 @@ finalize burn_public:
     branch.eq r21 false to end_then_2_18;
     branch.eq true true to end_otherwise_2_19;
     position end_then_2_18;
-    position end_otherwise_2_19;
     get balances[r14] into r22;
     sub r22.balance r20 into r23;
     cast r0.token_id r0.account r23 r22.authorized_until into r24 as Balance;
     set r24 into balances[r14];
+    position end_otherwise_2_19;
     position end_otherwise_1_17;
     branch.eq true true to end_otherwise_0_15;
     position end_then_0_14;
