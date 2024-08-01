@@ -1,6 +1,6 @@
 import credits.aleo;
 import multi_token_support_program_v02.aleo;
-program pondo_tokenv1.aleo;
+program pondo_token.aleo;
 
 
 struct TokenMetadata:
@@ -31,7 +31,7 @@ function mint_public:
     assert.eq self.caller aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0;
     call multi_token_support_program_v02.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842601field aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0 1_000_000_000_000_000u128 4294967295u32 into r0;
     async mint_public r0 into r1;
-    output r1 as pondo_tokenv1.aleo/mint_public.future;
+    output r1 as pondo_token.aleo/mint_public.future;
 
 finalize mint_public:
     input r0 as multi_token_support_program_v02.aleo/mint_public.future;
@@ -55,7 +55,7 @@ function burn_public:
     call multi_token_support_program_v02.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842601field r0 r1 into r8;
     call multi_token_support_program_v02.aleo/transfer_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field r0 r2 into r9;
     async burn_public r8 r9 r1 r2 into r10;
-    output r10 as pondo_tokenv1.aleo/burn_public.future;
+    output r10 as pondo_token.aleo/burn_public.future;
 
 finalize burn_public:
     input r0 as multi_token_support_program_v02.aleo/burn_public.future;
@@ -65,24 +65,24 @@ finalize burn_public:
     await r0;
     await r1;
     get multi_token_support_program_v02.aleo/registered_tokens[1751493913335802797273486270793650302076377624243810059080883537084141842601field] into r4;
-    cast pondo_tokenv1.aleo 1751493913335802797273486270793650302076377624243810059080883537084141842600field into r5 as TokenOwner;
+    cast pondo_token.aleo 1751493913335802797273486270793650302076377624243810059080883537084141842600field into r5 as TokenOwner;
     hash.bhp256 r5 into r6 as field;
     get multi_token_support_program_v02.aleo/authorized_balances[r6] into r7;
     mul r4.supply 1_000_000u128 into r8;
     div r8 r7.balance into r9;
     mul r2 1_000_000u128 into r10;
     div r10 r3 into r11;
-    gte r9 r11 into r12;
+    lte r9 r11 into r12;
     assert.eq r12 true;
 
 
 
 
 function initialize_token:
-    assert.eq self.caller pondo_core_protocolv1.aleo;
-    call multi_token_support_program_v02.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842601field 97240284627655645872219502u128 1347306575u128 6u8 1_000_000_000_000_000u128 false pondo_tokenv1.aleo into r0;
+    assert.eq self.caller pondo_core_protocol.aleo;
+    call multi_token_support_program_v02.aleo/register_token 1751493913335802797273486270793650302076377624243810059080883537084141842601field 97240284627655645872219502u128 1347306575u128 6u8 1_000_000_000_000_000u128 false pondo_token.aleo into r0;
     async initialize_token r0 into r1;
-    output r1 as pondo_tokenv1.aleo/initialize_token.future;
+    output r1 as pondo_token.aleo/initialize_token.future;
 
 finalize initialize_token:
     input r0 as multi_token_support_program_v02.aleo/register_token.future;

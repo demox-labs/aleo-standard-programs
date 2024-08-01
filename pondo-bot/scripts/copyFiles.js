@@ -3,7 +3,7 @@ const path = require('path');
 require('dotenv').config(); // Load the .env file
 
 // Read version number from .env file
-const versionNumber = process.env.VERSION_NUMBER || 'v1';
+const versionNumber = process.env.VERSION_NUMBER || '';
 
 // Source files
 const filesToCopy = [

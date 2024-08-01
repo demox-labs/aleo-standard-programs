@@ -74,7 +74,6 @@ program pondo_delegator2.aleo {
     public new_commission: u8
   ) -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);  // Assert that the caller is the pondo core protocol
-    assert(new_commission <= MAX_COMMISSION); // Ensure the commission is within the allowed range
 
     return finalize_set_validator(new_validator, new_commission);
   }
