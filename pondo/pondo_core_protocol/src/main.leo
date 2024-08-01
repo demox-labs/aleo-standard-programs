@@ -579,6 +579,105 @@ program pondo_core_protocol.aleo {
     owed_commission.set(0u8, current_owed_commission + withdrawal_fee);
   }
 
+  async transition instant_withdraw_public_signer(
+    public paleo_burn_amount: u64,
+    public withdrawal_credits: u64
+  ) -> Future {
+    // Burn pALEO for withdrawal
+    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.signer);
+    let f1: Future = credits.aleo/transfer_public(self.signer, withdrawal_credits);
+
+    return finalize_instant_withdraw_public_signer(f0, f1, paleo_burn_amount, withdrawal_credits, self.signer);
+  }
+
+  async function finalize_instant_withdraw_public_signer(
+    f0: Future,
+    f1: Future,
+    paleo_burn_amount: u64,
+    withdrawal_credits: u64,
+    signer: address
+  ) {
+    f0.await();
+    f1.await();
+
+    // Block withdrawals during a rebalance
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state != REBALANCING_STATE); // Assert that the protocol is not in a rebalancing state
+
+    let has_withdrawal: bool = withdrawals.contains(signer);
+    assert(!has_withdrawal); // Assert that the signer does not have a pending withdrawal
+
+    // Calculate new delegated balance
+    let base_bond_state: bond_state = bond_state {
+      validator: self.address,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
+
+    let base_unbond_state: unbond_state = unbond_state {
+      microcredits: 0u64,
+      height: 0u32
+    };
+    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator1.aleo, base_unbond_state).microcredits;
+    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator2.aleo, base_unbond_state).microcredits;
+    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator3.aleo, base_unbond_state).microcredits;
+    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator4.aleo, base_unbond_state).microcredits;
+    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator5.aleo, base_unbond_state).microcredits;
+
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
+    let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
+    let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
+    // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
+    let total_delegated: u64 = total_bonded + total_account + total_unbonding - bonded_withdrawals;
+
+    // Currently delegated is all credits that have been sent to delegators, less withdrawals,
+    // and without any rewards that have been earned since the update
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let current_owed_commission: u64 = owed_commission.get(0u8);
+    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
+
+    let rewards: i64 = total_delegated > currently_delegated ? total_delegated as i64 - currently_delegated as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    currently_delegated += rewards as u64 - new_commission;
+
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
+    assert(core_protocol_account >= reserved_for_withdrawal); // Ensure there are enough credits left for batched withdrawals
+    let deposit_pool: u64 = core_protocol_account - reserved_for_withdrawal + withdrawal_credits;
+    // Update owed commission balance
+    let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    current_owed_commission += new_commission_paleo;
+    total_paleo_minted += new_commission_paleo as u128;
+    currently_delegated += new_commission;
+
+    // Update total balance
+    balances.set(DELEGATED_BALANCE, currently_delegated);
+
+    // Calculate full pool size
+    let full_pool: u128 = currently_delegated as u128 + deposit_pool as u128;
+
+    // Calculate credits value of burned pALEO
+    let withdrawal_fee: u64 = calculate_withdraw_fee(paleo_burn_amount);
+    let net_burn_amount: u64 = paleo_burn_amount - withdrawal_fee;
+    let withdrawal_calculation: u128 = (net_burn_amount as u128 * full_pool as u128) / total_paleo_minted as u128;
+    assert(withdrawal_credits <= withdrawal_calculation as u64); // Assert that the withdrawal amount was at most the calculated amount
+
+    // Update owed commission to reflect withdrawal fee
+    owed_commission.set(0u8, current_owed_commission + withdrawal_fee);
+  }
+
   inline calculate_withdraw_fee(
     paleo_burn_amount: u64
   ) -> u64 {
@@ -685,6 +784,106 @@ program pondo_core_protocol.aleo {
       claim_block: claim_block
     };
     withdrawals.set(caller, withdrawal_state_value);
+  }
+
+  async transition withdraw_public_as_signer(
+    // total amount of pALEO to burn, including fee
+    public paleo_burn_amount: u64
+  ) -> Future {
+    // Burn pALEO for withdrawal
+    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.signer);
+    return finalize_withdraw_public_as_signer(f0, paleo_burn_amount, self.signer);
+  }
+
+  async function finalize_withdraw_public_as_signer(
+    public f0: Future,
+    public paleo_burn_amount: u64,
+    public signer: address
+  ) {
+    f0.await();
+
+    // Block withdrawals during a rebalance
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state != REBALANCING_STATE); // Assert that the protocol is not in a rebalancing state
+
+    // Assert that the signer does not have a pending withdrawal
+    let has_withdrawal: bool = withdrawals.contains(signer);
+    assert(!has_withdrawal); // only one withdrawal at a time
+
+    // Calculate commission owed
+    let base_bond_state: bond_state = bond_state {
+      validator: self.address,
+      microcredits: 0u64
+    };
+    let delegator1_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator1.aleo, base_bond_state).microcredits;
+    let delegator2_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator2.aleo, base_bond_state).microcredits;
+    let delegator3_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator3.aleo, base_bond_state).microcredits;
+    let delegator4_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator4.aleo, base_bond_state).microcredits;
+    let delegator5_bonded: u64 = credits.aleo/bonded.get_or_use(pondo_delegator5.aleo, base_bond_state).microcredits;
+
+    let base_unbond_state: unbond_state = unbond_state {
+      microcredits: 0u64,
+      height: 0u32
+    };
+    let delegator1_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator1.aleo, base_unbond_state).microcredits;
+    let delegator2_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator2.aleo, base_unbond_state).microcredits;
+    let delegator3_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator3.aleo, base_unbond_state).microcredits;
+    let delegator4_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator4.aleo, base_unbond_state).microcredits;
+    let delegator5_unbonding: u64 = credits.aleo/unbonding.get_or_use(pondo_delegator5.aleo, base_unbond_state).microcredits;
+
+    let delegator1_account: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_account: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_account: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_account: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_account: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+
+    let total_bonded: u64 = delegator1_bonded + delegator2_bonded + delegator3_bonded + delegator4_bonded + delegator5_bonded;
+    let total_account: u64 = delegator1_account + delegator2_account + delegator3_account + delegator4_account + delegator5_account;
+    let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
+    let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
+    // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
+    let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
+
+    // Currently delegated is all credits that have been sent to delegators, less withdrawals,
+    // and without any rewards that have been earned since the update
+    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let current_owed_commission: u64 = owed_commission.get(0u8);
+    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
+
+    let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
+    let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
+    currently_delegated += rewards as u64 - new_commission;
+
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
+    let deposit_pool: u64 = core_protocol_account - reserved_for_withdrawal;
+    // Update owed commission balance
+    let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
+    total_paleo_minted += new_commission_paleo as u128;
+    currently_delegated += new_commission;
+
+    // Calculate full pool size
+    let full_pool: u128 = currently_delegated as u128 + deposit_pool as u128;
+
+    // Calculate credits value of burned pALEO
+    let withdrawal_calculation: u128 = (paleo_burn_amount as u128 * full_pool as u128) / total_paleo_minted as u128;
+    let withdrawal: u64 = withdrawal_calculation as u64;
+
+    // Update bonded withdrawals
+    balances.set(BONDED_WITHDRAWALS, bonded_withdrawals + withdrawal);
+
+    // Update total balance to reflect withdrawal
+    balances.set(DELEGATED_BALANCE, currently_delegated - withdrawal);
+
+    // Create withdrawal for signer in next batch
+    let claim_block: u32 = get_claim_height(block.height);
+    let withdrawal_state_value: withdrawal_state = withdrawal_state {
+      microcredits: withdrawal,
+      claim_block: claim_block
+    };
+    withdrawals.set(signer, withdrawal_state_value);
   }
 
   inline get_claim_height(height: u32) -> u32 {
@@ -824,6 +1023,7 @@ program pondo_core_protocol.aleo {
     public transfer_amounts: [u64; 5],
     public commission_mint: u64
   ) -> Future {
+    assert(commission_mint >= 0u64); // ensure that the commission mint is non-zero
     let f0: Future = pondo_delegator1.aleo/transfer_to_core_protocol(transfer_amounts[0u8]);
     let f1: Future = pondo_delegator2.aleo/transfer_to_core_protocol(transfer_amounts[1u8]);
     let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
