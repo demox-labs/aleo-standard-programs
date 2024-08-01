@@ -267,16 +267,6 @@ function join:
     output r6 as Token.record;
 
 
-function split:
-    input r0 as Token.record;
-    input r1 as u128.private;
-    cast r0.owner r1 r0.token_id r0.external_authorization_required r0.authorized_until into r2 as Token.record;
-    sub r0.amount r1 into r3;
-    cast r0.owner r3 r0.token_id r0.external_authorization_required r0.authorized_until into r4 as Token.record;
-    output r2 as Token.record;
-    output r4 as Token.record;
-
-
 
 function initialize:
     async initialize into r0;

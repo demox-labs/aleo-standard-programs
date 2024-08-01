@@ -1075,28 +1075,6 @@ program multi_token_support_program_v02.aleo {
     return new_token;
   }
 
-  transition split(
-    private input_token: Token,
-    private amount: u128
-  ) -> (Token, Token) {
-    let new_token_1: Token = Token {
-      owner: input_token.owner,
-      amount: amount,
-      token_id: input_token.token_id,
-      external_authorization_required: input_token.external_authorization_required,
-      authorized_until: input_token.authorized_until
-    };
-    let new_token_2: Token = Token {
-      owner: input_token.owner,
-      amount: input_token.amount - amount,
-      token_id: input_token.token_id,
-      external_authorization_required: input_token.external_authorization_required,
-      authorized_until: input_token.authorized_until
-    };
-
-    return (new_token_1, new_token_2);
-  }
-
   // -------------------------
   // credits.aleo wrapper
   // -------------------------

@@ -221,22 +221,24 @@ export const resolveImports = async (imports: string[]) => {
 };
 
 export const deploymentCost = (program: string) => {
-  let fee = 10;
+  let fee = 1;
 
   if (program.indexOf('multi_token_support') !== -1) {
-    fee = 75; // At time of writing, the fee for deploying the multi-token support program is 69632150 microcredits
+    fee = 100; // At time of writing, the fee for deploying the multi-token support program is 87166375 microcredits
   } else if (program.indexOf('pondo_oracle') !== -1) {
     fee = 110; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
-    fee = 8; // At time of writing, the fee for deploying the pondo token program is 7779900 microcredits
+    fee = 10; // At time of writing, the fee for deploying the pondo token program is 7779900 microcredits
   } else if (program.indexOf('pondo_token') !== -1) {
-    fee = 10; // At time of writing, the fee for deploying the pondo token program is 7190475 microcredits
+    fee = 12; // At time of writing, the fee for deploying the pondo token program is 7190475 microcredits
   } else if (program.indexOf('pondo_delegator') !== -1) {
-    fee = 21; // At time of writing, the fee for deploying the pondo vault program is 20008475 microcredits
+    fee = 21; // At time of writing, the fee for deploying the pondo delegator program is 20008475 microcredits
   } else if (program.indexOf('pondo_core_protocol') !== -1) {
-    fee = 55; // At time of writing, the fee for deploying the pondo vault program is 50593425 microcredits
+    fee = 65; // At time of writing, the fee for deploying the pondo vault program is 61379725 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
-    fee = 8; // At time of writing, the fee for deploying the pondo vault program is 7761100 microcredits
+    fee = 8; // At time of writing, the fee for deploying a reference delegator program is 7761100 microcredits
+  } else if (program.indexOf('test_program') !== -1) {
+    fee = 20; // At time of writing, the fee for deploying the test program is 19054425 microcredits
   }
 
   return fee;
