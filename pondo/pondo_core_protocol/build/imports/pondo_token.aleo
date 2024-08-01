@@ -26,6 +26,10 @@ struct Balance:
 
 
 
+mapping has_minted:
+	key as u8.public;
+	value as boolean.public;
+
 
 function mint_public:
     assert.eq self.caller aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0;
@@ -36,6 +40,10 @@ function mint_public:
 finalize mint_public:
     input r0 as multi_token_support_program_v02.aleo/mint_public.future;
     await r0;
+    contains has_minted[0u8] into r1;
+    not r1 into r2;
+    assert.eq r2 true;
+    set true into has_minted[0u8];
 
 
 
