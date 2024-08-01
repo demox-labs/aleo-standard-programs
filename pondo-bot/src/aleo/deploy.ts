@@ -82,15 +82,24 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
     );
   }
   if (PALEO_TOKEN_ID !== PALEO_TOKEN_ID_DEFAULT) {
-    updatedProgramCode = updatedProgramCode.replaceAll(PALEO_TOKEN_ID_DEFAULT, PALEO_TOKEN_ID);
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      PALEO_TOKEN_ID_DEFAULT,
+      PALEO_TOKEN_ID
+    );
   }
   if (PONDO_TOKEN_ID !== PONDO_TOKEN_ID_DEFAULT) {
-    updatedProgramCode = updatedProgramCode.replaceAll(PONDO_TOKEN_ID_DEFAULT, PONDO_TOKEN_ID);
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      PONDO_TOKEN_ID_DEFAULT,
+      PONDO_TOKEN_ID
+    );
   }
   if (DEFAULT_PONDO_FOUNDATION_ADDRESS !== PONDO_FOUNDATION_ADDRESS) {
-    updatedProgramCode = updatedProgramCode.replaceAll(DEFAULT_PONDO_FOUNDATION_ADDRESS, PONDO_FOUNDATION_ADDRESS);
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      DEFAULT_PONDO_FOUNDATION_ADDRESS,
+      PONDO_FOUNDATION_ADDRESS
+    );
   }
-    
+
   updatedProgramCode = updatedProgramCode.replaceAll(
     'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
     ORACLE_ADDRESS
@@ -247,7 +256,8 @@ export const deployAllProgramsIfNecessary = async (
     // Skip the test program if we are not running tests
     if (
       program.indexOf('reference_delegator') !== -1 ||
-      (program.indexOf('test_program') !== -1 && process.env.TEST !== 'true')
+      (program.indexOf('test_program') !== -1 &&
+        process.env.DEPLOY_TEST_PROGRAM !== 'true')
     ) {
       continue;
     }
