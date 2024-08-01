@@ -1,0 +1,23 @@
+{
+  "program": "test_program.aleo",
+  "version": "0.0.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "multi_token_support_program_v02.aleo",
+      "location": "local",
+      "path": "../../multi_token_support_program"
+    },
+    {
+      "name": "pondo_core_protocol.aleo",
+      "location": "local",
+      "path": "../pondo_core_protocol"
+    }
+  ]
+}

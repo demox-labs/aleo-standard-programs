@@ -107,7 +107,9 @@ export const depositViaAllowance = async (
   console.log('deposit_public transaction submitted');
 };
 
-const calculatePaleoForDeposit = async (deposit: bigint): Promise<bigint> => {
+export const calculatePaleoForDeposit = async (
+  deposit: bigint
+): Promise<bigint> => {
   const { totalAleo, totalPaleo } = await calculateAleoAndPaleoPools();
 
   return calculatePaleoMint(totalAleo, totalPaleo, deposit);
@@ -152,6 +154,14 @@ const calculateAleoAndPaleoPools = async () => {
         )
       );
     }
+  }
+  const bondedWithdrawals = await getMappingValue(
+    '1u8',
+    CORE_PROTOCOL_PROGRAM!,
+    'balances'
+  );
+  if (bondedWithdrawals) {
+    totalProtocolBalance -= BigInt(bondedWithdrawals.slice(0, -3));
   }
   const lastDelegatedBalanceString = await getMappingValue(
     '0u8',
