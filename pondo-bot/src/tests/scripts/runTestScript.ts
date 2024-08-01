@@ -34,7 +34,7 @@ async function main(script: SCRIPT_TYPES, amount: string, privateKey: string) {
       await callDepositPublic(amount, privateKey);
       break;
     case SCRIPT_TYPES.deposit_public_as_signer:
-      await callDepositPublicAsSinger(amount, privateKey);
+      await callDepositPublicAsSigner(amount, privateKey);
       break;
     case SCRIPT_TYPES.distribute_deposits:
       await distributeDeposits();
@@ -71,7 +71,7 @@ export const callDepositPublic = async (amount: string, privateKey: string) => {
   );
 };
 
-export const callDepositPublicAsSinger = async (
+export const callDepositPublicAsSigner = async (
   amount: string,
   privateKey: string
 ) => {
@@ -81,4 +81,8 @@ export const callDepositPublicAsSinger = async (
   );
 };
 
-main(SCRIPT_TYPES[script], (amount || '').replace(/[,_]/g, ''), privateKey);
+await main(
+  SCRIPT_TYPES[script],
+  (amount || '').replace(/[,_]/g, ''),
+  privateKey
+);

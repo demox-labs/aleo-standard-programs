@@ -17,7 +17,8 @@ const filesToCopy = [
   '../pondo/delegators/pondo_delegator2/build/main.aleo',
   '../pondo/delegators/pondo_delegator3/build/main.aleo',
   '../pondo/delegators/pondo_delegator4/build/main.aleo',
-  '../pondo/delegators/pondo_delegator5/build/main.aleo'
+  '../pondo/delegators/pondo_delegator5/build/main.aleo',
+  '../pondo/test_program/build/main.aleo',
 ];
 
 // Ensure the target directory exists
@@ -72,7 +73,7 @@ filesToCopy.forEach(fileSrc => {
 
 // Update content for each file with new program names and copy to the target directory
 const pondoProgramToCode = {};
-filesToCopy.forEach(fileSrc => {
+filesToCopy.forEach((fileSrc) => {
   const programName = parseProgramName(fileSrc);
   const newProgramName = programNames[programName];
   let fileContent = fileContents[fileSrc];
@@ -94,7 +95,7 @@ const parseDependencies = (content) => {
   const lines = content.split('\n');
   const dependencies = [];
 
-  lines.forEach(line => {
+  lines.forEach((line) => {
     if (line.startsWith('import ')) {
       const parts = line.split(' ');
       if (parts.length >= 2) {
@@ -109,7 +110,7 @@ const parseDependencies = (content) => {
 
 // Parse dependencies and create the dependency tree
 const dependencyTree = {};
-filesToCopy.forEach(fileSrc => {
+filesToCopy.forEach((fileSrc) => {
   const programName = parseProgramName(fileSrc);
   const newProgramName = programNames[programName];
   const dependencies = parseDependencies(fileContents[fileSrc]).map(dep => {
@@ -147,9 +148,17 @@ const compiledProgramsContent = `
 
 export const pondoPrograms = ${JSON.stringify(sortedPrograms, null, 2)};
 
-export const pondoDependencyTree: { [key: string]: string[] } = ${JSON.stringify(dependencyTree, null, 2)};
+export const pondoDependencyTree: { [key: string]: string[] } = ${JSON.stringify(
+  dependencyTree,
+  null,
+  2
+)};
 
-export const pondoProgramToCode: { [key: string]: string } = ${JSON.stringify(pondoProgramToCode, null, 2)};
+export const pondoProgramToCode: { [key: string]: string } = ${JSON.stringify(
+  pondoProgramToCode,
+  null,
+  2
+)};
 `;
 
 fs.writeFileSync(compiledProgramsPath, compiledProgramsContent.trim());

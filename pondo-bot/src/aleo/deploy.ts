@@ -212,7 +212,7 @@ export const resolveImports = async (imports: string[]) => {
 };
 
 export const deploymentCost = (program: string) => {
-  let fee = 1;
+  let fee = 10;
 
   if (program.indexOf('multi_token_support') !== -1) {
     fee = 75; // At time of writing, the fee for deploying the multi-token support program is 69632150 microcredits
@@ -244,7 +244,11 @@ export const deployAllProgramsIfNecessary = async (
       continue;
     }
     // Skip the reference delegator program, this needs to be customized for each deployment
-    if (program.indexOf('reference_delegator') !== -1) {
+    // Skip the test program if we are not running tests
+    if (
+      program.indexOf('reference_delegator') !== -1 ||
+      (program.indexOf('test_program') !== -1 && process.env.TEST !== 'true')
+    ) {
       continue;
     }
     const programExists = await getProgram(program);
