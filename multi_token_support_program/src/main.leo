@@ -60,17 +60,21 @@ program multi_token_support_program_v02.aleo {
   }
 
   async function finalize_initialize() {
+    // Check if the CREDITS_RESERVED_TOKEN_ID token has already been initialized
+    let already_initialized: bool = registered_tokens.contains(CREDITS_RESERVED_TOKEN_ID);
+    assert_eq(already_initialized, false);
+
     // Initialize the CREDITS_RESERVED_TOKEN_ID token
     let credits_reserved_token: TokenMetadata = TokenMetadata {
       token_id: CREDITS_RESERVED_TOKEN_ID,
       name: 1095517519u128,
       symbol: 1095517519u128,
       decimals: 6u8,
-      supply: 1_500_000_000_000_000u128,
-      max_supply: 1_500_000_000_000_000u128,
-      admin: self.address,
+      supply: 0u128, // placeholder value; not used
+      max_supply: 0u128, // placeholder value; not used
+      admin: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc, // zero group address; no admin
       external_authorization_required: false,
-      external_authorization_party: self.address
+      external_authorization_party: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc // zero group address; no external authorization party
     };
 
     registered_tokens.set(CREDITS_RESERVED_TOKEN_ID, credits_reserved_token);
@@ -147,6 +151,7 @@ program multi_token_support_program_v02.aleo {
     public role: u8
   ) -> Future {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
+    assert(role == MINTER_ROLE || role == BURNER_ROLE || role == SUPPLY_MANAGER_ROLE);
     return finalize_set_role(token_id, account, role, self.caller);
   }
 
@@ -405,6 +410,9 @@ program multi_token_support_program_v02.aleo {
       } else {
         authorized_balances.remove(balance_key);
         let left_to_burn: u128 = amount - authorized_balance.balance;
+        if (left_to_burn == 0u128) {
+          return; // Done burning
+        }
         // Burn remainder from locked balance
         let locked_balance: Balance = balances.get(balance_key);
         let new_locked_balance: Balance = Balance {
@@ -493,11 +501,13 @@ program multi_token_support_program_v02.aleo {
     authorized_until: u32,
     caller: address
   ) {
-    // Check that the caller has permission to authorize
     let token: TokenMetadata = registered_tokens.get(owner.token_id);
+    // Check that the token requires external authorization
+    assert(token.external_authorization_required);
+    // Check that the caller has permission to authorize
     assert(caller == token.external_authorization_party);
 
-     let default_balance: Balance = Balance {
+    let default_balance: Balance = Balance {
       token_id: owner.token_id,
       account: owner.account,
       balance: 0u128,
@@ -1043,18 +1053,62 @@ program multi_token_support_program_v02.aleo {
     }
   }
 
+  transition join(
+    private token_1: Token,
+    private token_2: Token
+  ) -> Token {
+    // Check that the tokens are the same
+    assert(token_1.token_id == token_2.token_id);
+    let new_amount: u128 = token_1.amount + token_2.amount;
+    // Take the smaller of the two authorized_until values
+    let authorized_until: u32 = token_1.authorized_until < token_2.authorized_until
+      ? token_1.authorized_until
+      : token_2.authorized_until;
+    let new_token: Token = Token {
+      owner: token_1.owner,
+      amount: new_amount,
+      token_id: token_1.token_id,
+      external_authorization_required: token_1.external_authorization_required,
+      authorized_until: authorized_until
+    };
+
+    return new_token;
+  }
+
+  transition split(
+    private input_token: Token,
+    private amount: u128
+  ) -> (Token, Token) {
+    let new_token_1: Token = Token {
+      owner: input_token.owner,
+      amount: amount,
+      token_id: input_token.token_id,
+      external_authorization_required: input_token.external_authorization_required,
+      authorized_until: input_token.authorized_until
+    };
+    let new_token_2: Token = Token {
+      owner: input_token.owner,
+      amount: input_token.amount - amount,
+      token_id: input_token.token_id,
+      external_authorization_required: input_token.external_authorization_required,
+      authorized_until: input_token.authorized_until
+    };
+
+    return (new_token_1, new_token_2);
+  }
+
   // -------------------------
   // credits.aleo wrapper
   // -------------------------
 
-  async transition deposit_credits_public(
+  async transition deposit_credits_public_signer(
     public amount: u64
   ) -> Future {
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, amount);
-    return finalize_deposit_credits_public(f0, amount as u128, self.signer);
+    return finalize_deposit_credits_public_signer(f0, amount as u128, self.signer);
   }
 
-  async function finalize_deposit_credits_public(
+  async function finalize_deposit_credits_public_signer(
     f0: Future,
     amount: u128,
     signer: address
@@ -1127,6 +1181,36 @@ program multi_token_support_program_v02.aleo {
     let new_balance: Balance = Balance {
       token_id: CREDITS_RESERVED_TOKEN_ID,
       account: caller,
+      balance: balance.balance - amount,
+      authorized_until: balance.authorized_until
+    };
+    authorized_balances.set(balance_key_hash, new_balance);
+  }
+
+  async transition withdraw_credits_public_signer(
+    amount: u64
+  ) -> Future {
+    let f0: Future = credits.aleo/transfer_public(self.signer, amount);
+    return finalize_withdraw_credits_public_signer(f0, amount as u128, self.signer);
+  }
+
+  async function finalize_withdraw_credits_public_signer(
+    f0: Future,
+    amount: u128,
+    signer: address
+  ) {
+    f0.await();
+    // Get the credits balance for the signer
+    let balance_key: TokenOwner = TokenOwner {
+      account: signer,
+      token_id: CREDITS_RESERVED_TOKEN_ID
+    };
+    let balance_key_hash: field = BHP256::hash_to_field(balance_key);
+    let balance: Balance = authorized_balances.get(balance_key_hash);
+    // Decrement the balance by the amount withdrawn, underflow will be caught by the VM
+    let new_balance: Balance = Balance {
+      token_id: CREDITS_RESERVED_TOKEN_ID,
+      account: signer,
       balance: balance.balance - amount,
       authorized_until: balance.authorized_until
     };
