@@ -53,6 +53,29 @@ export const transferPondo = async (
   );
 };
 
+export const mintPondo = async (
+  accountPrivateKey: string
+) => {
+  const PONDO_PROGRAM = pondoPrograms.find((program) =>
+    program.includes('pondo_token')
+  )!;
+  const PONDO_PROGRAM_CODE = pondoProgramToCode[PONDO_PROGRAM];
+  const resolvedImports = await resolveImports(
+    pondoDependencyTree[PONDO_PROGRAM]
+  );
+
+  await submitTransaction(
+    NETWORK!,
+    accountPrivateKey,
+    PONDO_PROGRAM_CODE,
+    'mint_public',
+    [],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
 export const burnPondo = async (
   accountPrivateKey: string,
   address: string,

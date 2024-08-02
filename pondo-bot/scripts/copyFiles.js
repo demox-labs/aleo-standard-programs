@@ -21,12 +21,6 @@ const filesToCopy = [
   '../pondo/test_program/build/main.aleo',
 ];
 
-// Ensure the target directory exists
-const targetDir = './programs';
-if (!fs.existsSync(targetDir)) {
-  fs.mkdirSync(targetDir, { recursive: true });
-}
-
 // Function to parse program name from a file
 const parseProgramName = (filePath) => {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -84,10 +78,7 @@ filesToCopy.forEach((fileSrc) => {
     fileContent = updateProgramNameInContent(fileContent, oldName, newName);
   });
 
-  const fileDest = path.join(targetDir, newProgramName);
   pondoProgramToCode[newProgramName] = fileContent;
-  fs.writeFileSync(fileDest, fileContent);
-  console.log(`Copied and updated ${fileSrc} to ${fileDest}`);
 });
 
 // Function to parse dependencies from a program file
