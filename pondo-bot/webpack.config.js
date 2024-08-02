@@ -122,6 +122,10 @@ const testConfig = {
       path.resolve(__dirname, 'src') + '/tests/scripts/runOracleTests.ts',
     testProgramCalls:
       path.resolve(__dirname, 'src') + '/tests/scripts/testProgramCalls.ts',
+    snapshotLedger:
+      path.resolve(__dirname, 'src') + '/tests/scripts/snapshotLedger.ts',
+    swapLedger:
+      path.resolve(__dirname, 'src') + '/tests/scripts/swapLedger.ts',
   },
 
   // Output configuration

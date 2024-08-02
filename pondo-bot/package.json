@@ -14,7 +14,9 @@
     "call": "yarn call:protocol",
     "runOracleTests": "yarn build:dev && node ./dist/runOracleTests.js",
     "call:test": "yarn build:dev && node ./dist/testProgramCalls.js",
-    "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js"
+    "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js",
+    "snapshotLedger": "node ./dist/snapshotLedger.js",
+    "swapLedger": "node ./dist/swapLedger.js"
   },
   "repository": {
     "type": "git",
@@ -50,6 +52,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^9.1.3",
     "babel-preset-env": "^1.7.0",
+    "childprocess": "^2.0.2",
     "dotenv-webpack": "^8.1.0",
     "eslint": "^8.28.0",
     "eslint-plugin-security": "^1.7.1",
