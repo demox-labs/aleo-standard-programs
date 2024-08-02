@@ -2118,6 +2118,13 @@ chalk@^4.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
+childprocess@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/childprocess/-/childprocess-2.0.2.tgz#3d684929748b1e13e8521cf619bde5440de85eb4"
+  integrity sha512-ONqPBsbg+0c+s3p7HfOVm4zN3MnkfsDelUC8geQ1uH796Z4A/ArGLAaSp2HPRa+0qDPCJLz1Tw0d0vRa0ZITuw==
+  dependencies:
+    utility "~1.6.0"
+
 chokidar@^3.5.2:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.6.0.tgz#197c6cc669ef2a8dc5e7b4d97ee4e092c3eb0d5b"
@@ -2205,6 +2212,11 @@ convert-source-map@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
+
+copy-to@~2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/copy-to/-/copy-to-2.0.1.tgz#2680fbb8068a48d08656b6098092bdafc906f4a5"
+  integrity sha512-3DdaFaU/Zf1AnpLiFDeNCD4TOWe3Zl2RZaTzUvWiIk5ERzcCodOE20Vqq4fzCbNoHURFHT4/us/Lfq+S2zyY4w==
 
 core-js-compat@^3.36.1, core-js-compat@^3.37.1:
   version "3.37.1"
@@ -2318,6 +2330,11 @@ escalade@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.1.2.tgz#54076e9ab29ea5bf3d8f1ed62acffbb88272df27"
   integrity sha512-ErCHMCae19vR8vQGe50xIsVomy19rg6gFu3+r3jkEO46suLMWBksvVyoGgQV+jOfl84ZSOSlmv6Gxa89PmTGmA==
+
+escape-html@~1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
+  integrity sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==
 
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
@@ -3699,6 +3716,14 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+utility@~1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/utility/-/utility-1.6.0.tgz#e5bfb6a783a9c392b9fe70fe45c67fc24405c7e9"
+  integrity sha512-/NNDHF3i9grlAankmmL/f3TBVVCcWoEYE+g6Ugi+H8sC9ClhjEFRD/VO0G7Ti+kimlBCV7E9rTBjVnKiY6o9IA==
+  dependencies:
+    copy-to "~2.0.1"
+    escape-html "~1.0.3"
 
 watchpack@^2.4.1:
   version "2.4.1"

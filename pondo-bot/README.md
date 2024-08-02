@@ -27,6 +27,17 @@ Optionally, run Haruka's explorer:
 3. Run pondo bot: `yarn start:dev`
 4. (Optionally restart haruka's explorer): `docker compose down -v` and then setup as before
 
+## Save a ledger:
+1. Once the ledger is a in a state you want to save for hot reloading later, kill `/.devnet.sh` by `tmux kill-session -t devnet`.
+2. Make sure `LEDGER_PATH` and `LEDGER_BACKUPS_PATH` are set in your `.env`. `LEDGER_PATH` is the absolute path to the snarkOS directory on your machine, where the ledgers are stored. `LEDGER_BACKUPS_PATH` can refer to the local folder: `./ledger-swaps`.
+3. Run `yarn build:dev` to make sure all the test scripts are built.
+4. Run `yarn snapshotLedger your_ledger_name`.
+
+## Hot swap a ledger:
+1. Kill `/.devnet.sh` by `tmux kill-session -t devnet`.
+2. Make sure `LEDGER_PATH` and `LEDGER_BACKUPS_PATH` are set in your `.env`. `LEDGER_PATH` is the absolute path to the snarkOS directory on your machine, where the ledgers are stored. `LEDGER_BACKUPS_PATH` can refer to the local folder: `./ledger-swaps`.
+3. Run `yarn build:dev` to make sure all the test scripts are built.
+4. Run `yarn swapLedger your_ledger_name`.
 
 ## After updating a leo program
 1. Make sure to run: `yarn copyFiles`
