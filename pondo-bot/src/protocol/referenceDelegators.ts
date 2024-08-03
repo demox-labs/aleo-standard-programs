@@ -242,7 +242,7 @@ export const updateReferenceDelegatorsIfNecessary = async () => {
         PONDO_ORACLE_PROGRAM_CODE,
         'update_data',
         [delegator],
-        3, // TODO: set the correct fee
+        4, // TODO: set the correct fee
         undefined,
         resolvedImports
       );

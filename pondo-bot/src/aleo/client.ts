@@ -51,7 +51,7 @@ export async function getMappingValue(
   programId: string = 'credits.aleo',
   mappingName: string = 'account',
   maxRetries: number = 6,
-  baseDelay: number = 200
+  baseDelay: number = 300
 ): Promise<string> {
   const client = getClient();
 

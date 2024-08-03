@@ -2,6 +2,7 @@ import {
   transferPaleo,
   transferPondo,
   burnPondo,
+  mintPondo,
 } from '../../protocol/tokenActions';
 
 const [action, signer, address, amount] = process.argv.slice(2);
@@ -10,6 +11,7 @@ enum TOKEN_ACTION_TYPES {
   transfer_paleo = 'transfer_paleo',
   transfer_pondo = 'transfer_pondo',
   burn_pondo = 'burn_pondo',
+  mint_pondo = 'mint_pondo',
 }
 
 async function main(
@@ -24,6 +26,9 @@ async function main(
       break;
     case TOKEN_ACTION_TYPES.transfer_pondo:
       await transferPondo(signer, address, BigInt(amount));
+      break;
+    case TOKEN_ACTION_TYPES.mint_pondo:
+      await mintPondo(signer);
       break;
     case TOKEN_ACTION_TYPES.burn_pondo:
       await burnPondo(signer, address, BigInt(amount));

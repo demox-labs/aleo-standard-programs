@@ -5,6 +5,8 @@ import {
   getMappingValue,
   getProgram,
   getPublicBalance,
+  getPublicTransactionsForProgram,
+  isTransactionAccepted,
 } from '../aleo/client';
 import { resolveImports } from '../aleo/deploy';
 import { submitTransaction } from '../aleo/execute';
@@ -14,6 +16,7 @@ import {
   pondoPrograms,
 } from '../compiledPrograms';
 import {
+  CREDITS_PROGRAM,
   EPOCH_BLOCKS,
   NETWORK,
   ORACLE_UPDATE_BLOCKS,
@@ -29,7 +32,8 @@ import {
   PONDO_DELEGATOR_STATE_TO_VALUE,
 } from './types';
 import { updateReferenceDelegatorsIfNecessary } from './referenceDelegators';
-import { delay } from '../util';
+import { delay, formatAleoString } from '../util';
+import { ExecuteTransaction } from '../aleo/types';
 
 const PONDO_ORACLE_PROGRAM = pondoPrograms.find((program) =>
   program.includes('pondo_oracle')
@@ -128,7 +132,7 @@ export const determineRebalanceAmounts = async (): Promise<bigint[]> => {
   return transferAmounts;
 };
 
-const prepRebalance = async (): Promise<void> => {
+const prepRebalance = async (pondoDelegatorStates: string[]): Promise<void> => {
   console.log('Starting prep rebalance');
 
   const lastRebalanceBlock = await getMappingValue(
@@ -158,7 +162,6 @@ const prepRebalance = async (): Promise<void> => {
     return;
   }
 
-  const pondoDelegatorStates = await getPondoDelegatorStates();
   const allTerminalOrBonded = pondoDelegatorStates.every(
     (state) => state === '1u8' || state === '4u8'
   );
@@ -279,6 +282,85 @@ const rebalanceRedistribute = async (): Promise<void> => {
   console.log('rebalance_redistribute transaction submitted');
 };
 
+const setOracleTVL = async (): Promise<void> => {
+  const coreProtocolAddress = Aleo.Program.fromString(NETWORK!, CORE_PROTOCOL_PROGRAM_CODE).toAddress();
+  const protocolBalance = await getPublicBalance(coreProtocolAddress);
+  let pondoDelegatorTVLs = [];
+  for (let index = 1; index < 6; index++) {
+    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+    const delegatorProgram = await getProgram(delegatorProgramId);
+    const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
+    const delegatorBalance = await getPublicBalance(delegatorProgramAddress);
+    const bondedState = await getMappingValue(delegatorProgramAddress, CREDITS_PROGRAM, 'bonded');
+    let delegatorBondedBalance: bigint = 0n;
+    if (bondedState) {
+      delegatorBondedBalance = BigInt(JSON.parse(formatAleoString(bondedState))["microcredits"].slice(0, -3));
+    }
+    const unbondingState = await getMappingValue(delegatorProgramAddress, CREDITS_PROGRAM, 'unbonding');
+    let delegatorUnbondingBalance: bigint = 0n;
+    if (unbondingState) {
+      delegatorUnbondingBalance = BigInt(JSON.parse(formatAleoString(unbondingState))["microcredits"].slice(0, -3));
+    }
+    const delegatorTVL = delegatorBalance + delegatorBondedBalance + delegatorUnbondingBalance;
+    console.log(`Delegator ${index} tvl: ${delegatorTVL}, balance: ${delegatorBalance}, bonded: ${delegatorBondedBalance}, unbonding: ${delegatorUnbondingBalance}`);
+    pondoDelegatorTVLs.push(delegatorTVL);
+  }
+  const totalTVL = pondoDelegatorTVLs.reduce((acc, tvl) => acc + tvl, protocolBalance);
+  console.log(`Total tvl: ${totalTVL} Pondo core tvl: ${protocolBalance}, delegator TVLs: ${pondoDelegatorTVLs}`);
+
+  const previousTVLUpdates: ExecuteTransaction[] = await getPublicTransactionsForProgram(CORE_PROTOCOL_PROGRAM, 'set_oracle_tvl');
+  if (previousTVLUpdates.length === 0) {
+    console.log('No previous TVL updates, submitting new TVL update');
+    const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+    const resolvedImports = await resolveImports(imports);
+    const inputs = [`${totalTVL}u64`];
+    const transactionResult = await submitTransaction(
+      NETWORK!,
+      PRIVATE_KEY!,
+      CORE_PROTOCOL_PROGRAM_CODE,
+      'set_oracle_tvl',
+      inputs,
+      10, // TODO: set the correct fee
+      undefined,
+      resolvedImports
+    );
+    const wasAccepted = await isTransactionAccepted(transactionResult);
+    if (!wasAccepted) {
+      console.error('set_oracle_vtl transaction was not accepted');
+    } else {
+      console.log('set_oracle_tvl transaction was accepted');
+    }
+  } else {
+    const lastUpdateTVL = BigInt(previousTVLUpdates[previousTVLUpdates.length - 1].transaction.execution.transitions[0].inputs[0].value.slice(0, -3));
+    // If the TVL has changed by more than 25%, update the oracle TVL
+    const tvlChange = Math.abs(Number(totalTVL - lastUpdateTVL) / Number(lastUpdateTVL));
+    if (tvlChange > 0.25) {
+      console.log('TVL has changed by more than 25%, updating oracle TVL');
+      const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
+      const resolvedImports = await resolveImports(imports);
+      const inputs = [`${totalTVL}u64`];
+      const transactionResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        CORE_PROTOCOL_PROGRAM_CODE,
+        'set_oracle_tvl',
+        inputs,
+        10, // TODO: set the correct fee
+        undefined,
+        resolvedImports
+      );
+      const wasAccepted = await isTransactionAccepted(transactionResult);
+      if (!wasAccepted) {
+        console.error('set_oracle_vtl transaction was not accepted');
+      } else {
+        console.log('set_oracle_tvl transaction was accepted');
+      }
+    } else {
+      console.log('TVL has not changed by more than 25%, skipping');
+    }
+  }
+}
+
 const continueRebalanceIfNeccessary = async (
   pondoDelegatorStates: string[]
 ): Promise<void> => {
@@ -301,10 +383,13 @@ export const runProtocol = async (): Promise<void> => {
   const blockHeight = await getHeight();
   const epochPeriod = await getEpochPeriod(blockHeight);
   console.log(`Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
-  const pondoDelegatorStates = await getPondoDelegatorStates();
 
+  // Set the oracle TVL if it's changed by more than 25%
+  await setOracleTVL();
+
+  const pondoDelegatorStates = await getPondoDelegatorStates();
   if (epochPeriod === 'rebalance') {
-    await prepRebalance();
+    await prepRebalance(pondoDelegatorStates);
   } else if (epochPeriod == 'updateOracle') {
     await updateReferenceDelegatorsIfNecessary();
   }
@@ -313,15 +398,13 @@ export const runProtocol = async (): Promise<void> => {
   await continueRebalanceIfNeccessary(pondoDelegatorStates);
 
   // Handle updating all of the delegators
+  const updatePromises = [];
   for (let index = 1; index < 6; index++) {
-    const pondoDelegatorState = pondoDelegatorStates[
-      index - 1
-    ] as PONDO_DELEGATOR_STATE;
-    await handleDelegatorUpdate(
-      `pondo_delegator${index}${VERSION}.aleo`,
-      pondoDelegatorState
-    );
+    const pondoDelegatorState = pondoDelegatorStates[index - 1] as PONDO_DELEGATOR_STATE;
+    const updatePromise = handleDelegatorUpdate(`pondo_delegator${index}${VERSION}.aleo`, pondoDelegatorState);
+    updatePromises.push(updatePromise);
   }
+  await Promise.all(updatePromises);
 };
 
 export const runOracleProtocol = async (): Promise<void> => {
