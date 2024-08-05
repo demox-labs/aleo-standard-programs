@@ -153,6 +153,9 @@ program pondo_core_protocol.aleo {
     f7.await();
     f8.await();
 
+    // Assert the protocol hasn't been initialized yet
+    assert_eq(protocol_state.contains(PROTOCOL_STATE_KEY), false);
+
     balances.set(DELEGATED_BALANCE, transfer_amount);
     balances.set(BONDED_WITHDRAWALS, 0u64);
     balances.set(CLAIMABLE_WITHDRAWALS, 0u64);

@@ -104,6 +104,7 @@ finalize add_control_address:
 
 function remove_control_address:
     input r0 as address.public;
+    assert.neq r0 self.caller;
     async remove_control_address r0 self.caller into r1;
     output r1 as pondo_oracle.aleo/remove_control_address.future;
 
@@ -127,8 +128,8 @@ finalize update_admin:
     input r1 as address.public;
     get control_addresses[r1] into r2;
     assert.eq r2 true;
-    set true into control_addresses[r0];
     remove control_addresses[r1];
+    set true into control_addresses[r0];
 
 
 

@@ -119,28 +119,30 @@ finalize initialize:
     await r6;
     await r7;
     await r8;
+    contains protocol_state[0u8] into r10;
+    assert.eq r10 false;
     set r9 into balances[0u8];
     set 0u64 into balances[1u8];
     set 0u64 into balances[2u8];
     set 0u64 into owed_commission[0u8];
     set 2u8 into protocol_state[0u8];
-    cast  aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 into r10 as [address; 10u32];
-    get.or_use pondo_oracle.aleo/top_validators[0u8] r10 into r11;
-    cast aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 0u32 0u64 0u128 40u8 0u128 into r12 as validator_datum;
-    get.or_use pondo_oracle.aleo/validator_data[r11[0u32]] r12 into r13;
-    get.or_use pondo_oracle.aleo/validator_data[r11[1u32]] r12 into r14;
-    get.or_use pondo_oracle.aleo/validator_data[r11[2u32]] r12 into r15;
-    get.or_use pondo_oracle.aleo/validator_data[r11[3u32]] r12 into r16;
-    get.or_use pondo_oracle.aleo/validator_data[r11[4u32]] r12 into r17;
-    cast r13.validator r13.commission into r18 as validator_state;
+    cast  aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 into r11 as [address; 10u32];
+    get.or_use pondo_oracle.aleo/top_validators[0u8] r11 into r12;
+    cast aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 0u32 0u64 0u128 40u8 0u128 into r13 as validator_datum;
+    get.or_use pondo_oracle.aleo/validator_data[r12[0u32]] r13 into r14;
+    get.or_use pondo_oracle.aleo/validator_data[r12[1u32]] r13 into r15;
+    get.or_use pondo_oracle.aleo/validator_data[r12[2u32]] r13 into r16;
+    get.or_use pondo_oracle.aleo/validator_data[r12[3u32]] r13 into r17;
+    get.or_use pondo_oracle.aleo/validator_data[r12[4u32]] r13 into r18;
     cast r14.validator r14.commission into r19 as validator_state;
     cast r15.validator r15.commission into r20 as validator_state;
     cast r16.validator r16.commission into r21 as validator_state;
     cast r17.validator r17.commission into r22 as validator_state;
-    cast  r18 r19 r20 r21 r22 into r23 as [validator_state; 5u32];
-    set r23 into validator_set[1u8];
-    div block.height 120_960u32 into r24;
-    set r24 into last_rebalance_epoch[0u8];
+    cast r18.validator r18.commission into r23 as validator_state;
+    cast  r19 r20 r21 r22 r23 into r24 as [validator_state; 5u32];
+    set r24 into validator_set[1u8];
+    div block.height 120_960u32 into r25;
+    set r25 into last_rebalance_epoch[0u8];
 
 
 
@@ -521,6 +523,8 @@ finalize distribute_deposits:
     sub r21[4u32] r41 into r50;
     lte r50 2u128 into r51;
     assert.eq r51 true;
+    add r8 r25 into r52;
+    set r52 into balances[0u8];
 
 
 
