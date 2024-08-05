@@ -33,13 +33,6 @@ program pondo_core_protocol.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
   const CREDITS_TOKEN_ID: field = 3443843282313283355522573239085696902919850365217539366784739393210722344986field;
 
-  // Delegator states
-  const BOND_ALLOWED: u8 = 0u8;
-  const UNBOND_NOT_ALLOWED: u8 = 1u8;
-  const UNBOND_ALLOWED: u8 = 2u8;
-  const UNBONDING: u8 = 3u8;
-  const TERMINAL: u8 = 4u8;
-
   // The One Group Address
   const ONE_GROUP_ADDRESS: address = aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
 
