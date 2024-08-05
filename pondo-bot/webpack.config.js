@@ -126,6 +126,8 @@ const testConfig = {
       path.resolve(__dirname, 'src') + '/tests/scripts/snapshotLedger.ts',
     swapLedger:
       path.resolve(__dirname, 'src') + '/tests/scripts/swapLedger.ts',
+    testRunner:
+      path.resolve(__dirname, 'src') + '/tests/testRunner.ts',
   },
 
   // Output configuration

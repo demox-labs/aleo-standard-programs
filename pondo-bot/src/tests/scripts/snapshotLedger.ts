@@ -10,11 +10,11 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ledgerPath = process.env.LEDGER_PATH!;
+const ledgerPath = process.env.SNARKOS_PATH!;
 const destinationPath = process.env.LEDGER_BACKUPS_PATH!;
 
 if (!ledgerPath || !destinationPath) {
-    console.error('Please set LEDGER_PATH and LEDGER_BACKUPS_PATH in your .env file.');
+    console.error('Please set SNARKOS_PATH and LEDGER_BACKUPS_PATH in your .env file.');
     process.exit(1);
 }
 
@@ -33,7 +33,6 @@ if (!fs.existsSync(destinationSubfolder)) {
 const ledgerFilePattern = /^\.ledger/;
 
 const readdir = promisify(fs.readdir);
-const stat = promisify(fs.stat);
 const execPromise = promisify(exec);
 
 async function copyLedgerFiles() {

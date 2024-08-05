@@ -55,17 +55,17 @@ const getEpochPeriod = async (blockHeight: number): Promise<EPOCH_PERIOD> => {
 
 const getPondoDelegatorStates = async (): Promise<string[]> => {
   let states: string[] = [];
+  let printStates: object[] = [];
   for (let index = 1; index < 6; index++) {
     const pondoDelegatorState = (await getMappingValue(
       '0u8',
       `pondo_delegator${index}${VERSION}.aleo`,
       'state_mapping'
     )) as PONDO_DELEGATOR_STATE;
-    console.log(
-      `Pondo delegator ${index} state: ${PONDO_DELEGATOR_STATE_TO_VALUE[pondoDelegatorState]}`
-    );
+    printStates.push({ delegator: index, state: PONDO_DELEGATOR_STATE_TO_VALUE[pondoDelegatorState] });
     states.push(pondoDelegatorState);
   }
+  console.table(printStates);
   return states;
 };
 

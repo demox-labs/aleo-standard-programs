@@ -16,7 +16,8 @@
     "call:test": "yarn build:dev && node ./dist/testProgramCalls.js",
     "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js",
     "snapshotLedger": "node ./dist/snapshotLedger.js",
-    "swapLedger": "node ./dist/swapLedger.js"
+    "swapLedger": "node ./dist/swapLedger.js",
+    "test": "node ./dist/testRunner.js"
   },
   "repository": {
     "type": "git",

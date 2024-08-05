@@ -10,12 +10,12 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ledgerPath = process.env.LEDGER_PATH!;
+const ledgerPath = process.env.SNARKOS_PATH!;
 const backupPath = process.env.LEDGER_BACKUPS_PATH!;
 const subfolderName = process.argv[2];
 
 if (!ledgerPath || !backupPath) {
-    console.error('Please set LEDGER_PATH and LEDGER_BACKUPS_PATH in your .env file.');
+    console.error('Please set SNARKOS_PATH and LEDGER_BACKUPS_PATH in your .env file.');
     process.exit(1);
 }
 

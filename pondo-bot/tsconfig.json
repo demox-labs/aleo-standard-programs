@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["node", "mocha", "ts-node"]
   },
-  "include": ["src/*"]
+  "include": ["src/*", "test/*"],
 }
