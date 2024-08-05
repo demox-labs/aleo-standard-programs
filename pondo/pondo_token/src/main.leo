@@ -108,7 +108,8 @@ program pondo_token.aleo {
     let pondo_paleo_ratio: u128 = pondo_supply_after.supply * PRECISION / paleo_balance_after.balance;
     let withdrawal_ratio: u128 = amount * PRECISION / paleo_amount;
 
-    // Ensure that the pondo to paleo ratio is greater than the withdrawal ratio
+    // Ensure that the pondo to paleo ratio is less than the withdrawal ratio
+    // A lower pondo / paleo implies each pondo represents more paleo
     let valid_withdrawal: bool = pondo_paleo_ratio <= withdrawal_ratio;
     assert(valid_withdrawal);
   }

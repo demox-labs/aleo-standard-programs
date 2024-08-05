@@ -441,7 +441,7 @@ program pondo_core_protocol.aleo {
     let optimal_liquidity: u64 = calculate_optimal_liquidity(currently_delegated as u128);
     assert(liquidity_pool >= optimal_liquidity);
 
-        // Check that each validator has the correct portion of credits
+    // Check that each validator has the correct portion of credits
     let delegator_allocation: [u128; 10] = pondo_oracle.aleo/delegator_allocation.get_or_use(
       0u8,
       [
@@ -468,6 +468,9 @@ program pondo_core_protocol.aleo {
     assert(delegator_allocation[2u8] - validator3_portion <= 2u128); // ensure that the validator portion is close to the expected portion
     assert(delegator_allocation[3u8] - validator4_portion <= 2u128); // ensure that the validator portion is close to the expected portion
     assert(delegator_allocation[4u8] - validator5_portion <= 2u128); // ensure that the validator portion is close to the expected portion
+
+    // Update DELEGATED_BALANCE
+    balances.set(DELEGATED_BALANCE, currently_delegated + total_credits);
   }
 
   inline calculate_optimal_liquidity(total_balance: u128) -> u64 {
