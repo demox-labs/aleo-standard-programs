@@ -3,6 +3,8 @@
 total_validators=5
 network_id=1
 
+echo "here"
+
 # rpc has a couple of passthrough methods, we need to add one for the history endpoint 
 
 # Create a new tmux session named "devnet"
@@ -41,4 +43,4 @@ for validator_index in "${validator_indices[@]}"; do
 done
 
 # Attach to the tmux session to view and interact with the windows
-tmux attach-session -t "devnet"
+# tmux attach-session -t "devnet"

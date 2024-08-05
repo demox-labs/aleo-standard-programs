@@ -10,10 +10,9 @@ export const clearLedger = async () => {
     // Clear existing ledger files in the destination directory
     const files = await readdir('.');
     for (const file of files) {
-      if (file.startsWith('.ledger') || file.startsWith('.logs') || file.startsWith('.current')) {
+      if (file.startsWith('.ledger') || file.startsWith('.logs') || file.startsWith('.current') || file.startsWith('.history')) {
           const filePath = path.join('.', file);
           await rm(filePath, { recursive: true, force: true });
-          console.log(`Deleted ${filePath}`);
       }
     }
   } catch (err) {

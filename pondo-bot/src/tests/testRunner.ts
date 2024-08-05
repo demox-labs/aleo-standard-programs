@@ -23,6 +23,15 @@ async function startDevNet() {
   }
 }
 
+async function runTests(testName: string) {
+  try {
+    const { stdout } = await execPromise(`node --import tsx --test ./src/tests/cases/${testName}.test.ts`);
+    console.log(stdout);
+  } catch (err) {
+    console.error(`Error running tests:`, err);
+  }
+}
+
 async function loadRPC(rpcBackupName: string) {
 
 }
@@ -43,8 +52,9 @@ async function main() {
   await clearLedger();
   await loadLedger(testStateName);
   await startDevNet();
-  // await clearLedger();
-  // await stopDevNet();
+  await runTests(testName);
+  await stopDevNet();
+  await clearLedger();
 }
 
 main()

@@ -1,0 +1,34 @@
+[
+  [
+    "aleo1p9sg8gapg22p3j42tang7c8kqzp4lhe6mg77gx32yys2a5y7pq9sxh6wrd",
+    "{\n  validator: aleo1p9sg8gapg22p3j42tang7c8kqzp4lhe6mg77gx32yys2a5y7pq9sxh6wrd,\n  microcredits: 150000390668595u64\n}"
+  ],
+  [
+    "aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px",
+    "{\n  validator: aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px,\n  microcredits: 150000390667031u64\n}"
+  ],
+  [
+    "aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2",
+    "{\n  validator: aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2,\n  microcredits: 150000390666855u64\n}"
+  ],
+  [
+    "aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t",
+    "{\n  validator: aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t,\n  microcredits: 150000390667390u64\n}"
+  ],
+  [
+    "aleo1n37jkkhurvunfwhxtqtec2a3a02afs0jx29gnvcl69zkmyaryypq7wzkwu",
+    "{\n  validator: aleo1p9sg8gapg22p3j42tang7c8kqzp4lhe6mg77gx32yys2a5y7pq9sxh6wrd,\n  microcredits: 10000001749u64\n}"
+  ],
+  [
+    "aleo1nktryn58ynk44lxekrupz47ptlnn5gczyfgswfl9v4k2u0k2gufqulkq77",
+    "{\n  validator: aleo1rhgdu77hgyqd3xjj8ucu3jj9r2krwz6mnzyd80gncr5fxcwlh5rsvzp9px,\n  microcredits: 10000002361u64\n}"
+  ],
+  [
+    "aleo1celg6hlyd0t60v8xadrrj8z4hgw35vne2zk6sre2x0rzsjdr85xs00xkpf",
+    "{\n  validator: aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t,\n  microcredits: 10000001050u64\n}"
+  ],
+  [
+    "aleo1ashyu96tjwe63u0gtnnv8z5lhapdu4l5pjsl2kha7fv7hvz2eqxs5dz0rg",
+    "{\n  validator: aleo1ashyu96tjwe63u0gtnnv8z5lhapdu4l5pjsl2kha7fv7hvz2eqxs5dz0rg,\n  microcredits: 150000390666855u64\n}"
+  ]
+]
