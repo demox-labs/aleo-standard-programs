@@ -133,6 +133,9 @@ program pondo_oracle.aleo {
   async transition remove_control_address(
     public control_address: address
   ) -> Future {
+    // Assert not removing themself
+    assert_neq(control_address, self.caller);
+
     return finalize_remove_control_address(control_address, self.caller);
   }
 
@@ -161,10 +164,11 @@ program pondo_oracle.aleo {
     let is_admin: bool = control_addresses.get(caller);
     assert(is_admin);
 
-    // Set the new admin
-    control_addresses.set(new_admin, true);
     // Remove the old admin
     control_addresses.remove(caller);
+    
+    // Set the new admin
+    control_addresses.set(new_admin, true);
   }
 
   async transition update_delegator_allocations(
