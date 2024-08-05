@@ -26,19 +26,6 @@ const bondDelegator = async (delegatorProgramId: string, minBalance: bigint, del
   if (balance < minBalance) {
     // Delegator does not have enough credits to bond
     console.log(`Delegator ${delegatorProgramId} does not have enough credits to bond`);
-    if (delegatorState === '0u8') {
-      console.log('Delegator is in state 0u8, submitting insufficient_balance transaction');
-      await submitTransaction(
-        NETWORK!,
-        PRIVATE_KEY!,
-        delegatorProgram,
-        'insufficient_balance',
-        [],
-        2, // TODO: set the correct fee
-        undefined,
-        resolvedImports
-      );
-    }
   } else {
     // Delegator has enough credits to bond
     await submitTransaction(
