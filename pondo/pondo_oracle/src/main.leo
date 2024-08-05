@@ -73,6 +73,10 @@ program pondo_oracle.aleo {
   }
 
   async function finalize_initialize() {
+    // Assert the protocol hasn't been initialized yet
+    assert_eq(delegator_allocation.contains(0u8), false);
+    assert_eq(top_validators.contains(0u8), false);
+
     // Set the control addresses
     control_addresses.set(INITIAL_DELEGATOR_APPROVER_ADDRESS, true);
     control_addresses.set(pondo_delegator1.aleo, false);
