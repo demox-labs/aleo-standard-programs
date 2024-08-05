@@ -104,7 +104,7 @@ program pondo_core_protocol.aleo {
   mapping withdrawals: address => withdrawal_state;
 
   async transition initialize(transfer_amount: u64) -> Future {
-    assert(transfer_amount >= 102u64); // Assert that the transfer amount is at least 102 microcredits, to ensure there is no division by zero, and that there is enough for the liquidity pool
+    assert(transfer_amount >= 100_000_000u64); // Assert that the transfer amount is at least 100 credits, to ensure there is no division by zero, and that there is enough for the liquidity pool
 
     // Transfer ALEO to the protocol
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, transfer_amount);
@@ -1171,7 +1171,7 @@ program pondo_core_protocol.aleo {
     let liquidity_pool: u64 = account_balance - reserved_for_withdrawal;
     let optimal_liquidity: u64 = calculate_optimal_liquidity(total_credits_128);
     assert(liquidity_pool >= optimal_liquidity); // ensure that liquidity pool is at least optimal liquidity
-    assert(liquidity_pool <= optimal_liquidity + 250u64); // ensure that liquidity pool is close to optimal liquidity
+    assert(liquidity_pool <= optimal_liquidity + 10_000_000u64); // ensure that liquidity pool is close to optimal liquidity
 
     // Update delegated balance
     balances.set(DELEGATED_BALANCE, total_credits);

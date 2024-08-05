@@ -113,12 +113,13 @@ finalize bond:
     get validator_mapping[0u8] into r2;
     assert.eq r0 r2.validator;
     get credits.aleo/account[pondo_delegator1.aleo] into r3;
-    assert.eq r3 0u64;
-    get state_mapping[0u8] into r4;
-    is.eq r4 0u8 into r5;
-    is.eq r4 1u8 into r6;
-    or r5 r6 into r7;
-    assert.eq r7 true;
+    lt r3 10_000_000u64 into r4;
+    assert.eq r4 true;
+    get state_mapping[0u8] into r5;
+    is.eq r5 0u8 into r6;
+    is.eq r5 1u8 into r7;
+    or r6 r7 into r8;
+    assert.eq r8 true;
     set 1u8 into state_mapping[0u8];
 
 
@@ -189,9 +190,10 @@ finalize transfer_to_core_protocol:
     input r0 as credits.aleo/transfer_public.future;
     await r0;
     get credits.aleo/account[pondo_delegator1.aleo] into r1;
-    assert.eq r1 0u64;
-    get state_mapping[0u8] into r2;
-    assert.eq r2 4u8;
+    lt r1 10_000_000u64 into r2;
+    assert.eq r2 true;
+    get state_mapping[0u8] into r3;
+    assert.eq r3 4u8;
 
 
 

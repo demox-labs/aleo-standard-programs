@@ -85,7 +85,7 @@ mapping withdrawals:
 
 function initialize:
     input r0 as u64.private;
-    gte r0 102u64 into r1;
+    gte r0 100_000_000u64 into r1;
     assert.eq r1 true;
     call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r0 into r2;
     call pondo_staked_aleo_token.aleo/register_token into r3;
@@ -1222,7 +1222,7 @@ finalize rebalance_redistribute:
     ternary r66 250_000_000_000u64 r67 into r68;
     gte r62 r68 into r69;
     assert.eq r69 true;
-    add r68 250u64 into r70;
+    add r68 10_000_000u64 into r70;
     lte r62 r70 into r71;
     assert.eq r71 true;
     set r33 into balances[0u8];

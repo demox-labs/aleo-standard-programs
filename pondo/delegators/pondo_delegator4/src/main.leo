@@ -15,6 +15,9 @@ program pondo_delegator4.aleo {
   const UNBONDING: u8 = 3u8;
   const TERMINAL: u8 = 4u8;
 
+  // The maximum account tolerance
+  const MAX_BALANCE_TOLERANCE: u64 = 10_000_000u64;
+
   // The maximum increase in commission allowed before a validator is banned
   const MAX_COMMISSION_INCREASE: u8 = 10u8;
   const MAX_COMMISSION: u8 = 50u8;
@@ -117,7 +120,7 @@ program pondo_delegator4.aleo {
     assert_eq(validator, current_validator_state.validator); // Ensure we're bonding to the correct validator
 
     let balance: u64 = credits.aleo/account.get(pondo_delegator4.aleo);
-    assert_eq(balance, 0u64); // Ensure the delegator is bonded completely
+    assert(balance < MAX_BALANCE_TOLERANCE); // Ensure the delegator is bonded completely
 
     let current_state: u8 = state_mapping.get(0u8);
     assert(current_state == BOND_ALLOWED || current_state == UNBOND_NOT_ALLOWED); // Ensure the delegator is in the correct state
@@ -205,7 +208,7 @@ program pondo_delegator4.aleo {
     f0.await();
 
     let balance: u64 = credits.aleo/account.get(pondo_delegator4.aleo);
-    assert_eq(balance, 0u64); // Ensure all the funds were transferred
+    assert(balance < MAX_BALANCE_TOLERANCE); // Ensure all the funds were transferred
 
     let current_state: u8 = state_mapping.get(0u8);
     assert_eq(current_state, TERMINAL); // Ensure the delegator is in the TERMINAL state
