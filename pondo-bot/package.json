@@ -14,7 +14,8 @@
     "call": "yarn call:protocol",
     "runOracleTests": "yarn build:dev && node ./dist/runOracleTests.js",
     "call:test": "yarn build:dev && node ./dist/testProgramCalls.js",
-    "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js"
+    "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js",
+    "estimateFees": "node ./dist/estimateFees.js"
   },
   "repository": {
     "type": "git",
@@ -34,7 +35,7 @@
   },
   "homepage": "https://github.com/demox-labs/aleo-standard-programs#readme",
   "dependencies": {
-    "@demox-labs/aleo-sdk": "^0.3.36",
+    "@demox-labs/aleo-sdk": "file:/Users/evanmarshall/Dev/aleo/aleo/wasm",
     "dotenv": "^16.0.3",
     "json-rpc-2.0": "^1.7.0",
     "threads": "^1.7.0",

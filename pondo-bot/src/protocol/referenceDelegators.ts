@@ -35,7 +35,7 @@ const getCurrentValidators = async () => {
 
 
 // Returns the transaction history of all of the validators that were proposed as reference delegators
-const getOracleProposalTransactionHistory = async () => {
+export const getOracleProposalTransactionHistory = async () => {
   const pondoOracleProgramId = pondoPrograms.filter(program => program.includes('pondo_oracle'))[0];
   if (!pondoOracleProgramId) {
     throw new Error('Pondo oracle program not found');
@@ -43,7 +43,7 @@ const getOracleProposalTransactionHistory = async () => {
   return await getPublicTransactionsForProgram(pondoOracleProgramId, 'propose_delegator', 0);
 }
 
-function extractValidatorAddressAndProgramName(tx: ExecuteTransaction): { validatorAddress: string | null, programName: string | null } {
+export function extractValidatorAddressAndProgramName(tx: ExecuteTransaction): { validatorAddress: string | null, programName: string | null } {
   const transitions = tx.transaction.execution.transitions;
   let validatorAddress: string | null = null;
   let programName: string | null = null;
