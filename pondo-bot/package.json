@@ -17,6 +17,9 @@
     "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js",
     "snapshotLedger": "node ./dist/snapshotLedger.js",
     "swapLedger": "node ./dist/swapLedger.js",
+    "snapshotRpcDb": "node ./dist/snapshotRpcDb.js",
+    "swapRpcDb": "node ./dist/swapRpcDb.js",
+    "snapshotAll": "yarn snapshotRpcDb $0 && yarn snapshotLedger $0",
     "test": "node ./dist/testRunner.js"
   },
   "repository": {

@@ -5,8 +5,8 @@ As most calls in the pondo protocol are permissionless, the private key used to 
 
 ## Setup
 
-1. Clone snarkOS then run: `cargo install --locked --path . --features history`
-2. Clone & setup the Aleo RPC and run: `yarn` && `yarn local-db-up` && `yarn start:prover` && `yarn start:dev`
+1. Clone [snarkOS](https://github.com/AleoNet/snarkOS) then run: `cargo install --locked --path . --features history` in the snarkOS directory
+2. Clone & setup the [Aleo RPC](https://github.com/demox-labs/aleo-rpc) and run: `yarn` && `yarn local-db-up` && `yarn start:prover` && `yarn start:dev`
    1. Update `endpoints.ts`
    ```
    export const ALEO_URL_BASE = 'http://127.0.0.1:3030';
@@ -42,6 +42,26 @@ Optionally, run Haruka's explorer:
 2. Make sure `SNARKOS_PATH` and `LEDGER_BACKUPS_PATH` are set in your `.env`. `SNARKOS_PATH` is the absolute path to the snarkOS directory on your machine, where the ledgers are stored. `LEDGER_BACKUPS_PATH` can refer to the local folder: `./ledger-swaps`.
 3. Run `yarn build:dev` to make sure all the test scripts are built.
 4. Run `yarn swapLedger your_ledger_name`.
+
+## Save RPC DB state
+
+1. Once the RPC is a in a state you want to save for hot reloading later:
+   1. Kill `/.devnet.sh` by `tmux kill-session -t devnet`.
+   1. Spin down RPC task by `crtl+C` on relevant terminal
+1. Make sure `RPC_PATH` & `RPC_BACKUPS_PATH` are set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo. `RPC_BACKUPS_PATH` must refer to the absolute path
+1. Run `yarn build:dev` to make sure all the test scripts are built.
+1. Run `yarn rpcBackupDb your_backup_name`
+
+## Hot swap DB state
+
+1. Kill `/.devnet.sh` by `tmux kill-session -t devnet`.
+1. Make sure `RPC_PATH` is set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo. `RPC_BACKUPS_PATH` is optional but must refer to the absolute path of the backups
+1. Run `yarn build:dev` to make sure all the test scripts are built.
+1. Run `yarn swapRpcDb your_backup_name`.
+
+### Save all state data
+
+1. Alternatively, once killing devnet & spinning down the RPC, you can run `yarn snapshotAll your_test_name` to run snapshots for all relevant data
 
 ## After updating a leo program
 
