@@ -23,6 +23,11 @@ struct validator_boost:
     epoch as u32;
     boost_amount as u64;
 
+struct admin_operation:
+    arg as address;
+    op_type as u8;
+    request_id as u64;
+
 
 mapping delegator_to_validator:
 	key as address.public;
@@ -64,6 +69,11 @@ mapping delegator_allocation:
 	value as [u128; 10u32].public;
 
 
+mapping admin_operations:
+	key as u64.public;
+	value as admin_operation.public;
+
+
 function initialize:
     async initialize into r0;
     output r0 as pondo_oracle.aleo/initialize.future;
@@ -74,6 +84,10 @@ finalize initialize:
     contains top_validators[0u8] into r1;
     assert.eq r1 false;
     set true into control_addresses[aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0];
+    set true into control_addresses[aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr];
+    set true into control_addresses[aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew];
+    set true into control_addresses[aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a];
+    set true into control_addresses[aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s];
     set false into control_addresses[pondo_delegator1.aleo];
     set false into control_addresses[pondo_delegator2.aleo];
     set false into control_addresses[pondo_delegator3.aleo];
@@ -89,14 +103,44 @@ finalize initialize:
 
 function add_control_address:
     input r0 as address.public;
-    async add_control_address r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/add_control_address.future;
+    input r1 as signature.public;
+    input r2 as address.public;
+    input r3 as signature.public;
+    input r4 as address.public;
+    input r5 as signature.public;
+    input r6 as address.public;
+    input r7 as u64.public;
+    cast r0 0u8 r7 into r8 as admin_operation;
+    hash.bhp256 r8 into r9 as field;
+    sign.verify r1 r2 r9 into r10;
+    sign.verify r3 r4 r9 into r11;
+    sign.verify r5 r6 r9 into r12;
+    and r10 r11 into r13;
+    and r13 r12 into r14;
+    assert.eq r14 true;
+    async add_control_address r0 r2 r4 r6 r8 into r15;
+    output r15 as pondo_oracle.aleo/add_control_address.future;
 
 finalize add_control_address:
     input r0 as address.public;
     input r1 as address.public;
-    get control_addresses[r1] into r2;
-    assert.eq r2 true;
+    input r2 as address.public;
+    input r3 as address.public;
+    input r4 as admin_operation.public;
+    assert.neq r1 r2;
+    assert.neq r1 r3;
+    assert.neq r2 r3;
+    get control_addresses[r1] into r5;
+    get control_addresses[r2] into r6;
+    get control_addresses[r3] into r7;
+    and r5 r6 into r8;
+    and r8 r7 into r9;
+    assert.eq r9 true;
+    contains admin_operations[r4.request_id] into r10;
+    assert.eq r10 false;
+    set r4 into admin_operations[r4.request_id];
+    contains control_addresses[r0] into r11;
+    assert.eq r11 false;
     set false into control_addresses[r0];
 
 
@@ -104,15 +148,44 @@ finalize add_control_address:
 
 function remove_control_address:
     input r0 as address.public;
-    assert.neq r0 self.caller;
-    async remove_control_address r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/remove_control_address.future;
+    input r1 as signature.public;
+    input r2 as address.public;
+    input r3 as signature.public;
+    input r4 as address.public;
+    input r5 as signature.public;
+    input r6 as address.public;
+    input r7 as u64.public;
+    cast r0 1u8 r7 into r8 as admin_operation;
+    hash.bhp256 r8 into r9 as field;
+    sign.verify r1 r2 r9 into r10;
+    sign.verify r3 r4 r9 into r11;
+    sign.verify r5 r6 r9 into r12;
+    and r10 r11 into r13;
+    and r13 r12 into r14;
+    assert.eq r14 true;
+    async remove_control_address r0 r2 r4 r6 r8 into r15;
+    output r15 as pondo_oracle.aleo/remove_control_address.future;
 
 finalize remove_control_address:
     input r0 as address.public;
     input r1 as address.public;
-    get control_addresses[r1] into r2;
-    assert.eq r2 true;
+    input r2 as address.public;
+    input r3 as address.public;
+    input r4 as admin_operation.public;
+    assert.neq r1 r2;
+    assert.neq r1 r3;
+    assert.neq r2 r3;
+    get control_addresses[r1] into r5;
+    get control_addresses[r2] into r6;
+    get control_addresses[r3] into r7;
+    and r5 r6 into r8;
+    and r8 r7 into r9;
+    assert.eq r9 true;
+    contains admin_operations[r4.request_id] into r10;
+    assert.eq r10 false;
+    set r4 into admin_operations[r4.request_id];
+    get control_addresses[r0] into r11;
+    assert.eq r11 false;
     remove control_addresses[r0];
 
 
@@ -136,14 +209,43 @@ finalize update_admin:
 
 function update_delegator_allocations:
     input r0 as [u128; 10u32].public;
-    async update_delegator_allocations r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/update_delegator_allocations.future;
+    input r1 as signature.public;
+    input r2 as address.public;
+    input r3 as signature.public;
+    input r4 as address.public;
+    input r5 as signature.public;
+    input r6 as address.public;
+    input r7 as u64.public;
+    hash.bhp256 r0 into r8 as address;
+    cast r8 2u8 0u64 into r9 as admin_operation;
+    hash.bhp256 r9 into r10 as field;
+    sign.verify r1 r2 r10 into r11;
+    sign.verify r3 r4 r10 into r12;
+    sign.verify r5 r6 r10 into r13;
+    and r11 r12 into r14;
+    and r14 r13 into r15;
+    assert.eq r15 true;
+    async update_delegator_allocations r0 r2 r4 r6 r9 into r16;
+    output r16 as pondo_oracle.aleo/update_delegator_allocations.future;
 
 finalize update_delegator_allocations:
     input r0 as [u128; 10u32].public;
     input r1 as address.public;
-    get control_addresses[r1] into r2;
-    assert.eq r2 true;
+    input r2 as address.public;
+    input r3 as address.public;
+    input r4 as admin_operation.public;
+    assert.neq r1 r2;
+    assert.neq r1 r3;
+    assert.neq r2 r3;
+    get control_addresses[r1] into r5;
+    get control_addresses[r2] into r6;
+    get control_addresses[r3] into r7;
+    and r5 r6 into r8;
+    and r8 r7 into r9;
+    assert.eq r9 true;
+    contains admin_operations[r4.request_id] into r10;
+    assert.eq r10 false;
+    set r4 into admin_operations[r4.request_id];
     set r0 into delegator_allocation[0u8];
 
 
@@ -169,31 +271,59 @@ finalize propose_delegator:
 
 function add_delegator:
     input r0 as address.public;
-    async add_delegator r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/add_delegator.future;
+    input r1 as signature.public;
+    input r2 as address.public;
+    input r3 as signature.public;
+    input r4 as address.public;
+    input r5 as signature.public;
+    input r6 as address.public;
+    input r7 as u64.public;
+    cast r0 3u8 r7 into r8 as admin_operation;
+    hash.bhp256 r8 into r9 as field;
+    sign.verify r1 r2 r9 into r10;
+    sign.verify r3 r4 r9 into r11;
+    sign.verify r5 r6 r9 into r12;
+    and r10 r11 into r13;
+    and r13 r12 into r14;
+    assert.eq r14 true;
+    async add_delegator r0 r2 r4 r6 r8 into r15;
+    output r15 as pondo_oracle.aleo/add_delegator.future;
 
 finalize add_delegator:
     input r0 as address.public;
     input r1 as address.public;
-    get control_addresses[r1] into r2;
-    assert.eq r2 true;
-    contains delegator_to_validator[r0] into r3;
-    assert.eq r3 true;
-    get credits.aleo/withdraw[r0] into r4;
-    assert.eq r4 r0;
-    get delegator_to_validator[r0] into r5;
-    get credits.aleo/bonded[r0] into r6;
-    assert.eq r6.validator r5;
-    contains banned_validators[r5] into r7;
-    assert.eq r7 false;
-    contains validator_data[r0] into r8;
-    assert.eq r8 false;
-    get credits.aleo/committee[r5] into r9;
-    assert.eq r9.is_open true;
-    lt r9.commission 50u8 into r10;
-    assert.eq r10 true;
-    cast r0 r5 block.height r6.microcredits 0u128 r9.commission 0u128 into r11 as validator_datum;
-    set r11 into validator_data[r0];
+    input r2 as address.public;
+    input r3 as address.public;
+    input r4 as admin_operation.public;
+    assert.neq r1 r2;
+    assert.neq r1 r3;
+    assert.neq r2 r3;
+    get control_addresses[r1] into r5;
+    get control_addresses[r2] into r6;
+    get control_addresses[r3] into r7;
+    and r5 r6 into r8;
+    and r8 r7 into r9;
+    assert.eq r9 true;
+    contains admin_operations[r4.request_id] into r10;
+    assert.eq r10 false;
+    set r4 into admin_operations[r4.request_id];
+    contains delegator_to_validator[r0] into r11;
+    assert.eq r11 true;
+    get credits.aleo/withdraw[r0] into r12;
+    assert.eq r12 r0;
+    get delegator_to_validator[r0] into r13;
+    get credits.aleo/bonded[r0] into r14;
+    assert.eq r14.validator r13;
+    contains banned_validators[r13] into r15;
+    assert.eq r15 false;
+    contains validator_data[r0] into r16;
+    assert.eq r16 false;
+    get credits.aleo/committee[r13] into r17;
+    assert.eq r17.is_open true;
+    lt r17.commission 50u8 into r18;
+    assert.eq r18 true;
+    cast r0 r13 block.height r14.microcredits 0u128 r17.commission 0u128 into r19 as validator_datum;
+    set r19 into validator_data[r0];
 
 
 

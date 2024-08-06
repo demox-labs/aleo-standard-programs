@@ -5,7 +5,12 @@ import credits.aleo;
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
-  const INITIAL_DELEGATOR_APPROVER_ADDRESS: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
+  const ADMIN_0: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
+  const ADMIN_1: address = aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr;
+  const ADMIN_2: address = aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew;
+  const ADMIN_3: address = aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a;
+  const ADMIN_4: address = aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s;
+
   // The Zero Group Address
   const ZERO_GROUP_ADDRESS: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
   // The precision used to calculate the return per epoch
@@ -49,6 +54,12 @@ program pondo_oracle.aleo {
     commission: u8
   }
 
+  struct admin_operation {
+    arg: address,
+    op_type: u8,
+    request_id: u64
+  }
+
   // A mapping of the reference delegator to the validator address
   // It may contain unapproved reference delegators
   mapping delegator_to_validator: address => address;
@@ -67,6 +78,7 @@ program pondo_oracle.aleo {
   // Addresses that can ban validators, the bool indicates if the address is the admin
   mapping control_addresses: address => bool;
   mapping delegator_allocation: u8 => [u128; 10];
+  mapping admin_operations: u64 => admin_operation;
 
   async transition initialize() -> Future {
     return finalize_initialize();
@@ -77,8 +89,14 @@ program pondo_oracle.aleo {
     assert_eq(delegator_allocation.contains(0u8), false);
     assert_eq(top_validators.contains(0u8), false);
 
-    // Set the control addresses
-    control_addresses.set(INITIAL_DELEGATOR_APPROVER_ADDRESS, true);
+    // Set the admin control addresses
+    control_addresses.set(ADMIN_0, true);
+    control_addresses.set(ADMIN_1, true);
+    control_addresses.set(ADMIN_2, true);
+    control_addresses.set(ADMIN_3, true);
+    control_addresses.set(ADMIN_4, true);
+
+    // Set the non-admin control addresses
     control_addresses.set(pondo_delegator1.aleo, false);
     control_addresses.set(pondo_delegator2.aleo, false);
     control_addresses.set(pondo_delegator3.aleo, false);
@@ -114,42 +132,128 @@ program pondo_oracle.aleo {
   }
 
   async transition add_control_address(
-    public control_address: address
+    public control_address: address,
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
   ) -> Future {
-    return finalize_add_control_address(control_address, self.caller);
+    let admin_op: admin_operation = admin_operation {
+      arg: control_address,
+      op_type: 0u8,
+      request_id: request_id
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    return finalize_add_control_address(control_address, admin_1, admin_2, admin_3, admin_op);
   }
 
   async function finalize_add_control_address(
     public control_address: address,
-    public caller: address
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
   ) {
-    // Ensure the caller is an admin
-    let is_admin: bool = control_addresses.get(caller);
-    assert(is_admin);
+    /* Start Verify Admin Operation */
 
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
+
+    // Ensure the control address is not already an admin
+    // This ensures other admins cannot downgrade other admins
+    let already_exists: bool = control_addresses.contains(control_address);
+    assert_eq(already_exists, false);
+
+    // Set the control address
     control_addresses.set(control_address, false);
   }
 
   async transition remove_control_address(
-    public control_address: address
+    public control_address: address,
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
   ) -> Future {
-    // Assert not removing themself
-    assert_neq(control_address, self.caller);
+    let admin_op: admin_operation = admin_operation {
+      arg: control_address,
+      op_type: 1u8,
+      request_id: request_id
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);  
 
-    return finalize_remove_control_address(control_address, self.caller);
+    return finalize_remove_control_address(control_address, admin_1, admin_2, admin_3, admin_op);
   }
 
   async function finalize_remove_control_address(
     public control_address: address,
-    public caller: address
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
   ) {
-    // Ensure the caller is an admin
-    let is_admin: bool = control_addresses.get(caller);
-    assert(is_admin);
+    /* Start Verify Admin Operation */
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
+
+    // Ensure the control address is not an admin
+    let removing_admin: bool = control_addresses.get(control_address);
+    assert_eq(removing_admin, false);
 
     control_addresses.remove(control_address);
   }
 
+  // Used for an admin to update their own admin addresses
   async transition update_admin(
     public new_admin: address
   ) -> Future {
@@ -166,24 +270,64 @@ program pondo_oracle.aleo {
 
     // Remove the old admin
     control_addresses.remove(caller);
-    
+
     // Set the new admin
     control_addresses.set(new_admin, true);
   }
 
   async transition update_delegator_allocations(
-    public multiple: [u128; 10]
+    public multiple: [u128; 10],
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
   ) -> Future {
-    return finalize_update_delegator_allocations(multiple, self.caller);
+    let multiple_hash: address = BHP256::hash_to_address(multiple);
+    let admin_op: admin_operation = admin_operation {
+      arg: multiple_hash,
+      op_type: 2u8,
+      request_id: 0u64
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    return finalize_update_delegator_allocations(multiple, admin_1, admin_2, admin_3, admin_op);
   }
 
   async function finalize_update_delegator_allocations(
     public multiple: [u128; 10],
-    public caller: address
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
   ) {
-    // Ensure the caller is an admin
-    let is_admin: bool = control_addresses.get(caller);
-    assert(is_admin);
+    /* Start Verify Admin Operation */
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
 
     delegator_allocation.set(0u8, multiple);
   }
@@ -217,18 +361,57 @@ program pondo_oracle.aleo {
   // To be called by the delegator approver who will have to ensure offchain that the delegator meets the requirements to be considered a reference delegator
   // The only requirement is that reference delegator meets the exact standard set by reference_delegator.aleo
   async transition add_delegator(
-    public delegator: address
+    public delegator: address,
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
   ) -> Future {
-    return finalize_add_delegator(delegator, self.caller);
+    let admin_op: admin_operation = admin_operation {
+      arg: delegator,
+      op_type: 3u8,
+      request_id: request_id
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    return finalize_add_delegator(delegator, admin_1, admin_2, admin_3, admin_op);
   }
 
   async function finalize_add_delegator(
     public delegator: address,
-    public caller: address
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
   ) {
-    // Ensure the caller is a admin address
-    let is_admin: bool = control_addresses.get(caller);
-    assert(is_admin);
+    /* Start Verify Admin Operation */
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
 
     // Check that proposed_reference_delegator contains the reference delegator
     let contains_delegator: bool = delegator_to_validator.contains(delegator);

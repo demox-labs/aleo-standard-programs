@@ -44,6 +44,11 @@ struct validator_datum:
     commission as u8;
     boost as u128;
 
+struct admin_operation:
+    arg as address;
+    op_type as u8;
+    request_id as u64;
+
 struct validator_state:
     validator as address;
     commission as u8;

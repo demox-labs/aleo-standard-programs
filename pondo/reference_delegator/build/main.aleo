@@ -3,6 +3,11 @@ import pondo_oracle.aleo;
 program reference_delegator.aleo;
 
 
+struct admin_operation:
+    arg as address;
+    op_type as u8;
+    request_id as u64;
+
 
 mapping initialized:
 	key as u8.public;

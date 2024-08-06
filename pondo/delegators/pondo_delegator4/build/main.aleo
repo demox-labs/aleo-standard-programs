@@ -7,6 +7,11 @@ struct committee_state:
     commission as u8;
 
 
+struct admin_operation:
+    arg as address;
+    op_type as u8;
+    request_id as u64;
+
 struct validator_state:
     validator as address;
     commission as u8;
