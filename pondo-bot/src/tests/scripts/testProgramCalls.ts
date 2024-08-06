@@ -4,6 +4,7 @@ import {
   NETWORK,
   TEST_USER0_PRIVATE_KEY,
   TEST_USER1_PRIVATE_KEY,
+  TEST_USER2_PRIVATE_KEY,
 } from '../../constants';
 import {
   pondoDependencyTree,
@@ -44,10 +45,10 @@ async function main(
   let resolvedImports = await resolveImports(TEST_PROGRAM_IMPORTS);
   await submitTransaction(
     NETWORK!,
-    privateKey || TEST_USER1_PRIVATE_KEY!,
+    privateKey || TEST_USER2_PRIVATE_KEY!,
     TEST_PROGRAM_CODE,
     functionName,
-    [`${depositAsBigInt}u64`, `${expectedPaleo}u64`],
+    inputs,
     4,
     undefined,
     resolvedImports
