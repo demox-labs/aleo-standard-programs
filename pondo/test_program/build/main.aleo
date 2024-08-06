@@ -1,5 +1,5 @@
 import credits.aleo;
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -99,17 +99,17 @@ function deposit_withdraw:
     input r1 as u64.private;
     input r2 as boolean.private;
     cast r0 into r3 as u128;
-    call multi_token_support_program_v02.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller test_program.aleo r3 into r4;
+    call multi_token_support_program.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller test_program.aleo r3 into r4;
     cast r0 into r5 as u128;
-    call multi_token_support_program_v02.aleo/approve_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field pondo_core_protocol.aleo r5 into r6;
+    call multi_token_support_program.aleo/approve_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field pondo_core_protocol.aleo r5 into r6;
     call pondo_core_protocol.aleo/deposit_public r0 r1 test_program.aleo into r7;
     call pondo_core_protocol.aleo/withdraw_public r1 into r8;
     async deposit_withdraw r4 r6 r7 r8 into r9;
     output r9 as test_program.aleo/deposit_withdraw.future;
 
 finalize deposit_withdraw:
-    input r0 as multi_token_support_program_v02.aleo/transfer_from_public.future;
-    input r1 as multi_token_support_program_v02.aleo/approve_public.future;
+    input r0 as multi_token_support_program.aleo/transfer_from_public.future;
+    input r1 as multi_token_support_program.aleo/approve_public.future;
     input r2 as pondo_core_protocol.aleo/deposit_public.future;
     input r3 as pondo_core_protocol.aleo/withdraw_public.future;
     await r0;
@@ -125,9 +125,9 @@ function deposit_instant_withdraw:
     input r1 as u64.private;
     input r2 as boolean.private;
     cast r0 into r3 as u128;
-    call multi_token_support_program_v02.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller test_program.aleo r3 into r4;
+    call multi_token_support_program.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller test_program.aleo r3 into r4;
     cast r0 into r5 as u128;
-    call multi_token_support_program_v02.aleo/approve_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field pondo_core_protocol.aleo r5 into r6;
+    call multi_token_support_program.aleo/approve_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field pondo_core_protocol.aleo r5 into r6;
     cast r0 into r7 as u128;
     cast r0 into r8 as u128;
     mul r8 025u128 into r9;
@@ -142,8 +142,8 @@ function deposit_instant_withdraw:
     output r17 as test_program.aleo/deposit_instant_withdraw.future;
 
 finalize deposit_instant_withdraw:
-    input r0 as multi_token_support_program_v02.aleo/transfer_from_public.future;
-    input r1 as multi_token_support_program_v02.aleo/approve_public.future;
+    input r0 as multi_token_support_program.aleo/transfer_from_public.future;
+    input r1 as multi_token_support_program.aleo/approve_public.future;
     input r2 as pondo_core_protocol.aleo/deposit_public.future;
     input r3 as pondo_core_protocol.aleo/instant_withdraw_public.future;
     await r0;

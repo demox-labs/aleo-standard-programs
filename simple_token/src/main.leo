@@ -1,4 +1,4 @@
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 
 // The 'simple_token' program.
 program simple_token_v2.aleo {
@@ -12,7 +12,7 @@ program simple_token_v2.aleo {
   
   async transition initialize() -> Future {
     assert_eq(self.caller, ADMIN);
-    let r0: Future = multi_token_support_program_v02.aleo/register_token(
+    let r0: Future = multi_token_support_program.aleo/register_token(
       4846247369341682005field, // token_id: field
       4846247369341682004u128, // name: u128, CATNOHAT ascii encoded
       4846247369341682004u128, // symbol: u128, CATNOHAT ascii encoded
@@ -21,7 +21,7 @@ program simple_token_v2.aleo {
       false, // external_authorization_required: boolean
       self.address // external_authorization_party: address
     );
-    let r1: Future = multi_token_support_program_v02.aleo/mint_public(
+    let r1: Future = multi_token_support_program.aleo/mint_public(
       4846247369341682005field, // token_id: field
       ADMIN,
       1_000_000_000_000_000u128,

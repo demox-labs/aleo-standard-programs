@@ -1,4 +1,4 @@
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 
 program pondo_token.aleo {
   const PONDO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842601field;
@@ -7,7 +7,7 @@ program pondo_token.aleo {
   const PRECISION: u128 = 1_000_000u128;
   const MAX_SUPPLY: u128 = 1_000_000_000_000_000u128;
 
-  // shadowed from multi_token_support_program_v02.aleo
+  // shadowed from multi_token_support_program.aleo
   struct TokenMetadata {
     token_id: field,
     name: u128,
@@ -20,13 +20,13 @@ program pondo_token.aleo {
     external_authorization_party: address
   }
 
-  // shadowed from multi_token_support_program_v02.aleo
+  // shadowed from multi_token_support_program.aleo
   struct TokenOwner {
     account: address,
     token_id: field
   }
 
-  // shadowed from multi_token_support_program_v02.aleo
+  // shadowed from multi_token_support_program.aleo
   struct Balance {
     token_id: field,
     account: address,
@@ -46,7 +46,7 @@ program pondo_token.aleo {
     let external_authorization_required: bool = false;
     let external_authorization_party: address = pondo_token.aleo;
 
-    let f0: Future = multi_token_support_program_v02.aleo/register_token(PONDO_TOKEN_ID, name, symbol, decimals, MAX_SUPPLY, external_authorization_required, external_authorization_party);
+    let f0: Future = multi_token_support_program.aleo/register_token(PONDO_TOKEN_ID, name, symbol, decimals, MAX_SUPPLY, external_authorization_required, external_authorization_party);
 
     return finalize_initialize_token(f0);
   }
@@ -59,7 +59,7 @@ program pondo_token.aleo {
 
   async transition mint_public() -> Future {
     assert_eq(self.caller, PONDO_FOUNDATION_ADDRESS);
-    let f0: Future = multi_token_support_program_v02.aleo/mint_public(PONDO_TOKEN_ID, PONDO_FOUNDATION_ADDRESS, MAX_SUPPLY, 4294967295u32);
+    let f0: Future = multi_token_support_program.aleo/mint_public(PONDO_TOKEN_ID, PONDO_FOUNDATION_ADDRESS, MAX_SUPPLY, 4294967295u32);
     return finalize_mint_public(f0);
   }
   
@@ -82,9 +82,9 @@ program pondo_token.aleo {
     let called_by_owner: bool = self.caller == burner;
     assert(signed_by_owner || called_by_owner);
 
-    let f0: Future = multi_token_support_program_v02.aleo/burn_public(PONDO_TOKEN_ID, burner, amount);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PONDO_TOKEN_ID, burner, amount);
 
-    let f1: Future = multi_token_support_program_v02.aleo/transfer_public(PALEO_TOKEN_ID, burner, paleo_amount);
+    let f1: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, burner, paleo_amount);
 
     return finalize_burn_public(f0, f1, amount, paleo_amount);
   }
@@ -94,7 +94,7 @@ program pondo_token.aleo {
     f1.await();
 
     // Get the total supply of pondo
-    let pondo_supply_after: TokenMetadata = multi_token_support_program_v02.aleo/registered_tokens.get(PONDO_TOKEN_ID);
+    let pondo_supply_after: TokenMetadata = multi_token_support_program.aleo/registered_tokens.get(PONDO_TOKEN_ID);
 
     // Get the pondo_token's balance of paleo
     let token_owner: TokenOwner = TokenOwner {
@@ -102,7 +102,7 @@ program pondo_token.aleo {
       token_id: PALEO_TOKEN_ID
     };
     let balance_key: field = BHP256::hash_to_field(token_owner);
-    let paleo_balance_after: Balance = multi_token_support_program_v02.aleo/authorized_balances.get(balance_key);
+    let paleo_balance_after: Balance = multi_token_support_program.aleo/authorized_balances.get(balance_key);
 
     // Calculate the pondo to paleo ratio
     let pondo_paleo_ratio: u128 = pondo_supply_after.supply * PRECISION / paleo_balance_after.balance;

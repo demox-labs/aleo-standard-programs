@@ -10,7 +10,7 @@
             "network": "testnet"
         },
         {
-            "name": "multi_token_support_program_v02.aleo",
+            "name": "multi_token_support_program.aleo",
             "location": "local",
             "path": "../../multi_token_support_program"
         },

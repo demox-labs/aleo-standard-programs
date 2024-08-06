@@ -54,8 +54,15 @@ program pondo_oracle.aleo {
     commission: u8
   }
 
+  // The operation types
+  const ADD_OPERATION: u8 = 0u8;
+  const REMOVE_OPERATION: u8 = 1u8;
+  const UPDATE_DELEGATOR_ALLOCATIONS_OPERATION: u8 = 2u8;
+  const UPDATE_ADMIN_OPERATION: u8 = 3u8;
+  const APPROVE_DELEGATOR_OPERATION: u8 = 4u8;
+
   struct admin_operation {
-    arg: address,
+    arg: field,
     op_type: u8,
     request_id: u64
   }
@@ -141,9 +148,10 @@ program pondo_oracle.aleo {
     public admin_3: address,
     public request_id: u64
   ) -> Future {
+    let arg: field = BHP256::hash_to_field(control_address);
     let admin_op: admin_operation = admin_operation {
-      arg: control_address,
-      op_type: 0u8,
+      arg: arg,
+      op_type: ADD_OPERATION,
       request_id: request_id
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);
@@ -203,9 +211,10 @@ program pondo_oracle.aleo {
     public admin_3: address,
     public request_id: u64
   ) -> Future {
+    let arg: field = BHP256::hash_to_field(control_address);
     let admin_op: admin_operation = admin_operation {
-      arg: control_address,
-      op_type: 1u8,
+      arg: arg,
+      op_type: REMOVE_OPERATION,
       request_id: request_id
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);
@@ -255,21 +264,64 @@ program pondo_oracle.aleo {
 
   // Used for an admin to update their own admin addresses
   async transition update_admin(
-    public new_admin: address
+    public old_admin: address,
+    public new_admin: address,
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
   ) -> Future {
-    return finalize_update_admin(new_admin, self.caller);
+    let args: [address; 2] = [old_admin, new_admin];
+    let arg: field = BHP256::hash_to_field(args);
+    let admin_op: admin_operation = admin_operation {
+      arg: arg,
+      op_type: UPDATE_ADMIN_OPERATION,
+      request_id: request_id
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    return finalize_update_admin(old_admin, new_admin, admin_1, admin_2, admin_3, admin_op);
   }
 
   async function finalize_update_admin(
+    public old_admin: address,
     public new_admin: address,
-    public caller: address
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
   ) {
-    // Ensure the caller is an admin
-    let is_admin: bool = control_addresses.get(caller);
-    assert(is_admin);
+    /* Start Verify Admin Operation */
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
 
     // Remove the old admin
-    control_addresses.remove(caller);
+    control_addresses.remove(old_admin);
 
     // Set the new admin
     control_addresses.set(new_admin, true);
@@ -285,10 +337,10 @@ program pondo_oracle.aleo {
     public admin_3: address,
     public request_id: u64
   ) -> Future {
-    let multiple_hash: address = BHP256::hash_to_address(multiple);
+    let multiple_hash: field = BHP256::hash_to_field(multiple);
     let admin_op: admin_operation = admin_operation {
       arg: multiple_hash,
-      op_type: 2u8,
+      op_type: UPDATE_DELEGATOR_ALLOCATIONS_OPERATION,
       request_id: 0u64
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);
@@ -370,9 +422,10 @@ program pondo_oracle.aleo {
     public admin_3: address,
     public request_id: u64
   ) -> Future {
+    let arg: field = BHP256::hash_to_field(delegator);
     let admin_op: admin_operation = admin_operation {
-      arg: delegator,
-      op_type: 3u8,
+      arg: arg,
+      op_type: APPROVE_DELEGATOR_OPERATION,
       request_id: request_id
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);

@@ -24,7 +24,7 @@ struct validator_boost:
     boost_amount as u64;
 
 struct admin_operation:
-    arg as address;
+    arg as field;
     op_type as u8;
     request_id as u64;
 
@@ -110,16 +110,17 @@ function add_control_address:
     input r5 as signature.public;
     input r6 as address.public;
     input r7 as u64.public;
-    cast r0 0u8 r7 into r8 as admin_operation;
-    hash.bhp256 r8 into r9 as field;
-    sign.verify r1 r2 r9 into r10;
-    sign.verify r3 r4 r9 into r11;
-    sign.verify r5 r6 r9 into r12;
-    and r10 r11 into r13;
-    and r13 r12 into r14;
-    assert.eq r14 true;
-    async add_control_address r0 r2 r4 r6 r8 into r15;
-    output r15 as pondo_oracle.aleo/add_control_address.future;
+    hash.bhp256 r0 into r8 as field;
+    cast r8 0u8 r7 into r9 as admin_operation;
+    hash.bhp256 r9 into r10 as field;
+    sign.verify r1 r2 r10 into r11;
+    sign.verify r3 r4 r10 into r12;
+    sign.verify r5 r6 r10 into r13;
+    and r11 r12 into r14;
+    and r14 r13 into r15;
+    assert.eq r15 true;
+    async add_control_address r0 r2 r4 r6 r9 into r16;
+    output r16 as pondo_oracle.aleo/add_control_address.future;
 
 finalize add_control_address:
     input r0 as address.public;
@@ -155,16 +156,17 @@ function remove_control_address:
     input r5 as signature.public;
     input r6 as address.public;
     input r7 as u64.public;
-    cast r0 1u8 r7 into r8 as admin_operation;
-    hash.bhp256 r8 into r9 as field;
-    sign.verify r1 r2 r9 into r10;
-    sign.verify r3 r4 r9 into r11;
-    sign.verify r5 r6 r9 into r12;
-    and r10 r11 into r13;
-    and r13 r12 into r14;
-    assert.eq r14 true;
-    async remove_control_address r0 r2 r4 r6 r8 into r15;
-    output r15 as pondo_oracle.aleo/remove_control_address.future;
+    hash.bhp256 r0 into r8 as field;
+    cast r8 1u8 r7 into r9 as admin_operation;
+    hash.bhp256 r9 into r10 as field;
+    sign.verify r1 r2 r10 into r11;
+    sign.verify r3 r4 r10 into r12;
+    sign.verify r5 r6 r10 into r13;
+    and r11 r12 into r14;
+    and r14 r13 into r15;
+    assert.eq r15 true;
+    async remove_control_address r0 r2 r4 r6 r9 into r16;
+    output r16 as pondo_oracle.aleo/remove_control_address.future;
 
 finalize remove_control_address:
     input r0 as address.public;
@@ -193,16 +195,48 @@ finalize remove_control_address:
 
 function update_admin:
     input r0 as address.public;
-    async update_admin r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/update_admin.future;
+    input r1 as address.public;
+    input r2 as signature.public;
+    input r3 as address.public;
+    input r4 as signature.public;
+    input r5 as address.public;
+    input r6 as signature.public;
+    input r7 as address.public;
+    input r8 as u64.public;
+    cast  r0 r1 into r9 as [address; 2u32];
+    hash.bhp256 r9 into r10 as field;
+    cast r10 3u8 r8 into r11 as admin_operation;
+    hash.bhp256 r11 into r12 as field;
+    sign.verify r2 r3 r12 into r13;
+    sign.verify r4 r5 r12 into r14;
+    sign.verify r6 r7 r12 into r15;
+    and r13 r14 into r16;
+    and r16 r15 into r17;
+    assert.eq r17 true;
+    async update_admin r0 r1 r3 r5 r7 r11 into r18;
+    output r18 as pondo_oracle.aleo/update_admin.future;
 
 finalize update_admin:
     input r0 as address.public;
     input r1 as address.public;
-    get control_addresses[r1] into r2;
-    assert.eq r2 true;
-    remove control_addresses[r1];
-    set true into control_addresses[r0];
+    input r2 as address.public;
+    input r3 as address.public;
+    input r4 as address.public;
+    input r5 as admin_operation.public;
+    assert.neq r2 r3;
+    assert.neq r2 r4;
+    assert.neq r3 r4;
+    get control_addresses[r2] into r6;
+    get control_addresses[r3] into r7;
+    get control_addresses[r4] into r8;
+    and r6 r7 into r9;
+    and r9 r8 into r10;
+    assert.eq r10 true;
+    contains admin_operations[r5.request_id] into r11;
+    assert.eq r11 false;
+    set r5 into admin_operations[r5.request_id];
+    remove control_addresses[r0];
+    set true into control_addresses[r1];
 
 
 
@@ -216,7 +250,7 @@ function update_delegator_allocations:
     input r5 as signature.public;
     input r6 as address.public;
     input r7 as u64.public;
-    hash.bhp256 r0 into r8 as address;
+    hash.bhp256 r0 into r8 as field;
     cast r8 2u8 0u64 into r9 as admin_operation;
     hash.bhp256 r9 into r10 as field;
     sign.verify r1 r2 r10 into r11;
@@ -278,16 +312,17 @@ function add_delegator:
     input r5 as signature.public;
     input r6 as address.public;
     input r7 as u64.public;
-    cast r0 3u8 r7 into r8 as admin_operation;
-    hash.bhp256 r8 into r9 as field;
-    sign.verify r1 r2 r9 into r10;
-    sign.verify r3 r4 r9 into r11;
-    sign.verify r5 r6 r9 into r12;
-    and r10 r11 into r13;
-    and r13 r12 into r14;
-    assert.eq r14 true;
-    async add_delegator r0 r2 r4 r6 r8 into r15;
-    output r15 as pondo_oracle.aleo/add_delegator.future;
+    hash.bhp256 r0 into r8 as field;
+    cast r8 4u8 r7 into r9 as admin_operation;
+    hash.bhp256 r9 into r10 as field;
+    sign.verify r1 r2 r10 into r11;
+    sign.verify r3 r4 r10 into r12;
+    sign.verify r5 r6 r10 into r13;
+    and r11 r12 into r14;
+    and r14 r13 into r15;
+    assert.eq r15 true;
+    async add_delegator r0 r2 r4 r6 r9 into r16;
+    output r16 as pondo_oracle.aleo/add_delegator.future;
 
 finalize add_delegator:
     input r0 as address.public;

@@ -1,4 +1,4 @@
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 
 // -----------------------------------------------------------
 // pALEO Token Program
@@ -16,7 +16,7 @@ program pondo_staked_aleo_token.aleo {
     let external_authorization_required: bool = false;
     let external_authorization_party: address = pondo_staked_aleo_token.aleo;
 
-    let f0: Future = multi_token_support_program_v02.aleo/register_token(PALEO_TOKEN_ID, name, symbol, decimals, max_supply, external_authorization_required, external_authorization_party);
+    let f0: Future = multi_token_support_program.aleo/register_token(PALEO_TOKEN_ID, name, symbol, decimals, max_supply, external_authorization_required, external_authorization_party);
 
     return finalize_register_token(f0);
   }
@@ -32,7 +32,7 @@ program pondo_staked_aleo_token.aleo {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
     // Mint the pALEO tokens to the receiver, with u32::MAX as the expiration time
-    let f0: Future = multi_token_support_program_v02.aleo/mint_public(PALEO_TOKEN_ID, receiver, amount as u128, 4294967295u32);
+    let f0: Future = multi_token_support_program.aleo/mint_public(PALEO_TOKEN_ID, receiver, amount as u128, 4294967295u32);
     return finalize_mint_public(f0);
   }
 
@@ -46,7 +46,7 @@ program pondo_staked_aleo_token.aleo {
   ) -> Future {
     assert_eq(self.caller, pondo_core_protocol.aleo);
 
-    let f0: Future = multi_token_support_program_v02.aleo/burn_public(PALEO_TOKEN_ID, owner, amount as u128);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PALEO_TOKEN_ID, owner, amount as u128);
     return finalize_burn_public(f0);
   }
 

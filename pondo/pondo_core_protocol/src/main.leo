@@ -1,5 +1,5 @@
 import credits.aleo;
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -260,7 +260,7 @@ program pondo_core_protocol.aleo {
 
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let total_paleo_pool: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
+    let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
     let rewards: i64 = total_delegated > currently_delegated ? total_delegated as i64 - currently_delegated as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
@@ -314,8 +314,8 @@ program pondo_core_protocol.aleo {
     assert(expected_paleo_mint >= 1u64); // Assert that the expected pALEO mint is at least 1 microcredit
 
     // Transfer ALEO to pool
-    let f0: Future = multi_token_support_program_v02.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
-    let f1: Future = multi_token_support_program_v02.aleo/withdraw_credits_public(credits_deposit);
+    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
+    let f1: Future = multi_token_support_program.aleo/withdraw_credits_public(credits_deposit);
     // Mint pALEO to depositor
     let f2: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
 
@@ -367,7 +367,7 @@ program pondo_core_protocol.aleo {
 
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let total_paleo_pool: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
+    let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
     let rewards: i64 = total_delegated > currently_delegated ? total_delegated as i64 - currently_delegated as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
@@ -545,7 +545,7 @@ program pondo_core_protocol.aleo {
     // and without any rewards that have been earned since the update
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
     let rewards: i64 = total_delegated > currently_delegated ? total_delegated as i64 - currently_delegated as i64 : 0i64;
@@ -644,7 +644,7 @@ program pondo_core_protocol.aleo {
     // and without any rewards that have been earned since the update
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
     let rewards: i64 = total_delegated > currently_delegated ? total_delegated as i64 - currently_delegated as i64 : 0i64;
@@ -747,7 +747,7 @@ program pondo_core_protocol.aleo {
     // and without any rewards that have been earned since the update
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
     let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
@@ -847,7 +847,7 @@ program pondo_core_protocol.aleo {
     // and without any rewards that have been earned since the update
     let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_owed_commission: u64 = owed_commission.get(0u8);
-    let paleo_minted_post_burn: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
+    let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
     let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
@@ -1056,7 +1056,7 @@ program pondo_core_protocol.aleo {
 
     let current_owed_commission: u64 = owed_commission.get(0u8);
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
-    let total_paleo_minted: u128 = multi_token_support_program_v02.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - commission_mint as u128;
+    let total_paleo_minted: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - commission_mint as u128;
 
     let rewards: i64 = full_balance > current_balance ? full_balance as i64 - current_balance as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);

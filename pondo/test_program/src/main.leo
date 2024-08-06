@@ -1,5 +1,5 @@
 import credits.aleo;
-import multi_token_support_program_v02.aleo;
+import multi_token_support_program.aleo;
 import pondo_core_protocol.aleo;
 
 program test_program.aleo {
@@ -48,8 +48,8 @@ program test_program.aleo {
   }
 
   async transition deposit_withdraw(deposit: u64, expected_paleo: u64, subtract_fee: bool) -> Future {
-    let f0: Future = multi_token_support_program_v02.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
-    let f1: Future = multi_token_support_program_v02.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
+    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
+    let f1: Future = multi_token_support_program.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
 
     let f2: Future = pondo_core_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
     let f3: Future = pondo_core_protocol.aleo/withdraw_public(expected_paleo);
@@ -65,8 +65,8 @@ program test_program.aleo {
   }
 
   async transition deposit_instant_withdraw(deposit: u64, expected_paleo: u64, subtract_fee: bool) -> Future {
-    let f0: Future = multi_token_support_program_v02.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
-    let f1: Future = multi_token_support_program_v02.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
+    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
+    let f1: Future = multi_token_support_program.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
 
     let expectedAleo: u128 = subtract_fee ? deposit as u128 - (deposit as u128 * INSTANT_WITHDRAW_FEE / PRECISION_UNSIGNED) : deposit as u128;
     let f2: Future = pondo_core_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);

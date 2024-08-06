@@ -8,7 +8,7 @@ struct committee_state:
 
 
 struct admin_operation:
-    arg as address;
+    arg as field;
     op_type as u8;
     request_id as u64;
 
