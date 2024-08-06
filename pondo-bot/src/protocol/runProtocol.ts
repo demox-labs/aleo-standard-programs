@@ -163,12 +163,12 @@ const prepRebalance = async (pondoDelegatorStates: string[]): Promise<void> => {
   }
 
   const allTerminalOrBonded = pondoDelegatorStates.every(
-    (state) => state === '1u8' || state === '4u8'
+    (state) =>  state === '0u8' || state === '1u8' || state === '4u8'
   );
 
   if (allTerminalOrBonded) {
     console.log(
-      'All pondo delegators are in unbond_not_Allowed or terminal state, ready to prep_rebalance'
+      'All pondo delegators are in bond_allowed or unbond_not_allowed or terminal state, ready to prep_rebalance'
     );
 
     const programCode = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
