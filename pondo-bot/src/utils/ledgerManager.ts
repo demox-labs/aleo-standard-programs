@@ -42,7 +42,6 @@ export const loadLedger = async (ledgerFolderName: string) => {
           const destFile = path.join(ledgerPath, file);
           try {
               await execPromise(`cp -r ${sourceFile} ${destFile}`);
-              console.log(`Copied ${file} to ${ledgerPath}`);
           } catch (copyErr) {
               console.error(`Error copying file ${file}:`, copyErr);
           }

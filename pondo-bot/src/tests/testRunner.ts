@@ -25,7 +25,7 @@ async function startDevNet() {
 
 async function runTests(testName: string) {
   try {
-    const { stdout } = await execPromise(`node --import tsx --test ./src/tests/cases/${testName}.test.ts`);
+    const { stdout } = await execPromise(`node --test ./dist/${testName}Test.js`);
     console.log(stdout);
   } catch (err) {
     console.error(`Error running tests:`, err);

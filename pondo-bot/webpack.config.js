@@ -128,6 +128,8 @@ const testConfig = {
       path.resolve(__dirname, 'src') + '/tests/scripts/swapLedger.ts',
     testRunner:
       path.resolve(__dirname, 'src') + '/tests/testRunner.ts',
+    depositTest:
+      path.resolve(__dirname, 'src') + '/tests/cases/deposit.test.ts',
   },
 
   // Output configuration
