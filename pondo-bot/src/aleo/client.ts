@@ -286,6 +286,16 @@ export const pollDelegatedDeployment = async (
   return await pollDelegatedDeployment(requestId);
 };
 
+export const getChainHeight = async (): Promise<number> => {
+  const client = getClient();
+  try {
+    const height = (await client.request('latest/height', {}));
+    return height;
+  } catch {
+    throw new Error('Height endpoint errored.');
+  }
+};
+
 export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 10): Promise<boolean> => {
   if (retriesRemaining <= 0) {
     return false;
