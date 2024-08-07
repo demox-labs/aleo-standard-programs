@@ -11,8 +11,6 @@ program pondo_oracle.aleo {
   const ADMIN_3: address = aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a;
   const ADMIN_4: address = aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s;
 
-  // The Zero Group Address
-  const ZERO_GROUP_ADDRESS: address = aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch
@@ -124,16 +122,16 @@ program pondo_oracle.aleo {
     ]);
     top_validators.set(0u8,
       [
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS,
-        ZERO_GROUP_ADDRESS
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address,
+        self.address
       ]
     );
   }
@@ -586,8 +584,8 @@ program pondo_oracle.aleo {
     // Get the array of top validators
     let top_validators_addresses: [address; 10] = top_validators.get(0u8);
     let default_validator_datum: validator_datum = validator_datum {
-      delegator: ZERO_GROUP_ADDRESS,
-      validator: ZERO_GROUP_ADDRESS,
+      delegator: self.address,
+      validator: self.address,
       block_height: 0u32,
       bonded_microcredits: 0u64,
       microcredits_yield_per_epoch: 0u128,
@@ -675,27 +673,27 @@ program pondo_oracle.aleo {
 
     // Remove from the top 10 validators if there
     let top_validators_addresses: [address; 10] = top_validators.get(0u8);
-    let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[0u8];
-    let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[1u8];
-    let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[2u8];
-    let new_validator_3: address = top_validators_addresses[3u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[3u8];
-    let new_validator_4: address = top_validators_addresses[4u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[4u8];
-    let new_validator_5: address = top_validators_addresses[5u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[5u8];
-    let new_validator_6: address = top_validators_addresses[6u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[6u8];
-    let new_validator_7: address = top_validators_addresses[7u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[7u8];
-    let new_validator_8: address = top_validators_addresses[8u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[8u8];
-    let new_validator_9: address = top_validators_addresses[9u8] == delegator_address ? ZERO_GROUP_ADDRESS : top_validators_addresses[9u8];
+    let new_validator_0: address = top_validators_addresses[0u8] == delegator_address ? self.address : top_validators_addresses[0u8];
+    let new_validator_1: address = top_validators_addresses[1u8] == delegator_address ? self.address : top_validators_addresses[1u8];
+    let new_validator_2: address = top_validators_addresses[2u8] == delegator_address ? self.address : top_validators_addresses[2u8];
+    let new_validator_3: address = top_validators_addresses[3u8] == delegator_address ? self.address : top_validators_addresses[3u8];
+    let new_validator_4: address = top_validators_addresses[4u8] == delegator_address ? self.address : top_validators_addresses[4u8];
+    let new_validator_5: address = top_validators_addresses[5u8] == delegator_address ? self.address : top_validators_addresses[5u8];
+    let new_validator_6: address = top_validators_addresses[6u8] == delegator_address ? self.address : top_validators_addresses[6u8];
+    let new_validator_7: address = top_validators_addresses[7u8] == delegator_address ? self.address : top_validators_addresses[7u8];
+    let new_validator_8: address = top_validators_addresses[8u8] == delegator_address ? self.address : top_validators_addresses[8u8];
+    let new_validator_9: address = top_validators_addresses[9u8] == delegator_address ? self.address : top_validators_addresses[9u8];
 
     // Swap until 0group address is at the end of the array
-    let swap_result_0: (address, address) = swap_zero_group_address(new_validator_0, new_validator_1);
-    let swap_result_1: (address, address) = swap_zero_group_address(swap_result_0.1, new_validator_2);
-    let swap_result_2: (address, address) = swap_zero_group_address(swap_result_1.1, new_validator_3);
-    let swap_result_3: (address, address) = swap_zero_group_address(swap_result_2.1, new_validator_4);
-    let swap_result_4: (address, address) = swap_zero_group_address(swap_result_3.1, new_validator_5);
-    let swap_result_5: (address, address) = swap_zero_group_address(swap_result_4.1, new_validator_6);
-    let swap_result_6: (address, address) = swap_zero_group_address(swap_result_5.1, new_validator_7);
-    let swap_result_7: (address, address) = swap_zero_group_address(swap_result_6.1, new_validator_8);
-    let swap_result_8: (address, address) = swap_zero_group_address(swap_result_7.1, new_validator_9);
+    let swap_result_0: (address, address) = swap_self_address(new_validator_0, new_validator_1);
+    let swap_result_1: (address, address) = swap_self_address(swap_result_0.1, new_validator_2);
+    let swap_result_2: (address, address) = swap_self_address(swap_result_1.1, new_validator_3);
+    let swap_result_3: (address, address) = swap_self_address(swap_result_2.1, new_validator_4);
+    let swap_result_4: (address, address) = swap_self_address(swap_result_3.1, new_validator_5);
+    let swap_result_5: (address, address) = swap_self_address(swap_result_4.1, new_validator_6);
+    let swap_result_6: (address, address) = swap_self_address(swap_result_5.1, new_validator_7);
+    let swap_result_7: (address, address) = swap_self_address(swap_result_6.1, new_validator_8);
+    let swap_result_8: (address, address) = swap_self_address(swap_result_7.1, new_validator_9);
 
     let new_top_validators_addresses: [address; 10] = [
       swap_result_0.0,
@@ -719,7 +717,7 @@ program pondo_oracle.aleo {
     public validator: address
   ) -> Future {
     // Check that 0Group addresses cannot be banned
-    assert_neq(validator, ZERO_GROUP_ADDRESS);
+    assert_neq(validator, self.address);
 
     return finalize_pondo_ban_validator(validator, self.caller);
   }
@@ -943,11 +941,11 @@ program pondo_oracle.aleo {
   }
 
   // Swap the zero group address to the end of the list
-  inline swap_zero_group_address(
+  inline swap_self_address(
     address_0: address,
     address_1: address
   ) -> (address, address) {
-      if (address_0 == ZERO_GROUP_ADDRESS) {
+      if (address_0 == self.address) {
         return (address_1, address_0);
       } else {
         return (address_0, address_1);

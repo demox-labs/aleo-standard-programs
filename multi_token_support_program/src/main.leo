@@ -72,9 +72,9 @@ program multi_token_support_program.aleo {
       decimals: 6u8,
       supply: 0u128, // placeholder value; not used
       max_supply: 0u128, // placeholder value; not used
-      admin: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc, // zero group address; no admin
+      admin: self.address, // admin is the multi_token_support_program itself, ie no one can change the token metadata
       external_authorization_required: false,
-      external_authorization_party: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc // zero group address; no external authorization party
+      external_authorization_party: self.address // admin is the multi_token_support_program itself, ie no one can change the token metadata
     };
 
     registered_tokens.set(CREDITS_RESERVED_TOKEN_ID, credits_reserved_token);

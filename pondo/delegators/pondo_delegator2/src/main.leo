@@ -16,7 +16,7 @@ program pondo_delegator2.aleo {
   const TERMINAL: u8 = 4u8;
 
   // The maximum account tolerance
-  const MAX_BALANCE_TOLERANCE: u64 = 10_000_000u64;
+  const MAX_BALANCE_TOLERANCE: u64 = 1_000_000u64;
 
   // The maximum increase in commission allowed before a validator is banned
   const MAX_COMMISSION_INCREASE: u8 = 10u8;

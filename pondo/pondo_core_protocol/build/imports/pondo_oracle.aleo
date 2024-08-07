@@ -95,7 +95,7 @@ finalize initialize:
     set false into control_addresses[pondo_delegator5.aleo];
     cast  3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r2 as [u128; 10u32];
     set r2 into delegator_allocation[0u8];
-    cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r3 as [address; 10u32];
+    cast  pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo into r3 as [address; 10u32];
     set r3 into top_validators[0u8];
 
 
@@ -415,7 +415,7 @@ finalize update_data:
     ternary r33 r20 0u128 into r34;
     cast r0 r1.validator block.height r9.microcredits r34 r7.commission r30 into r35 as validator_datum;
     get top_validators[0u8] into r36;
-    cast aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc 0u32 0u64 0u128 0u8 0u128 into r37 as validator_datum;
+    cast pondo_oracle.aleo pondo_oracle.aleo 0u32 0u64 0u128 0u8 0u128 into r37 as validator_datum;
     get.or_use validator_data[r36[0u32]] r37 into r38;
     get.or_use validator_data[r36[1u32]] r37 into r39;
     get.or_use validator_data[r36[2u32]] r37 into r40;
@@ -1491,50 +1491,50 @@ finalize remove_delegator:
     position end_otherwise_0_3;
     get top_validators[0u8] into r5;
     is.eq r5[0u32] r0 into r6;
-    ternary r6 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[0u32] into r7;
+    ternary r6 pondo_oracle.aleo r5[0u32] into r7;
     is.eq r5[1u32] r0 into r8;
-    ternary r8 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[1u32] into r9;
+    ternary r8 pondo_oracle.aleo r5[1u32] into r9;
     is.eq r5[2u32] r0 into r10;
-    ternary r10 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[2u32] into r11;
+    ternary r10 pondo_oracle.aleo r5[2u32] into r11;
     is.eq r5[3u32] r0 into r12;
-    ternary r12 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[3u32] into r13;
+    ternary r12 pondo_oracle.aleo r5[3u32] into r13;
     is.eq r5[4u32] r0 into r14;
-    ternary r14 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[4u32] into r15;
+    ternary r14 pondo_oracle.aleo r5[4u32] into r15;
     is.eq r5[5u32] r0 into r16;
-    ternary r16 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[5u32] into r17;
+    ternary r16 pondo_oracle.aleo r5[5u32] into r17;
     is.eq r5[6u32] r0 into r18;
-    ternary r18 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[6u32] into r19;
+    ternary r18 pondo_oracle.aleo r5[6u32] into r19;
     is.eq r5[7u32] r0 into r20;
-    ternary r20 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[7u32] into r21;
+    ternary r20 pondo_oracle.aleo r5[7u32] into r21;
     is.eq r5[8u32] r0 into r22;
-    ternary r22 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[8u32] into r23;
+    ternary r22 pondo_oracle.aleo r5[8u32] into r23;
     is.eq r5[9u32] r0 into r24;
-    ternary r24 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc r5[9u32] into r25;
-    is.eq r7 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r26;
+    ternary r24 pondo_oracle.aleo r5[9u32] into r25;
+    is.eq r7 pondo_oracle.aleo into r26;
     ternary r26 r9 r7 into r27;
     ternary r26 r7 r9 into r28;
-    is.eq r28 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r29;
+    is.eq r28 pondo_oracle.aleo into r29;
     ternary r29 r11 r28 into r30;
     ternary r29 r28 r11 into r31;
-    is.eq r31 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r32;
+    is.eq r31 pondo_oracle.aleo into r32;
     ternary r32 r13 r31 into r33;
     ternary r32 r31 r13 into r34;
-    is.eq r34 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r35;
+    is.eq r34 pondo_oracle.aleo into r35;
     ternary r35 r15 r34 into r36;
     ternary r35 r34 r15 into r37;
-    is.eq r37 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r38;
+    is.eq r37 pondo_oracle.aleo into r38;
     ternary r38 r17 r37 into r39;
     ternary r38 r37 r17 into r40;
-    is.eq r40 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r41;
+    is.eq r40 pondo_oracle.aleo into r41;
     ternary r41 r19 r40 into r42;
     ternary r41 r40 r19 into r43;
-    is.eq r43 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r44;
+    is.eq r43 pondo_oracle.aleo into r44;
     ternary r44 r21 r43 into r45;
     ternary r44 r43 r21 into r46;
-    is.eq r46 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r47;
+    is.eq r46 pondo_oracle.aleo into r47;
     ternary r47 r23 r46 into r48;
     ternary r47 r46 r23 into r49;
-    is.eq r49 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r50;
+    is.eq r49 pondo_oracle.aleo into r50;
     ternary r50 r25 r49 into r51;
     ternary r50 r49 r25 into r52;
     cast  r27 r30 r33 r36 r39 r42 r45 r48 r51 r52 into r53 as [address; 10u32];
@@ -1545,7 +1545,7 @@ finalize remove_delegator:
 
 function pondo_ban_validator:
     input r0 as address.public;
-    assert.neq r0 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
+    assert.neq r0 pondo_oracle.aleo;
     async pondo_ban_validator r0 self.caller into r1;
     output r1 as pondo_oracle.aleo/pondo_ban_validator.future;
 

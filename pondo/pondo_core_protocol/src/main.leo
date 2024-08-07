@@ -111,7 +111,7 @@ program pondo_core_protocol.aleo {
 
     // Initialize pALEO and PNDO tokens
     let f1: Future = pondo_staked_aleo_token.aleo/register_token();
-    let f2: Future = pondo_staked_aleo_token.aleo/mint_public(transfer_amount, self.signer);
+    let f2: Future = pondo_staked_aleo_token.aleo/mint_public(transfer_amount, self.address);
     let f3: Future = pondo_token.aleo/initialize_token();
 
     // Initialize delegators
@@ -226,6 +226,10 @@ program pondo_core_protocol.aleo {
     f0.await();
     f1.await();
 
+    // Assert not in rebalancing state
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state != REBALANCING_STATE);
+
     let base_bond_state: bond_state = bond_state {
       validator: self.address,
       microcredits: 0u64
@@ -258,7 +262,8 @@ program pondo_core_protocol.aleo {
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     let total_delegated: u64 = total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
@@ -268,13 +273,7 @@ program pondo_core_protocol.aleo {
 
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
-    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let core_protocol_account_i64: i64 = core_protocol_account as i64;
-    let credits_deposit_i64: i64 = credits_deposit as i64;
-    let reserved_for_withdrawal_i64: i64 = reserved_for_withdrawal as i64;
-    let deposit_pool: i64 = current_state != REBALANCING_STATE
-     ? core_protocol_account_i64 - credits_deposit_i64 - reserved_for_withdrawal_i64
-     : core_protocol_account_i64 - currently_delegated as i64 - credits_deposit_i64 - reserved_for_withdrawal_i64; // if the protocol is rebalancing, the full balance is in the account
+    let deposit_pool: u64 = core_protocol_account - credits_deposit - reserved_for_withdrawal;
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
 
@@ -333,6 +332,10 @@ program pondo_core_protocol.aleo {
     f1.await();
     f2.await();
 
+    // Assert not in rebalancing state
+    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
+    assert(current_state != REBALANCING_STATE);
+
     let base_bond_state: bond_state = bond_state {
       validator: self.address,
       microcredits: 0u64
@@ -365,7 +368,8 @@ program pondo_core_protocol.aleo {
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     let total_delegated: u64 = total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128 - expected_paleo_mint as u128;
 
@@ -375,13 +379,7 @@ program pondo_core_protocol.aleo {
 
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
     let reserved_for_withdrawal: u64 = balances.get(CLAIMABLE_WITHDRAWALS);
-    let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);
-    let core_protocol_account_i64: i64 = core_protocol_account as i64;
-    let credits_deposit_i64: i64 = credits_deposit as i64;
-    let reserved_for_withdrawal_i64: i64 = reserved_for_withdrawal as i64;
-    let deposit_pool: i64 = current_state != REBALANCING_STATE
-     ? core_protocol_account_i64 - credits_deposit_i64 - reserved_for_withdrawal_i64
-     : core_protocol_account_i64 - currently_delegated as i64 - credits_deposit_i64 - reserved_for_withdrawal_i64; // if the protocol is rebalancing, the full balance is in the account
+    let deposit_pool: u64 = core_protocol_account - credits_deposit - reserved_for_withdrawal;
     let new_commission_paleo: u64 = calculate_new_paleo(currently_delegated as u128, deposit_pool as u128, new_commission as u128, total_paleo_pool);
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo);
 
@@ -543,7 +541,8 @@ program pondo_core_protocol.aleo {
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
@@ -642,7 +641,8 @@ program pondo_core_protocol.aleo {
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
@@ -741,16 +741,17 @@ program pondo_core_protocol.aleo {
     let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
-    let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
+    let total_delegated: u64 = total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
-    let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
+    let rewards: i64 = total_delegated as i64 > currently_delegated as i64 ? total_delegated as i64 - currently_delegated as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
     currently_delegated += rewards as u64 - new_commission;
 
@@ -841,16 +842,17 @@ program pondo_core_protocol.aleo {
     let total_unbonding: u64 = delegator1_unbonding + delegator2_unbonding + delegator3_unbonding + delegator4_unbonding + delegator5_unbonding;
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
     // Total delegated is all credits that have been sent to delegators, less any that have been withdrawn but are still bonded
-    let total_delegated: i64 = total_bonded as i64 + total_account as i64 + total_unbonding as i64 - bonded_withdrawals as i64;
+    let total_delegated: u64 = total_bonded + total_account + total_unbonding - bonded_withdrawals;
 
     // Currently delegated is all credits that have been sent to delegators, less withdrawals,
     // and without any rewards that have been earned since the update
-    let currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let currently_delegated: u64 = saved_currently_delegated > total_delegated ? total_delegated : saved_currently_delegated;
     let current_owed_commission: u64 = owed_commission.get(0u8);
     let paleo_minted_post_burn: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply + current_owed_commission as u128;
     let total_paleo_minted: u128 = paleo_minted_post_burn + paleo_burn_amount as u128;
 
-    let rewards: i64 = total_delegated > currently_delegated as i64 ? total_delegated - currently_delegated as i64 : 0i64;
+    let rewards: i64 = total_delegated as i64 > currently_delegated as i64 ? total_delegated as i64 - currently_delegated as i64 : 0i64;
     let new_commission: u64 = get_commission(rewards as u128, PROTOCOL_FEE);
     currently_delegated += rewards as u64 - new_commission;
 
@@ -1051,8 +1053,17 @@ program pondo_core_protocol.aleo {
     f5.await();
 
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
-    let full_balance: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8] - bonded_withdrawals;
-    let current_balance: u64 = balances.get(DELEGATED_BALANCE);
+    let transfers_total: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8] - bonded_withdrawals;
+    let delegator_balance_1: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator_balance_2: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator_balance_3: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator_balance_4: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator_balance_5: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+    let delegators_total: u64 = delegator_balance_1 + delegator_balance_2 + delegator_balance_3 + delegator_balance_4 + delegator_balance_5;
+    let full_balance: u64 = transfers_total + delegators_total;
+
+    let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
+    let current_balance: u64 = saved_currently_delegated > full_balance ? full_balance : saved_currently_delegated;
 
     let current_owed_commission: u64 = owed_commission.get(0u8);
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
@@ -1071,7 +1082,7 @@ program pondo_core_protocol.aleo {
     // Reset bonded withdrawals
     balances.set(BONDED_WITHDRAWALS, 0u64);
     // Calculate deposit pool
-    let deposit_pool: u64 = core_protocol_account - full_balance - reserved_for_withdrawal;
+    let deposit_pool: u64 = core_protocol_account - transfers_total - reserved_for_withdrawal;
 
     let new_commission_paleo: u64 = calculate_new_paleo(current_balance as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
     assert(commission_mint >= (current_owed_commission * 98u64) / 100u64); // Assert that the minted commission is at least 98% of the owed commission
@@ -1153,7 +1164,13 @@ program pondo_core_protocol.aleo {
         PORTION_5,
         PORTION_5
       ]);
+    let delegator1_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
     let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
+    total_credits += delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance;
     let total_credits_128: u128 = total_credits as u128;
     let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator2_portion: u128 = (transfer_amounts[1u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
