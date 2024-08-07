@@ -2,3 +2,4 @@
 .env.testnetbeta
 .env.local
 .env.*
+src/tests/.*

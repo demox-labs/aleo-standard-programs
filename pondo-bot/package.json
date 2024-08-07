@@ -20,7 +20,9 @@
     "snapshotRpcDb": "node ./dist/snapshotRpcDb.js",
     "swapRpcDb": "node ./dist/swapRpcDb.js",
     "snapshotAll": "yarn snapshotRpcDb $0 && yarn snapshotLedger $0",
-    "test": "node ./dist/testRunner.js"
+    "test": "node ./dist/testRunner.js",
+    "setupDevnet": "cd src/tests && ./setupDevnet.sh",
+    "stopDevnet": "tmux kill-session -t devnet"
   },
   "repository": {
     "type": "git",
