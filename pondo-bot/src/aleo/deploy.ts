@@ -33,7 +33,6 @@ import {
   MAX_GUARANTEED_LIQUIDITY_DEFAULT,
   MIN_LIQUIDITY_PERCENT,
   MIN_LIQUIDITY_PERCENT_DEFAULT,
-  ORACLE_ADDRESS,
   PALEO_TOKEN_ID_DEFAULT,
   PALEO_TOKEN_ID,
   PONDO_TOKEN_ID_DEFAULT,
@@ -41,6 +40,11 @@ import {
   DEFAULT_PONDO_FOUNDATION_ADDRESS,
   PONDO_FOUNDATION_ADDRESS,
   ORACLE_ONLY,
+  MULTI_SIG_ADDRESS_0,
+  MULTI_SIG_ADDRESS_1,
+  MULTI_SIG_ADDRESS_2,
+  MULTI_SIG_ADDRESS_3,
+  MULTI_SIG_ADDRESS_4,
 } from '../constants';
 
 type AuthorizePool = Pool<
@@ -100,10 +104,29 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
     );
   }
 
-  updatedProgramCode = updatedProgramCode.replaceAll(
-    'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
-    ORACLE_ADDRESS
-  );
+  if (MULTI_SIG_ADDRESS_0 && MULTI_SIG_ADDRESS_1 && MULTI_SIG_ADDRESS_2 && MULTI_SIG_ADDRESS_3 && MULTI_SIG_ADDRESS_4) {
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0',
+      MULTI_SIG_ADDRESS_0
+    );
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr',
+      MULTI_SIG_ADDRESS_1
+    );
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew',
+      MULTI_SIG_ADDRESS_2
+    );
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a',
+      MULTI_SIG_ADDRESS_3
+    );
+    updatedProgramCode = updatedProgramCode.replaceAll(
+      'aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s',
+      MULTI_SIG_ADDRESS_4
+    );
+  }
+
 
   if (DEFAULT_VALIDATOR_ADDRESS) {
     updatedProgramCode = updatedProgramCode.replaceAll(

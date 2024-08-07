@@ -1,5 +1,13 @@
 import { deployAllProgramsIfNecessary } from './aleo/deploy';
-import { NETWORK, ORACLE_ONLY, ORACLE_PRIVATE_KEY, PRIVATE_KEY, TEST } from './constants';
+import {
+  NETWORK,
+  ORACLE_ONLY,
+  MULTI_SIG_PRIVATE_KEY_0,
+  MULTI_SIG_PRIVATE_KEY_1,
+  MULTI_SIG_PRIVATE_KEY_2,
+  PRIVATE_KEY,
+  TEST
+} from './constants';
 import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
 import {
   approveReferenceDelegatorsIfNecessary,
@@ -25,7 +33,7 @@ async function main() {
 
   while (true) {
     try {
-      if (ORACLE_PRIVATE_KEY) {
+      if (MULTI_SIG_PRIVATE_KEY_0 && MULTI_SIG_PRIVATE_KEY_1 && MULTI_SIG_PRIVATE_KEY_2) {
         // Approve reference delegators if necessary
         await approveReferenceDelegatorsIfNecessary();
       }

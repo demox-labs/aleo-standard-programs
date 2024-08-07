@@ -286,7 +286,7 @@ export const pollDelegatedDeployment = async (
   return await pollDelegatedDeployment(requestId);
 };
 
-export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 5): Promise<boolean> => {
+export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 10): Promise<boolean> => {
   if (retriesRemaining <= 0) {
     return false;
   }

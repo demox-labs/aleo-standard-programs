@@ -1,12 +1,24 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
 
-import { getPublicTransactionsForProgram, getLatestCommittee, getProgram, getMappingValue, getHeight, getPublicBalance } from '../aleo/client';
+import { getPublicTransactionsForProgram, getLatestCommittee, getProgram, getMappingValue, getHeight, getPublicBalance, isTransactionAccepted } from '../aleo/client';
 import { deployProgram, deploymentCost, resolveImports } from '../aleo/deploy';
 import { MemberData, ExecuteTransaction } from '../aleo/types';
 import { pondoDependencyTree, pondoProgramToCode, pondoPrograms } from '../compiledPrograms';
 import { delay, formatAleoString, generateRandomCharacters, isProgramMatch } from '../util';
 import { submitTransaction } from '../aleo/execute';
-import { EPOCH_BLOCKS, NETWORK, ORACLE_ADDRESS, ORACLE_PRIVATE_KEY, PONDO_ORACLE_PROGRAM, PONDO_ORACLE_PROGRAM_CODE, PRIVATE_KEY } from '../constants';
+import {
+  EPOCH_BLOCKS,
+  NETWORK,
+  MULTI_SIG_ADDRESS_0,
+  MULTI_SIG_ADDRESS_1,
+  MULTI_SIG_ADDRESS_2,
+  MULTI_SIG_PRIVATE_KEY_0,
+  MULTI_SIG_PRIVATE_KEY_1,
+  MULTI_SIG_PRIVATE_KEY_2,
+  PONDO_ORACLE_PROGRAM,
+  PONDO_ORACLE_PROGRAM_CODE,
+  PRIVATE_KEY
+} from '../constants';
 
 
 const REFERENCE_DELEGATOR_PROGRAM = pondoPrograms.find(program => program.includes('reference_delegator'));
@@ -181,37 +193,47 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
       continue;
     }
 
-    // Transfer some funds to the oracle to pay for the next transaction
-    const publicBalance = await getPublicBalance(ORACLE_ADDRESS);
-    if (publicBalance < BigInt(5_000_000)) {
-      console.log('Transferring funds to the oracle');
-      await submitTransaction(
-        NETWORK,
-        PRIVATE_KEY,
-        Aleo.Program.getCreditsProgram(NETWORK).toString(),
-        'transfer_public',
-        [ORACLE_ADDRESS, '50_000_000u64'],
-        0.1
-      );
-    }
-
-    // Wait for a bit before approving the next reference delegator
-    await delay(5000);
-
     let imports = pondoDependencyTree[PONDO_ORACLE_PROGRAM];
     let resolvedImports = await resolveImports(imports);
 
+    // Get a random bigint to use as the requestId
+    const requestId = BigInt(Math.floor(Math.random() * 1_000_000_000));
+    const addressHash = Aleo.Plaintext.fromString(NETWORK, programAddress).hashBhp256();
+    const plaintextString = `{
+      arg: ${addressHash},
+      op_type: 4u8,
+      request_id: ${requestId}u64
+    }`;
+    const hashedField = Aleo.Plaintext.fromString(NETWORK, plaintextString).hashBhp256();
+
+    // Sign the hash with the oracle private keys
+    const signature0 = Aleo.Signature.sign_plaintext(NETWORK, MULTI_SIG_PRIVATE_KEY_0, hashedField).to_string();
+    const signature1 = Aleo.Signature.sign_plaintext(NETWORK, MULTI_SIG_PRIVATE_KEY_1, hashedField).to_string();
+    const signature2 = Aleo.Signature.sign_plaintext(NETWORK, MULTI_SIG_PRIVATE_KEY_2, hashedField).to_string();
+
     console.log(`Approving reference delegator ${programName}`);
-    await submitTransaction(
+    const txResult = await submitTransaction(
       NETWORK,
-      ORACLE_PRIVATE_KEY,
+      PRIVATE_KEY,
       PONDO_ORACLE_PROGRAM_CODE,
       'add_delegator',
-      [programAddress],
+      [
+        programAddress,
+        signature0,
+        MULTI_SIG_ADDRESS_0,
+        signature1,
+        MULTI_SIG_ADDRESS_1,
+        signature2,
+        MULTI_SIG_ADDRESS_2,
+        `${requestId.toString()}u64`
+      ],
       3,
       undefined,
       resolvedImports
     );
+
+    const transactionAccepted = await isTransactionAccepted(txResult);
+    console.log(`Approved ${programAddress} Transaction accepted: ${transactionAccepted}`);
   }
 }
 

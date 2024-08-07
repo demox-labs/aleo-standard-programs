@@ -993,8 +993,10 @@
     "@babel/helper-validator-identifier" "^7.24.7"
     to-fast-properties "^2.0.0"
 
-"@demox-labs/aleo-sdk@file:../../aleo/wasm":
-  version "0.3.35"
+"@demox-labs/aleo-sdk@^0.3.39":
+  version "0.3.39"
+  resolved "https://registry.yarnpkg.com/@demox-labs/aleo-sdk/-/aleo-sdk-0.3.39.tgz#f01be0d036fe2b9f57316fcd27f2c0082f5d5501"
+  integrity sha512-+R20JpeikTHpP1OmQqkCsjBmMHgTKu6l1T3zlaw3OMK8E3tslOufUoi9vHMweAQtBKjsx2/d0XfVZttBdbL5bA==
 
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"

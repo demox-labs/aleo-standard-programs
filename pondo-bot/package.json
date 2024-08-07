@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/demox-labs/aleo-standard-programs#readme",
   "dependencies": {
-    "@demox-labs/aleo-sdk": "file:/Users/evanmarshall/Dev/aleo/aleo/wasm",
+    "@demox-labs/aleo-sdk": "^0.3.39",
     "dotenv": "^16.0.3",
     "json-rpc-2.0": "^1.7.0",
     "threads": "^1.7.0",

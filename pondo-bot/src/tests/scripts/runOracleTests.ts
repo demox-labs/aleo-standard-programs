@@ -3,7 +3,14 @@ import * as Aleo from '@demox-labs/aleo-sdk';
 import { getMappingValue, getPublicBalance, isTransactionAccepted } from "../../aleo/client";
 import { submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
-import { NETWORK, ORACLE_ADDRESS, ORACLE_PRIVATE_KEY, PONDO_ORACLE_PROGRAM, PONDO_ORACLE_PROGRAM_CODE, PRIVATE_KEY } from "../../constants";
+import {
+  NETWORK,
+  MULTI_SIG_ADDRESS_0,
+  MULTI_SIG_PRIVATE_KEY_0,
+  PONDO_ORACLE_PROGRAM,
+  PONDO_ORACLE_PROGRAM_CODE,
+  PRIVATE_KEY
+} from "../../constants";
 import { pondoDependencyTree } from '../../compiledPrograms';
 import assert from 'assert';
 
@@ -22,7 +29,7 @@ async function testControlAddress() {
 
   const transactionResult = await submitTransaction(
     NETWORK!,
-    ORACLE_PRIVATE_KEY!,
+    MULTI_SIG_PRIVATE_KEY_0!,
     PONDO_ORACLE_PROGRAM_CODE!,
     'add_control_address',
     [newAddress.to_string()],
@@ -76,7 +83,7 @@ async function testPondoBanValidator() {
 
   const transactionResult = await submitTransaction(
     NETWORK!,
-    ORACLE_PRIVATE_KEY!,
+    MULTI_SIG_PRIVATE_KEY_0!,
     PONDO_ORACLE_PROGRAM_CODE!,
     'pondo_ban_validator',
     [newAddress.to_string()],
@@ -118,7 +125,7 @@ async function testPondoBanValidator() {
 
 async function main() {
   // Transfer some funds to the oracle to pay for the next transaction
-  const publicBalance = await getPublicBalance(ORACLE_ADDRESS!);
+  const publicBalance = await getPublicBalance(MULTI_SIG_ADDRESS_0!);
   if (publicBalance < BigInt(5_000_000)) {
     console.log('Transferring funds to the oracle');
     await submitTransaction(
@@ -126,7 +133,7 @@ async function main() {
       PRIVATE_KEY!,
       Aleo.Program.getCreditsProgram(NETWORK!).toString(),
       'transfer_public',
-      [ORACLE_ADDRESS!, '50_000_000u64'],
+      [MULTI_SIG_ADDRESS_0!, '50_000_000u64'],
       0.1
     );
   }

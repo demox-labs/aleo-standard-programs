@@ -29,8 +29,18 @@ if (!RPC_URL) {
   throw new Error('No RPC URL provided');
 }
 
-export const ORACLE_PRIVATE_KEY = process.env.ORACLE_PRIVATE_KEY;
-export const ORACLE_ADDRESS = process.env.ORACLE_ADDRESS;
+// Oracle constants
+export const MULTI_SIG_PRIVATE_KEY_0 = process.env.MULTI_SIG_PRIVATE_KEY_0;
+export const MULTI_SIG_ADDRESS_0 = process.env.MULTI_SIG_ADDRESS_0;
+export const MULTI_SIG_PRIVATE_KEY_1 = process.env.MULTI_SIG_PRIVATE_KEY_1;
+export const MULTI_SIG_ADDRESS_1 = process.env.MULTI_SIG_ADDRESS_1;
+export const MULTI_SIG_PRIVATE_KEY_2 = process.env.MULTI_SIG_PRIVATE_KEY_2;
+export const MULTI_SIG_ADDRESS_2 = process.env.MULTI_SIG_ADDRESS_2;
+export const MULTI_SIG_PRIVATE_KEY_3 = process.env.MULTI_SIG_PRIVATE_KEY_3;
+export const MULTI_SIG_ADDRESS_3 = process.env.MULTI_SIG_ADDRESS_3;
+export const MULTI_SIG_PRIVATE_KEY_4 = process.env.MULTI_SIG_PRIVATE_KEY_4;
+export const MULTI_SIG_ADDRESS_4 = process.env.MULTI_SIG_ADDRESS_4;
+
 export const DEFAULT_VALIDATOR_ADDRESS = process.env.DEFAULT_VALIDATOR_ADDRESS;
 export const DEFAULT_PONDO_FOUNDATION_ADDRESS = 'aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0';
 export const PONDO_FOUNDATION_ADDRESS = process.env.PONDO_FOUNDATION_ADDRESS || DEFAULT_PONDO_FOUNDATION_ADDRESS;

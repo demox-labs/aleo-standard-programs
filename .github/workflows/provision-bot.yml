@@ -53,10 +53,6 @@ on:
         required: true
       ADDRESS:
         required: true
-      ORACLE_ADDRESS:
-        required: true
-      ORACLE_PRIVATE_KEY:
-        required: false
 
 
 env:
@@ -96,8 +92,6 @@ jobs:
       run: |
         echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" > .env
         echo "ADDRESS=${{ secrets.ADDRESS }}" >> .env
-        echo "ORACLE_PRIVATE_KEY=${{ secrets.ORACLE_PRIVATE_KEY }}" >> .env
-        echo "ORACLE_ADDRESS=${{ secrets.ORACLE_ADDRESS }}" >> .env
         echo "DEFAULT_VALIDATOR_ADDRESS=${{ inputs.default_validator_address }}" >> .env
         echo "PONDO_FOUNDATION_ADDRESS=${{ inputs.pondo_foundation_address }}" >> .env
         echo "NETWORK=${{ inputs.network }}" >> .env
