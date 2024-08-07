@@ -14,6 +14,10 @@ As most calls in the pondo protocol are permissionless, the private key used to 
    ```
 3. Create the `.env` file
 4. Install and run the pondo bot: `yarn` && `yarn start:dev`
+5. Fetch large files for testing
+   1. Install [git lfs](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
+   2. Run `git lfs install` and verify message `Git LFS initialized.` shows
+   3. Run `git lfs fetch` and `git lfs checkout` to obtain large files
 
 Optionally, run Haruka's explorer:
 
