@@ -1074,6 +1074,7 @@ program pondo_core_protocol.aleo {
     let deposit_pool: u64 = core_protocol_account - full_balance - reserved_for_withdrawal;
 
     let new_commission_paleo: u64 = calculate_new_paleo(current_balance as u128, deposit_pool as u128, new_commission as u128, total_paleo_minted);
+    assert(commission_mint >= (current_owed_commission * 98u64) / 100u64); // Assert that the minted commission is at least 98% of the owed commission
     // New owed commission is whatever commission is left after the new commission mint, plus what we may have earned between calling the function and now
     owed_commission.set(0u8, current_owed_commission + new_commission_paleo - commission_mint);
     // Update total balance

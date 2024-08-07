@@ -1104,14 +1104,18 @@ finalize rebalance_retrieve_credits:
     div r43 r41 into r44;
     sub r44 r20 into r45;
     cast r45 into r46 as u64;
-    add r15 r46 into r47;
-    sub r47 r7 into r48;
-    set r48 into owed_commission[0u8];
-    add r32 r29 into r49;
-    set r49 into balances[0u8];
-    get protocol_state[0u8] into r50;
-    is.eq r50 1u8 into r51;
-    assert.eq r51 true;
+    mul r15 98u64 into r47;
+    div r47 100u64 into r48;
+    gte r7 r48 into r49;
+    assert.eq r49 true;
+    add r15 r46 into r50;
+    sub r50 r7 into r51;
+    set r51 into owed_commission[0u8];
+    add r32 r29 into r52;
+    set r52 into balances[0u8];
+    get protocol_state[0u8] into r53;
+    is.eq r53 1u8 into r54;
+    assert.eq r54 true;
     set 2u8 into protocol_state[0u8];
 
 
