@@ -1,5 +1,5 @@
 import { clearLedger, loadLedger } from "../utils/ledgerManager";
-import { exec } from "child_process";
+import { exec, spawnSync } from "child_process";
 import { promisify } from "util";
 import { getChainHeight } from "../aleo/client";
 import { delay } from "../util";
@@ -27,10 +27,9 @@ async function startDevNet() {
 
 async function runTests(testName: string) {
   try {
-    const { stdout } = await execPromise(
-      `node --test ./dist/${testName}Test.js`
-    );
-    console.log(stdout);
+    // use spawnSync to ensure process completes before moving on
+    // use stdio for colored output (pretty tests)
+    spawnSync('node', ['--test', `./dist/${testName}Test.js`], {stdio:'inherit'});
   } catch (err) {
     console.error(`Error running tests:`, err);
   }
@@ -47,14 +46,16 @@ async function loadRpc(rpcBackupName: string) {
 }
 
 async function waitUntilRPCReady() {
+  const startTime = Date.now();
   try {
     let preloadedRPCBlockHeight = await getChainHeight();
     console.log('preloaded blockheight: ' + preloadedRPCBlockHeight);
     let newRPCBlockHeight = 0;
     while (newRPCBlockHeight <= preloadedRPCBlockHeight) {
-      await delay(2000);
+      await delay(5000);
       newRPCBlockHeight = await getChainHeight();
-      console.log('waiting for new blockheight... ' + newRPCBlockHeight);
+      const waitTime = Date.now() - startTime;
+      console.log(`waiting ${waitTime} ms for chain to advance...`);
     }
   } catch (err) {
     console.error(`Error waiting for rpc: ${err}`);
@@ -83,6 +84,8 @@ async function main() {
   await waitUntilRPCReady();
   await runTests(testName);
   await stopDevNet();
+  // let devnet spin down before we wipe out the files
+  await delay(5000);
   await clearLedger();
 }
 

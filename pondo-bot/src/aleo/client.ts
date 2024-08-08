@@ -1,9 +1,10 @@
 import { JSONRPCClient } from 'json-rpc-2.0';
-import { delay } from '../util';
+import { delay, formatAleoString } from '../util';
 
 import { MemberData } from './types';
-import { CLIENT_URL, RPC_URL } from '../constants';
-
+import { CLIENT_URL, NETWORK, RPC_URL } from '../constants';
+import * as Aleo from '@demox-labs/aleo-sdk';
+import { pondoPrograms } from '../compiledPrograms';
 
 export const getClient = () => {
   const client = new JSONRPCClient((jsonRPCRequest: any) =>
@@ -74,6 +75,31 @@ export async function getMappingValue(
 
   // This line should not be reached as the function will either return or throw an error
   throw new Error('Unexpected error in getMappingValue function');
+}
+
+export async function getMTSPBalance(
+  publicKey: string,
+  tokenId: string
+): Promise<bigint> {
+  const MTSP_PROGRAM = pondoPrograms.find((program) =>
+    program.includes('multi_token_support_program')
+  );
+  const tokenOwnerString = `{ account: ${publicKey}, token_id: ${tokenId} }`;
+    const tokenOwnerHash = Aleo.Plaintext.fromString(
+      NETWORK,
+      tokenOwnerString
+    ).hashBhp256();
+    const paleoBalance = await getMappingValue(
+      tokenOwnerHash,
+      MTSP_PROGRAM!,
+      'balances'
+    );
+    console.log(`Paleo balance: ${paleoBalance}`);
+    const paleoBalanceValue = paleoBalance
+      ? JSON.parse(formatAleoString(paleoBalance))['balance'].slice(0, -4)
+      : '0';
+
+    return BigInt(paleoBalanceValue);
 }
 
 export async function getPublicBalance(

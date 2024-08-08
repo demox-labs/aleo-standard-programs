@@ -6,6 +6,7 @@ import { promisify } from 'util';
 export const clearLedger = async () => {
   const readdir = promisify(fs.readdir);
   const rm = promisify(fs.rm);
+  console.log(`Clearing ledger files...`);
   try {
     // Clear existing ledger files in the destination directory
     const files = await readdir('.');
