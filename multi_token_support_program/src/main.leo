@@ -204,8 +204,19 @@ program multi_token_support_program.aleo {
     public amount: u128,
     public authorized_until: u32
   ) -> Future {
+    let role_owner: TokenOwner = TokenOwner {
+      account: self.caller,
+      token_id: token_id
+    };
+    let role_owner_hash: field = BHP256::hash_to_field(role_owner);
+    let token_owner: TokenOwner = TokenOwner {
+      account: recipient,
+      token_id: token_id
+    };
+    let balance_key: field = BHP256::hash_to_field(token_owner);
+
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
-    return finalize_mint_public(token_id, recipient, amount, authorized_until, self.caller);
+    return finalize_mint_public(token_id, recipient, amount, authorized_until, self.caller, role_owner_hash, balance_key);
   }
 
   async function finalize_mint_public(
@@ -213,17 +224,14 @@ program multi_token_support_program.aleo {
     recipient: address,
     amount: u128,
     authorized_until: u32,
-    caller: address
+    caller: address,
+    role_owner_hash: field,
+    balance_key: field
   ) {
     // Check that the token exists, and that the caller has permission to mint
     let token: TokenMetadata = registered_tokens.get(token_id);
     let is_admin: bool = caller == token.admin;
     if (!is_admin) {
-      let role_owner: TokenOwner = TokenOwner {
-        account: caller,
-        token_id: token_id
-      };
-      let role_owner_hash: field = BHP256::hash_to_field(role_owner);
       let role: u8 = roles.get(role_owner_hash);
       assert(role == MINTER_ROLE || role == SUPPLY_MANAGER_ROLE);
     }
@@ -233,11 +241,6 @@ program multi_token_support_program.aleo {
     assert(new_supply <= token.max_supply);
 
     // Get or create the balance for the recipient
-    let token_owner: TokenOwner = TokenOwner {
-      account: recipient,
-      token_id: token_id
-    };
-    let balance_key: field = BHP256::hash_to_field(token_owner);
     let default_balance: Balance = Balance {
       token_id: token_id,
       account: recipient,

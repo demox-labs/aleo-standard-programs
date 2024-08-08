@@ -230,7 +230,7 @@ const rebalanceRetrieveCredits = async (): Promise<void> => {
     programCode,
     'rebalance_retrieve_credits',
     inputs,
-    2, // TODO: set the correct fee
+    2.5, // TODO: set the correct fee
     undefined,
     resolvedImports
   );
@@ -275,7 +275,7 @@ const rebalanceRedistribute = async (): Promise<void> => {
     programCode,
     'rebalance_redistribute',
     inputs,
-    2, // TODO: set the correct fee
+    2.5, // TODO: set the correct fee
     undefined,
     resolvedImports
   );
@@ -302,7 +302,7 @@ const setOracleTVL = async (): Promise<void> => {
       delegatorUnbondingBalance = BigInt(JSON.parse(formatAleoString(unbondingState))["microcredits"].slice(0, -3));
     }
     const delegatorTVL = delegatorBalance + delegatorBondedBalance + delegatorUnbondingBalance;
-    console.log(`Delegator ${index} tvl: ${delegatorTVL}, balance: ${delegatorBalance}, bonded: ${delegatorBondedBalance}, unbonding: ${delegatorUnbondingBalance}`);
+    console.log(`Delegator ${index}, address ${delegatorProgramAddress} tvl: ${delegatorTVL}, balance: ${delegatorBalance}, bonded: ${delegatorBondedBalance}, unbonding: ${delegatorUnbondingBalance}`);
     pondoDelegatorTVLs.push(delegatorTVL);
   }
   const totalTVL = pondoDelegatorTVLs.reduce((acc, tvl) => acc + tvl, protocolBalance);

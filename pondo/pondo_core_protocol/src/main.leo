@@ -1164,13 +1164,8 @@ program pondo_core_protocol.aleo {
         PORTION_5,
         PORTION_5
       ]);
-    let delegator1_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
-    let delegator2_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
-    let delegator3_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
-    let delegator4_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
-    let delegator5_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+
     let total_credits: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
-    total_credits += delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance;
     let total_credits_128: u128 = total_credits as u128;
     let validator1_portion: u128 = (transfer_amounts[0u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
     let validator2_portion: u128 = (transfer_amounts[1u8] as u128 * PRECISION_UNSIGNED) / total_credits_128;
