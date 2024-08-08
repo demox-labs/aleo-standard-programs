@@ -401,7 +401,7 @@ program multi_token_support_program.aleo {
     // Check if the authorized balance is enough to burn
     if (authorized_balance.balance > 0u128) {
       // Burn from authorized balance
-      if (authorized_balance.balance > amount) {
+      if (authorized_balance.balance >= amount) {
         let new_authorized_balance: Balance = Balance {
           token_id: owner.token_id,
           account: owner.account,
@@ -411,21 +411,16 @@ program multi_token_support_program.aleo {
         authorized_balances.set(balance_key, new_authorized_balance);
         return; // Done burning
       } else {
-        authorized_balances.remove(balance_key);
         let left_to_burn: u128 = amount - authorized_balance.balance;
-        if (left_to_burn == 0u128) {
-          return; // Done burning
-        } else {
-          // Burn remainder from locked balance
-          let locked_balance: Balance = balances.get(balance_key);
-          let new_locked_balance: Balance = Balance {
-            token_id: owner.token_id,
-            account: owner.account,
-            balance: locked_balance.balance - left_to_burn,
-            authorized_until: locked_balance.authorized_until
-          };
-          balances.set(balance_key, new_locked_balance);
-        }
+        // Burn remainder from locked balance
+        let locked_balance: Balance = balances.get(balance_key);
+        let new_locked_balance: Balance = Balance {
+          token_id: owner.token_id,
+          account: owner.account,
+          balance: locked_balance.balance - left_to_burn,
+          authorized_until: locked_balance.authorized_until
+        };
+        balances.set(balance_key, new_locked_balance);
       }
     } else {
       // Otherwise burn directly from locked balance
