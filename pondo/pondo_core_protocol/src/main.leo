@@ -1186,8 +1186,18 @@ program pondo_core_protocol.aleo {
     assert(liquidity_pool >= optimal_liquidity); // ensure that liquidity pool is at least optimal liquidity
     assert(liquidity_pool <= optimal_liquidity + 10_000_000u64); // ensure that liquidity pool is close to optimal liquidity
 
+    // Get the delegator balances which actually represent the total credits
+    // NOTE: We cannot use the balances above as it opens the protocol to attacks where a large credits transfer
+    // could cause this transition to always fail either from the proportions check or the liquidity check
+    let delegator1_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
+    let delegator2_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
+    let delegator3_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
+    let delegator4_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
+    let delegator5_balance: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
+    let total_balances: u64 = delegator1_balance + delegator2_balance + delegator3_balance + delegator4_balance + delegator5_balance;
+
     // Update delegated balance
-    balances.set(DELEGATED_BALANCE, total_credits);
+    balances.set(DELEGATED_BALANCE, total_balances);
 
     // Update protocol state
     let current_state: u8 = protocol_state.get(PROTOCOL_STATE_KEY);

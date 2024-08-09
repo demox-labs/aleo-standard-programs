@@ -132,6 +132,14 @@ program pondo_delegator5.aleo {
   // This is a permissionless call
   // It can only be called if the delegator is in the UNBOND_ALLOWED state
   // Or if the validator commission changed while the delegator was bonded
+  // Invariant in before state:
+  // 1. The delegator is bonded
+  // 2. The delegator has no unbonding state
+  // 3. The delegator could have some account balance
+  // Invariant in after state:
+  // 1. The delegator has no bonded state
+  // 2. The delegator has an unbonding state
+  // 3. The delegator could have some account balance
   async transition unbond(public amount: u64) -> Future {
     // Unbond the delegator, only works if there's actually something to unbond
     let f0: Future = credits.aleo/unbond_public(pondo_delegator5.aleo, amount);

@@ -806,14 +806,13 @@ function deposit_credits_private:
     call credits.aleo/transfer_private_to_public r0 multi_token_support_program.aleo r1 into r2 r3;
     cast r1 into r4 as u128;
     cast r0.owner r4 3443843282313283355522573239085696902919850365217539366784739393210722344986field false 4294967295u32 into r5 as Token.record;
-    async deposit_credits_private r3 into r6;
+    async deposit_credits_private into r6;
     output r2 as credits.aleo/credits.record;
     output r5 as Token.record;
     output r6 as multi_token_support_program.aleo/deposit_credits_private.future;
 
 finalize deposit_credits_private:
-    input r0 as credits.aleo/transfer_private_to_public.future;
-    await r0;
+    assert.eq true true;
 
 
 
@@ -871,12 +870,11 @@ function withdraw_credits_private:
     cast r1 into r5 as u128;
     sub r0.amount r5 into r6;
     cast r0.owner r6 r0.token_id r0.external_authorization_required r0.authorized_until into r7 as Token.record;
-    async withdraw_credits_private r4 into r8;
+    async withdraw_credits_private into r8;
     output r7 as Token.record;
     output r3 as credits.aleo/credits.record;
     output r8 as multi_token_support_program.aleo/withdraw_credits_private.future;
 
 finalize withdraw_credits_private:
-    input r0 as credits.aleo/transfer_public_to_private.future;
-    await r0;
+    assert.eq true true;
 
