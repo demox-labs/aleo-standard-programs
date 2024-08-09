@@ -1240,10 +1240,19 @@ finalize rebalance_redistribute:
     add r68 10_000_000u64 into r70;
     lte r62 r70 into r71;
     assert.eq r71 true;
-    set r33 into balances[0u8];
-    get protocol_state[0u8] into r72;
-    is.eq r72 2u8 into r73;
-    assert.eq r73 true;
+    get.or_use credits.aleo/account[pondo_delegator1.aleo] 0u64 into r72;
+    get.or_use credits.aleo/account[pondo_delegator2.aleo] 0u64 into r73;
+    get.or_use credits.aleo/account[pondo_delegator3.aleo] 0u64 into r74;
+    get.or_use credits.aleo/account[pondo_delegator4.aleo] 0u64 into r75;
+    get.or_use credits.aleo/account[pondo_delegator5.aleo] 0u64 into r76;
+    add r72 r73 into r77;
+    add r77 r74 into r78;
+    add r78 r75 into r79;
+    add r79 r76 into r80;
+    set r80 into balances[0u8];
+    get protocol_state[0u8] into r81;
+    is.eq r81 2u8 into r82;
+    assert.eq r82 true;
     set 0u8 into protocol_state[0u8];
 
 
