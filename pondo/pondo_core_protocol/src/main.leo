@@ -1,5 +1,6 @@
 import credits.aleo;
 import multi_token_support_program.aleo;
+import mtsp_credits.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -314,7 +315,7 @@ program pondo_core_protocol.aleo {
 
     // Transfer ALEO to pool
     let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
-    let f1: Future = multi_token_support_program.aleo/withdraw_credits_public(credits_deposit);
+    let f1: Future = mtsp_credits.aleo/withdraw_credits_public(credits_deposit);
     // Mint pALEO to depositor
     let f2: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
 

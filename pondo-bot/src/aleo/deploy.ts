@@ -248,6 +248,8 @@ export const deploymentCost = (program: string) => {
 
   if (program.indexOf('multi_token_support') !== -1) {
     fee = 100; // At time of writing, the fee for deploying the multi-token support program is 87166375 microcredits
+  } else if (program.indexOf('mtsp_credits') !== -1) {
+    fee = 16; // At time of writing, the fee for deploying the mtsp credits program is 15804975 microcredits
   } else if (program.indexOf('pondo_oracle') !== -1) {
     fee = 110; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {

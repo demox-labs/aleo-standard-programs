@@ -1,5 +1,6 @@
 import credits.aleo;
 import multi_token_support_program.aleo;
+import mtsp_credits.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -326,14 +327,14 @@ function deposit_public:
     assert.eq r3 true;
     cast r0 into r4 as u128;
     call multi_token_support_program.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
-    call multi_token_support_program.aleo/withdraw_credits_public r0 into r6;
+    call mtsp_credits.aleo/withdraw_credits_public r0 into r6;
     call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r7;
     async deposit_public r5 r6 r7 r0 r1 into r8;
     output r8 as pondo_core_protocol.aleo/deposit_public.future;
 
 finalize deposit_public:
     input r0 as multi_token_support_program.aleo/transfer_from_public.future;
-    input r1 as multi_token_support_program.aleo/withdraw_credits_public.future;
+    input r1 as mtsp_credits.aleo/withdraw_credits_public.future;
     input r2 as pondo_staked_aleo_token.aleo/mint_public.future;
     input r3 as u64.public;
     input r4 as u64.public;
