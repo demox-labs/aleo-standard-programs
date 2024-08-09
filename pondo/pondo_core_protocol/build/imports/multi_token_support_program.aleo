@@ -517,25 +517,32 @@ finalize burn_public:
     get.or_use authorized_balances[r14] r13 into r15;
     gt r15.balance 0u128 into r16;
     branch.eq r16 false to end_then_0_14;
-    gte r15.balance r1 into r17;
+    gt r15.balance r1 into r17;
     branch.eq r17 false to end_then_1_16;
     sub r15.balance r1 into r18;
     cast r0.token_id r0.account r18 r15.authorized_until into r19 as Balance;
     set r19 into authorized_balances[r14];
     branch.eq true true to end_otherwise_1_17;
     position end_then_1_16;
-    sub r1 r15.balance into r20;
-    get balances[r14] into r21;
-    sub r21.balance r20 into r22;
-    cast r0.token_id r0.account r22 r21.authorized_until into r23 as Balance;
-    set r23 into balances[r14];
+    cast r0.token_id r0.account 0u128 r15.authorized_until into r20 as Balance;
+    set r20 into authorized_balances[r14];
+    sub r1 r15.balance into r21;
+    is.eq r21 0u128 into r22;
+    branch.eq r22 false to end_then_2_18;
+    branch.eq true true to end_otherwise_2_19;
+    position end_then_2_18;
+    get balances[r14] into r23;
+    sub r23.balance r21 into r24;
+    cast r0.token_id r0.account r24 r23.authorized_until into r25 as Balance;
+    set r25 into balances[r14];
+    position end_otherwise_2_19;
     position end_otherwise_1_17;
     branch.eq true true to end_otherwise_0_15;
     position end_then_0_14;
-    get balances[r14] into r24;
-    sub r24.balance r1 into r25;
-    cast r0.token_id r0.account r25 r24.authorized_until into r26 as Balance;
-    set r26 into balances[r14];
+    get balances[r14] into r26;
+    sub r26.balance r1 into r27;
+    cast r0.token_id r0.account r27 r26.authorized_until into r28 as Balance;
+    set r28 into balances[r14];
     position end_otherwise_0_15;
 
 
@@ -559,7 +566,7 @@ finalize burn_private:
     get registered_tokens[r0] into r3;
     is.eq r2 r3.admin into r4;
     not r4 into r5;
-    branch.eq r5 false to end_then_0_18;
+    branch.eq r5 false to end_then_0_20;
     cast r2 r0 into r6 as TokenOwner;
     hash.bhp256 r6 into r7 as field;
     get roles[r7] into r8;
@@ -567,9 +574,9 @@ finalize burn_private:
     is.eq r8 3u8 into r10;
     or r9 r10 into r11;
     assert.eq r11 true;
-    branch.eq true true to end_otherwise_0_19;
-    position end_then_0_18;
-    position end_otherwise_0_19;
+    branch.eq true true to end_otherwise_0_21;
+    position end_then_0_20;
+    position end_otherwise_0_21;
     sub r3.supply r1 into r12;
     cast r0 r3.name r3.symbol r3.decimals r12 r3.max_supply r3.admin r3.external_authorization_required r3.external_authorization_party into r13 as TokenMetadata;
     set r13 into registered_tokens[r0];
@@ -720,12 +727,12 @@ finalize transfer_from_public:
     cast r25 r26 r27 r28 into r29 as Balance;
     add r29.balance r3 into r30;
     cast r0 r2 r30 r29.authorized_until into r31 as Balance;
-    branch.eq r20.external_authorization_required false to end_then_0_20;
+    branch.eq r20.external_authorization_required false to end_then_0_22;
     set r31 into balances[r19];
-    branch.eq true true to end_otherwise_0_21;
-    position end_then_0_20;
+    branch.eq true true to end_otherwise_0_23;
+    position end_then_0_22;
     set r31 into authorized_balances[r19];
-    position end_otherwise_0_21;
+    position end_otherwise_0_23;
 
 
 
