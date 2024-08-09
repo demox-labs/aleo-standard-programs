@@ -95,20 +95,21 @@ function initialize:
     assert.eq r1 true;
     call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r0 into r2;
     call pondo_staked_aleo_token.aleo/register_token into r3;
-    call pondo_staked_aleo_token.aleo/mint_public r0 pondo_core_protocol.aleo into r4;
-    call pondo_token.aleo/initialize_token into r5;
-    call pondo_delegator1.aleo/initialize into r6;
-    call pondo_delegator2.aleo/initialize into r7;
-    call pondo_delegator3.aleo/initialize into r8;
-    call pondo_delegator4.aleo/initialize into r9;
-    call pondo_delegator5.aleo/initialize into r10;
-    async initialize r2 r3 r4 r5 r6 r7 r8 r9 r10 r0 into r11;
-    output r11 as pondo_core_protocol.aleo/initialize.future;
+    cast r0 into r4 as u128;
+    call multi_token_support_program.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field pondo_core_protocol.aleo r4 4294967295u32 into r5;
+    call pondo_token.aleo/initialize_token into r6;
+    call pondo_delegator1.aleo/initialize into r7;
+    call pondo_delegator2.aleo/initialize into r8;
+    call pondo_delegator3.aleo/initialize into r9;
+    call pondo_delegator4.aleo/initialize into r10;
+    call pondo_delegator5.aleo/initialize into r11;
+    async initialize r2 r3 r5 r6 r7 r8 r9 r10 r11 r0 into r12;
+    output r12 as pondo_core_protocol.aleo/initialize.future;
 
 finalize initialize:
     input r0 as credits.aleo/transfer_public_as_signer.future;
     input r1 as pondo_staked_aleo_token.aleo/register_token.future;
-    input r2 as pondo_staked_aleo_token.aleo/mint_public.future;
+    input r2 as multi_token_support_program.aleo/mint_public.future;
     input r3 as pondo_token.aleo/initialize_token.future;
     input r4 as pondo_delegator1.aleo/initialize.future;
     input r5 as pondo_delegator2.aleo/initialize.future;
@@ -217,13 +218,14 @@ function deposit_public_as_signer:
     gte r1 1u64 into r3;
     assert.eq r3 true;
     call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r0 into r4;
-    call pondo_staked_aleo_token.aleo/mint_public r1 self.signer into r5;
-    async deposit_public_as_signer r4 r5 r0 r1 into r6;
-    output r6 as pondo_core_protocol.aleo/deposit_public_as_signer.future;
+    cast r1 into r5 as u128;
+    call multi_token_support_program.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.signer r5 4294967295u32 into r6;
+    async deposit_public_as_signer r4 r6 r0 r1 into r7;
+    output r7 as pondo_core_protocol.aleo/deposit_public_as_signer.future;
 
 finalize deposit_public_as_signer:
     input r0 as credits.aleo/transfer_public_as_signer.future;
-    input r1 as pondo_staked_aleo_token.aleo/mint_public.future;
+    input r1 as multi_token_support_program.aleo/mint_public.future;
     input r2 as u64.public;
     input r3 as u64.public;
     await r0;
@@ -328,14 +330,15 @@ function deposit_public:
     cast r0 into r4 as u128;
     call multi_token_support_program.aleo/transfer_from_public 3443843282313283355522573239085696902919850365217539366784739393210722344986field self.caller pondo_core_protocol.aleo r4 into r5;
     call mtsp_credits.aleo/withdraw_credits_public r0 into r6;
-    call pondo_staked_aleo_token.aleo/mint_public r1 self.caller into r7;
-    async deposit_public r5 r6 r7 r0 r1 into r8;
-    output r8 as pondo_core_protocol.aleo/deposit_public.future;
+    cast r1 into r7 as u128;
+    call multi_token_support_program.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.caller r7 4294967295u32 into r8;
+    async deposit_public r5 r6 r8 r0 r1 into r9;
+    output r9 as pondo_core_protocol.aleo/deposit_public.future;
 
 finalize deposit_public:
     input r0 as multi_token_support_program.aleo/transfer_from_public.future;
     input r1 as mtsp_credits.aleo/withdraw_credits_public.future;
-    input r2 as pondo_staked_aleo_token.aleo/mint_public.future;
+    input r2 as multi_token_support_program.aleo/mint_public.future;
     input r3 as u64.public;
     input r4 as u64.public;
     await r0;
@@ -530,13 +533,14 @@ finalize distribute_deposits:
 function instant_withdraw_public:
     input r0 as u64.public;
     input r1 as u64.public;
-    call pondo_staked_aleo_token.aleo/burn_public r0 self.caller into r2;
-    call credits.aleo/transfer_public self.caller r1 into r3;
-    async instant_withdraw_public r2 r3 r0 r1 self.caller into r4;
-    output r4 as pondo_core_protocol.aleo/instant_withdraw_public.future;
+    cast r0 into r2 as u128;
+    call multi_token_support_program.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.caller r2 into r3;
+    call credits.aleo/transfer_public self.caller r1 into r4;
+    async instant_withdraw_public r3 r4 r0 r1 self.caller into r5;
+    output r5 as pondo_core_protocol.aleo/instant_withdraw_public.future;
 
 finalize instant_withdraw_public:
-    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r0 as multi_token_support_program.aleo/burn_public.future;
     input r1 as credits.aleo/transfer_public.future;
     input r2 as u64.public;
     input r3 as u64.public;
@@ -648,13 +652,14 @@ finalize instant_withdraw_public:
 function instant_withdraw_public_signer:
     input r0 as u64.public;
     input r1 as u64.public;
-    call pondo_staked_aleo_token.aleo/burn_public r0 self.signer into r2;
-    call credits.aleo/transfer_public self.signer r1 into r3;
-    async instant_withdraw_public_signer r2 r3 r0 r1 self.signer into r4;
-    output r4 as pondo_core_protocol.aleo/instant_withdraw_public_signer.future;
+    cast r0 into r2 as u128;
+    call multi_token_support_program.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.signer r2 into r3;
+    call credits.aleo/transfer_public self.signer r1 into r4;
+    async instant_withdraw_public_signer r3 r4 r0 r1 self.signer into r5;
+    output r5 as pondo_core_protocol.aleo/instant_withdraw_public_signer.future;
 
 finalize instant_withdraw_public_signer:
-    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r0 as multi_token_support_program.aleo/burn_public.future;
     input r1 as credits.aleo/transfer_public.future;
     input r2 as u64.public;
     input r3 as u64.public;
@@ -767,12 +772,13 @@ finalize instant_withdraw_public_signer:
 
 function withdraw_public:
     input r0 as u64.public;
-    call pondo_staked_aleo_token.aleo/burn_public r0 self.caller into r1;
-    async withdraw_public r1 r0 self.caller into r2;
-    output r2 as pondo_core_protocol.aleo/withdraw_public.future;
+    cast r0 into r1 as u128;
+    call multi_token_support_program.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.caller r1 into r2;
+    async withdraw_public r2 r0 self.caller into r3;
+    output r3 as pondo_core_protocol.aleo/withdraw_public.future;
 
 finalize withdraw_public:
-    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r0 as multi_token_support_program.aleo/burn_public.future;
     input r1 as u64.public;
     input r2 as address.public;
     await r0;
@@ -882,12 +888,13 @@ finalize withdraw_public:
 
 function withdraw_public_as_signer:
     input r0 as u64.public;
-    call pondo_staked_aleo_token.aleo/burn_public r0 self.signer into r1;
-    async withdraw_public_as_signer r1 r0 self.signer into r2;
-    output r2 as pondo_core_protocol.aleo/withdraw_public_as_signer.future;
+    cast r0 into r1 as u128;
+    call multi_token_support_program.aleo/burn_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.signer r1 into r2;
+    async withdraw_public_as_signer r2 r0 self.signer into r3;
+    output r3 as pondo_core_protocol.aleo/withdraw_public_as_signer.future;
 
 finalize withdraw_public_as_signer:
-    input r0 as pondo_staked_aleo_token.aleo/burn_public.future;
+    input r0 as multi_token_support_program.aleo/burn_public.future;
     input r1 as u64.public;
     input r2 as address.public;
     await r0;
@@ -1039,9 +1046,10 @@ function rebalance_retrieve_credits:
     call pondo_delegator3.aleo/transfer_to_core_protocol r0[2u32] into r5;
     call pondo_delegator4.aleo/transfer_to_core_protocol r0[3u32] into r6;
     call pondo_delegator5.aleo/transfer_to_core_protocol r0[4u32] into r7;
-    call pondo_staked_aleo_token.aleo/mint_public r1 pondo_token.aleo into r8;
-    async rebalance_retrieve_credits r3 r4 r5 r6 r7 r8 r0 r1 into r9;
-    output r9 as pondo_core_protocol.aleo/rebalance_retrieve_credits.future;
+    cast r1 into r8 as u128;
+    call multi_token_support_program.aleo/mint_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field pondo_token.aleo r8 4294967295u32 into r9;
+    async rebalance_retrieve_credits r3 r4 r5 r6 r7 r9 r0 r1 into r10;
+    output r10 as pondo_core_protocol.aleo/rebalance_retrieve_credits.future;
 
 finalize rebalance_retrieve_credits:
     input r0 as pondo_delegator1.aleo/transfer_to_core_protocol.future;
@@ -1049,7 +1057,7 @@ finalize rebalance_retrieve_credits:
     input r2 as pondo_delegator3.aleo/transfer_to_core_protocol.future;
     input r3 as pondo_delegator4.aleo/transfer_to_core_protocol.future;
     input r4 as pondo_delegator5.aleo/transfer_to_core_protocol.future;
-    input r5 as pondo_staked_aleo_token.aleo/mint_public.future;
+    input r5 as multi_token_support_program.aleo/mint_public.future;
     input r6 as [u64; 5u32].public;
     input r7 as u64.public;
     await r0;

@@ -314,7 +314,7 @@ export const deployAllProgramsIfNecessary = async (
       );
 
       // Wait for a bit before deploying the next program
-      await delay(15_000);
+      await delay(30_000);
     } else {
       console.log(`Program ${program} already exists`);
     }
