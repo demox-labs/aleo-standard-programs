@@ -58,7 +58,7 @@ filesToCopy.forEach(fileSrc => {
   const programName = parseProgramName(fileSrc);
   let newProgramName = programName;
 
-  if (programName.startsWith('pondo_')) {
+  if (programName.startsWith('pondo_') || programName.startsWith('m')) {
     newProgramName = addVersionNumber(programName, versionNumber);
   }
 
