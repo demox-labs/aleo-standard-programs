@@ -1,5 +1,0 @@
-/dist
-.env.testnetbeta
-.env.local
-.env.*
-src/tests/.*

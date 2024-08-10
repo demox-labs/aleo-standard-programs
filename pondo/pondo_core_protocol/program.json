@@ -15,6 +15,11 @@
             "path": "../../multi_token_support_program"
         },
         {
+          "name": "mtsp_credits.aleo",
+          "location": "local",
+          "path": "../../mtsp_credits"
+        },
+        {
             "name": "pondo_oracle.aleo",
             "location": "local",
             "path": "../pondo_oracle"

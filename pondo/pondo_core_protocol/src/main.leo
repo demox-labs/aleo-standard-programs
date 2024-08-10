@@ -1,5 +1,6 @@
 import credits.aleo;
 import multi_token_support_program.aleo;
+import mtsp_credits.aleo;
 import pondo_oracle.aleo;
 import pondo_staked_aleo_token.aleo;
 import pondo_token.aleo;
@@ -111,7 +112,7 @@ program pondo_core_protocol.aleo {
 
     // Initialize pALEO and PNDO tokens
     let f1: Future = pondo_staked_aleo_token.aleo/register_token();
-    let f2: Future = pondo_staked_aleo_token.aleo/mint_public(transfer_amount, self.address);
+    let f2: Future = multi_token_support_program.aleo/mint_public(PALEO_TOKEN_ID, self.address, transfer_amount as u128, 4294967295u32);
     let f3: Future = pondo_token.aleo/initialize_token();
 
     // Initialize delegators
@@ -212,7 +213,7 @@ program pondo_core_protocol.aleo {
     // Transfer ALEO to pool
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, credits_deposit);
     // Mint pALEO to depositor
-    let f1: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.signer);
+    let f1: Future = multi_token_support_program.aleo/mint_public(PALEO_TOKEN_ID, self.signer, expected_paleo_mint as u128, 4294967295u32);
 
     return finalize_deposit_public_as_signer(f0, f1, credits_deposit, expected_paleo_mint);
   }
@@ -314,9 +315,9 @@ program pondo_core_protocol.aleo {
 
     // Transfer ALEO to pool
     let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, credits_deposit as u128);
-    let f1: Future = multi_token_support_program.aleo/withdraw_credits_public(credits_deposit);
+    let f1: Future = mtsp_credits.aleo/withdraw_credits_public(credits_deposit);
     // Mint pALEO to depositor
-    let f2: Future = pondo_staked_aleo_token.aleo/mint_public(expected_paleo_mint, self.caller);
+    let f2: Future = multi_token_support_program.aleo/mint_public(PALEO_TOKEN_ID, self.caller, expected_paleo_mint as u128, 4294967295u32);
 
     return finalize_deposit_public(f0, f1, f2, credits_deposit, expected_paleo_mint);
   }
@@ -482,7 +483,7 @@ program pondo_core_protocol.aleo {
     public withdrawal_credits: u64
   ) -> Future {
     // Burn pALEO for withdrawal
-    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.caller);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PALEO_TOKEN_ID, self.caller, paleo_burn_amount as u128);
     let f1: Future = credits.aleo/transfer_public(self.caller, withdrawal_credits);
 
     return finalize_instant_withdraw_public(f0, f1, paleo_burn_amount, withdrawal_credits, self.caller);
@@ -582,7 +583,7 @@ program pondo_core_protocol.aleo {
     public withdrawal_credits: u64
   ) -> Future {
     // Burn pALEO for withdrawal
-    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.signer);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PALEO_TOKEN_ID, self.signer, paleo_burn_amount as u128);
     let f1: Future = credits.aleo/transfer_public(self.signer, withdrawal_credits);
 
     return finalize_instant_withdraw_public_signer(f0, f1, paleo_burn_amount, withdrawal_credits, self.signer);
@@ -690,7 +691,7 @@ program pondo_core_protocol.aleo {
     public paleo_burn_amount: u64
   ) -> Future {
     // Burn pALEO for withdrawal
-    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.caller);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PALEO_TOKEN_ID, self.caller, paleo_burn_amount as u128);
     return finalize_withdraw_public(f0, paleo_burn_amount, self.caller);
   }
 
@@ -791,7 +792,7 @@ program pondo_core_protocol.aleo {
     public paleo_burn_amount: u64
   ) -> Future {
     // Burn pALEO for withdrawal
-    let f0: Future = pondo_staked_aleo_token.aleo/burn_public(paleo_burn_amount, self.signer);
+    let f0: Future = multi_token_support_program.aleo/burn_public(PALEO_TOKEN_ID, self.signer, paleo_burn_amount as u128);
     return finalize_withdraw_public_as_signer(f0, paleo_burn_amount, self.signer);
   }
 
@@ -1030,7 +1031,7 @@ program pondo_core_protocol.aleo {
     let f2: Future = pondo_delegator3.aleo/transfer_to_core_protocol(transfer_amounts[2u8]);
     let f3: Future = pondo_delegator4.aleo/transfer_to_core_protocol(transfer_amounts[3u8]);
     let f4: Future = pondo_delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
-    let f5: Future = pondo_staked_aleo_token.aleo/mint_public(commission_mint, pondo_token.aleo);
+    let f5: Future = multi_token_support_program.aleo/mint_public(PALEO_TOKEN_ID, pondo_token.aleo, commission_mint as u128, 4294967295u32);
 
     return finalize_rebalance_retrieve_credits(f0, f1, f2, f3, f4, f5, transfer_amounts, commission_mint);
   }

@@ -1,4 +1,4 @@
-# test_program.aleo
+# mtsp_credits.aleo
 
 ## Build Guide
 

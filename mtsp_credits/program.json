@@ -1,0 +1,19 @@
+{
+  "program": "mtsp_credits.aleo",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "network": "testnet",
+      "path": null
+    },
+    {
+      "name": "multi_token_support_program.aleo",
+      "location": "local",
+      "path": "../multi_token_support_program"
+    }
+  ]
+}
