@@ -50,7 +50,7 @@ export const depositAsSigner = async (deposit: bigint, privateKey?: string) => {
     CORE_PROTOCOL_PROGRAM_CODE,
     'deposit_public_as_signer',
     [`${deposit}u64`, `${paleoForDeposit}u64`, ZERO_ADDRESS],
-    3,
+    0.487533,
     undefined,
     resolvedImports
   );

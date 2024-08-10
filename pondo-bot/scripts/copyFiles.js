@@ -8,6 +8,7 @@ const versionNumber = process.env.VERSION_NUMBER || '';
 // Source files
 const filesToCopy = [
   '../multi_token_support_program/build/main.aleo',
+  '../mtsp_credits/build/main.aleo',
   '../pondo/pondo_core_protocol/build/main.aleo',
   '../pondo/pondo_oracle/build/main.aleo',
   '../pondo/pondo_staked_aleo_token/build/main.aleo',
@@ -57,7 +58,7 @@ filesToCopy.forEach(fileSrc => {
   const programName = parseProgramName(fileSrc);
   let newProgramName = programName;
 
-  if (programName.startsWith('pondo_')) {
+  if (programName.startsWith('pondo_') || programName.startsWith('m')) {
     newProgramName = addVersionNumber(programName, versionNumber);
   }
 
