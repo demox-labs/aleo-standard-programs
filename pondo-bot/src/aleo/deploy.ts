@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { spawn, Pool, Worker, FunctionThread, ModuleThread } from 'threads';
 import path from 'path';
 
@@ -173,6 +174,34 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
   return updatedProgramCode;
 };
 
+export const ensureValidProgramDeployment = async (programId: string, programCode: string, retries=15, delayTime=3_000) => {
+  let foundProgram = await getProgram(programId);
+  if (!foundProgram) {
+    console.log(`Awaiting deployment: ${programId}`);
+    await delay(delayTime);
+    ensureValidProgramDeployment(programId, programCode, retries-1, delayTime);
+  } else {
+    // Strip all newlines and whitespace from programCode && foundProgram
+    programCode = programCode.replace(/\s/g, '');
+    foundProgram = foundProgram.replace(/\s/g, '');
+
+    // Checksum the programCode and foundProgram
+    const expectedChecksum = crypto.createHash('md5').update(programCode).digest("hex");
+    const actualChecksum = crypto.createHash('md5').update(foundProgram).digest("hex");
+
+    if (expectedChecksum !== actualChecksum) {
+      console.error(`Checksum mismatch for program ${programId}`);
+      console.error(`Expected: ${expectedChecksum}`);
+      console.error(`Actual: ${actualChecksum}`);
+      process.exit(1);
+    } else {
+      console.log(`Program ${programId} deployed successfully: ${expectedChecksum}`);
+    }
+  }
+}
+
+
+
 export const authorizeDeployment = async (
   network: string,
   privateKey: string,
@@ -313,8 +342,8 @@ export const deployAllProgramsIfNecessary = async (
         fee
       );
 
-      // Wait for a bit before deploying the next program
-      await delay(30_000);
+      // Ensure the program was deployed successfully by checking the checksum
+      await ensureValidProgramDeployment(program, programCode);
     } else {
       console.log(`Program ${program} already exists`);
     }
