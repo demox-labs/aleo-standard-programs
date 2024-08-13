@@ -260,7 +260,7 @@ program pondo_oracle.aleo {
     control_addresses.remove(control_address);
   }
 
-  // Used for an admin to update their own admin addresses
+  // Used for the multi-sig to update an admin addresses
   async transition update_admin(
     public old_admin: address,
     public new_admin: address,

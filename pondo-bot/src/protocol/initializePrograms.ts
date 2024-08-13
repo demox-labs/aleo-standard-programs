@@ -4,7 +4,7 @@ import { getProgram, getPublicTransactionsForProgram } from "../aleo/client";
 import { resolveImports } from '../aleo/deploy';
 import { submitTransaction } from '../aleo/execute';
 import { pondoDependencyTree, pondoPrograms } from "../compiledPrograms";
-import { NETWORK, ORACLE_ONLY, PRIVATE_KEY } from '../constants';
+import { INITIALIZATION_AMOUNT, NETWORK, ORACLE_ONLY, PRIVATE_KEY } from '../constants';
 
 
 const getInitializationFunction = (programCode: string): string | undefined => {
@@ -63,7 +63,7 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
     // Set the inputs
     let inputs: string[] = [];
     if (program.includes('pondo_core_protocol')) {
-      inputs = ['100_000_000_000u64']
+      inputs = [INITIALIZATION_AMOUNT]
     }
 
     // Initialize the program
