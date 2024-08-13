@@ -6,7 +6,8 @@ import {
   MULTI_SIG_PRIVATE_KEY_1,
   MULTI_SIG_PRIVATE_KEY_2,
   PRIVATE_KEY,
-  TEST
+  TEST,
+  RPC_URL
 } from './constants';
 import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
 import {
@@ -18,6 +19,8 @@ import { fundTestAccountsIfNecessary, runTests } from './tests/runTests';
 import { delay } from './util';
 
 async function main() {
+  // Log start up information
+  console.log(`Starting Pondo bot with RPC URL: ${RPC_URL} on network: ${NETWORK}`);
   // Deploy all programs if necessary
   await deployAllProgramsIfNecessary(NETWORK, PRIVATE_KEY);
   // Initialize all programs if necessary

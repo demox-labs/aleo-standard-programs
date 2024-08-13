@@ -46,6 +46,7 @@ import {
   MULTI_SIG_ADDRESS_2,
   MULTI_SIG_ADDRESS_3,
   MULTI_SIG_ADDRESS_4,
+  MANUAL_DEPLOY,
 } from '../constants';
 
 type AuthorizePool = Pool<
@@ -174,12 +175,16 @@ const updateDefaultValuesWithEnvVariables = (programCode: string): string => {
   return updatedProgramCode;
 };
 
-export const ensureValidProgramDeployment = async (programId: string, programCode: string, retries=15, delayTime=3_000) => {
+export const ensureValidProgramDeployment = async (programId: string, programCode: string, retries=15, delayTime=3_000): Promise<void> => {
   let foundProgram = await getProgram(programId);
   if (!foundProgram) {
+    if (retries === 0) {
+      console.error(`Program ${programId} not found after deployment`);
+      process.exit(1);
+    }
     console.log(`Awaiting deployment: ${programId}`);
     await delay(delayTime);
-    ensureValidProgramDeployment(programId, programCode, retries-1, delayTime);
+    return ensureValidProgramDeployment(programId, programCode, retries-1, delayTime);
   } else {
     // Strip all newlines and whitespace from programCode && foundProgram
     programCode = programCode.replace(/\s/g, '');
@@ -298,6 +303,24 @@ export const deploymentCost = (program: string) => {
   return fee;
 };
 
+const confirmManualDeployment = async (programId: string): Promise<void> => {
+  console.log(`Do you want to continue with the ${programId} deployment? (y/n)`);
+
+  const userInput = await new Promise<string>((resolve) => {
+      process.stdin.once('data', (data) => {
+          resolve(data.toString().trim());
+      });
+  });
+
+  if (userInput.toLowerCase() === 'y') {
+      console.log("Continuing with deployment...");
+      return;
+  } else {
+      console.log("Exiting process...");
+      process.exit(0);
+  }
+}
+
 export const deployAllProgramsIfNecessary = async (
   network: string,
   privateKey: string
@@ -330,6 +353,12 @@ export const deployAllProgramsIfNecessary = async (
       let resolvedImports = {};
       if (imports) {
         resolvedImports = await resolveImports(imports);
+      }
+
+      if (MANUAL_DEPLOY) {
+        // Logs the entire programCode and then awaits the user to hit enter before deploying
+        console.log(programCode);
+        await confirmManualDeployment(program);
       }
       // Deploy the program
       console.log(`Deploying program ${program}`);

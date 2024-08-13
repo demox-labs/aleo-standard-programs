@@ -93,6 +93,7 @@ export const VERSION = process.env.VERSION ? process.env.VERSION : '';
 export const ORACLE_ONLY = process.env.ORACLE_ONLY === 'true' || false;
 export const PONDO_ORACLE_PROGRAM = pondoPrograms.find(program => program.includes('pondo_oracle'));
 export const PONDO_ORACLE_PROGRAM_CODE = pondoProgramToCode[PONDO_ORACLE_PROGRAM!];
+export const MANUAL_DEPLOY = process.env.MANUAL_DEPLOY === 'true' || false;
 
 // Non .env constants
 export const CREDITS_PROGRAM = 'credits.aleo';
