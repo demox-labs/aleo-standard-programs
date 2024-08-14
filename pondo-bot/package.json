@@ -20,11 +20,11 @@
     "swapLedger": "node ./dist/swapLedger.js",
     "snapshotRpcDb": "node ./dist/snapshotRpcDb.js",
     "swapRpcDb": "node ./dist/swapRpcDb.js",
-    "snapshotAll": "yarn snapshotRpcDb $0 && yarn snapshotLedger $0",
     "test": "node ./dist/testRunner.js",
-    "startDevnet": "./src/tests/setupDevnet.sh",
+    "startDevnet": "yarn cleanDevnet && ./src/tests/setupDevnet.sh",
     "stopDevnet": "tmux kill-session -t devnet",
-    "watchDevnet": "tmux attach-session -t devnet"
+    "watchDevnet": "tmux attach-session -t devnet",
+    "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*"
   },
   "repository": {
     "type": "git",

@@ -3,8 +3,6 @@
 total_validators=20
 network_id=1
 
-echo "here"
-
 # rpc has a couple of passthrough methods, we need to add one for the history endpoint 
 
 # Create a new tmux session named "devnet"

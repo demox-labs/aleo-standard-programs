@@ -52,20 +52,16 @@ Optionally, run Haruka's explorer:
 1. Once the RPC is a in a state you want to save for hot reloading later:
    1. Kill `/.devnet.sh` by `tmux kill-session -t devnet`.
    1. Spin down RPC task by `crtl+C` on relevant terminal
-1. Make sure `RPC_PATH` & `RPC_BACKUPS_PATH` are set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo. `RPC_BACKUPS_PATH` must refer to the absolute path
+1. Make sure `RPC_PATH` is set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo.
 1. Run `yarn build:dev` to make sure all the test scripts are built.
 1. Run `yarn rpcBackupDb your_backup_name`
 
 ## Hot swap DB state
 
 1. Kill `/.devnet.sh` by `tmux kill-session -t devnet`.
-1. Make sure `RPC_PATH` is set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo. `RPC_BACKUPS_PATH` is optional but must refer to the absolute path of the backups
+1. Make sure `RPC_PATH` is set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo.
 1. Run `yarn build:dev` to make sure all the test scripts are built.
 1. Run `yarn swapRpcDb your_backup_name`.
-
-### Save all state data
-
-1. Alternatively, once killing devnet & spinning down the RPC, you can run `yarn snapshotAll your_test_name` to run snapshots for all relevant data
 
 ## After updating a leo program
 
@@ -74,6 +70,8 @@ Optionally, run Haruka's explorer:
 ## Troubleshooting
 
 1. Ensure docker is installed and running
+1. Make sure rpc and pondo-bot node versions are in sync
 1. Increase file descriptors if having trouble running the devnet from snarkOS: `ulimit -n` to check.
 1. `snarkos clean` doesn't work but within the snarkOS folder: `rm -rf .ledger-* && rm -rf .logs*` does.
-1. Use node: v18.15.0
+1. Use node: v18.15.0 or v20.16.0
+1. In the case of the prover, sometimes docker caches the build causing issues. Use `docker system prune -a --volumes` to fully reset docker build cache. (Unlikely cause, but including for posterity)

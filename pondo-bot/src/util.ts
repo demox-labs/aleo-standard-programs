@@ -143,3 +143,7 @@ export const getTokenOwnerHash = (address: string, tokenId: string) => {
   const tokenOwnerString = `{ account: ${address}, token_id: ${tokenId} }`;
   return Aleo.Plaintext.fromString(NETWORK!, tokenOwnerString).hashBhp256();
 };
+
+export const getAddressFromProgram = (network: string, program: string) => {
+  return Aleo.Program.fromString(network, program).toAddress();
+}

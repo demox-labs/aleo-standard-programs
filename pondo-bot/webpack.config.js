@@ -121,14 +121,16 @@ const testConfig = {
     runOracleTests:
       path.resolve(__dirname, "src") + "/tests/scripts/runOracleTests.ts",
     testProgramCalls:
-      path.resolve(__dirname, 'src') + '/tests/scripts/testProgramCalls.ts',
+      path.resolve(__dirname, "src") + "/tests/scripts/testProgramCalls.ts",
     estimateFees:
-      path.resolve(__dirname, 'src') + '/tests/scripts/estimateFees.ts',
+      path.resolve(__dirname, "src") + "/tests/scripts/estimateFees.ts",
     snapshotLedger:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotLedger.ts",
     testRunner: path.resolve(__dirname, "src") + "/tests/testRunner.ts",
     depositTest:
       path.resolve(__dirname, "src") + "/tests/cases/deposit.test.ts",
+    initialStateTest:
+      path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
     snapshotRpcDb:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotRpcDb.ts",
     swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",

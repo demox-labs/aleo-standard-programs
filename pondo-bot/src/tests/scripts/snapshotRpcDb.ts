@@ -14,8 +14,7 @@ if (!backupName) {
   process.exit(1);
 }
 
-const RPC_BACKUPS_PATH =
-  process.env.RPC_BACKUPS_PATH ?? __dirname + `/../saved-states/${backupName}`;
+const RPC_BACKUPS_PATH =__dirname + `/../saved-states/${backupName}`;
 
 async function snapshotRpcDb(backupFileName: string) {
   const execPromise = promisify(exec);
