@@ -14,10 +14,6 @@ As most calls in the pondo protocol are permissionless, the private key used to 
    ```
 3. Create the `.env` file
 4. Install and run the pondo bot: `yarn` && `yarn start:dev`
-5. Fetch large files for testing
-   1. Install [git lfs](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
-   2. Run `git lfs install` and verify message `Git LFS initialized.` shows
-   3. Run `git lfs fetch` and `git lfs checkout` to obtain large files
 
 Optionally, run Haruka's explorer:
 
@@ -62,6 +58,19 @@ Optionally, run Haruka's explorer:
 1. Make sure `RPC_PATH` is set in your `.env` . `RPC_PATH` is the path to your `aleo-rpc` local repo.
 1. Run `yarn build:dev` to make sure all the test scripts are built.
 1. Run `yarn swapRpcDb your_backup_name`.
+
+## Retrieving / uploading common saved states
+We use an S3 bucket to store common states: [pondo-test-states](https://us-west-2.console.aws.amazon.com/s3/buckets/pondo-test-states)
+
+### Downloading
+1. Ensure you have AWS S3 retrieve access 
+1. Navigate to the above S3 bucket on the console, and download any relevant zips 
+1. Unzip into the saved-states/ directory 
+
+### Uploading 
+1. After snapshotting, zip the saved state i.e. `zip -r programsDeployed.zip programsDeployed` 
+1. Ensure you have AWS S3 upload access 
+1. Navigate to the above S3 bucket on the console, and upload the zips with default settings
 
 ## After updating a leo program
 

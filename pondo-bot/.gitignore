@@ -3,3 +3,4 @@
 .env.local
 .env.*
 src/tests/.*
+saved-states/**
