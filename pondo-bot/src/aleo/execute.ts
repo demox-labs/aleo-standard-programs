@@ -53,12 +53,13 @@ export const submitTransaction = async (
   feeRecord?: string,
   imports?: { [key: string]: string }
 ): Promise<any> => {
+  const aleoProgram = Aleo.Program.fromString(network, program);
+
   // Get the fee for the program and function or use the input as a default
-  feeCredits = Number(calculatedFees[program]?.[functionName]) / 999_995 || feeCredits;
+  feeCredits = Number(calculatedFees[aleoProgram.id()]?.[functionName]) / 999_995 || feeCredits;
   // Authorize the transaction
   const authorization = await authorizeTransaction(network, privateKey, program, functionName, inputs, feeCredits, feeRecord, imports);
-  const aleoProgram = Aleo.Program.fromString(network, program);
-  console.log(`Authorized transaction ${aleoProgram.id()}.${functionName}`);
+  console.log(`Authorized transaction ${aleoProgram.id()} ${functionName}`);
   const requestId = await delegateTransaction(authorization.authorization, program, functionName, authorization.fee_authorization, true, imports);
   console.log('Request ID:', requestId);
 
