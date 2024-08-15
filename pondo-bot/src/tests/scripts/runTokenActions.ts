@@ -3,6 +3,7 @@ import {
   transferPondo,
   burnPondo,
   mintPondo,
+  getPAleoBalance
 } from '../../protocol/tokenActions';
 
 const [action, signer, address, amount] = process.argv.slice(2);
@@ -12,6 +13,7 @@ enum TOKEN_ACTION_TYPES {
   transfer_pondo = 'transfer_pondo',
   burn_pondo = 'burn_pondo',
   mint_pondo = 'mint_pondo',
+  paleo_balance = 'paleo_balance'
 }
 
 async function main(
@@ -32,6 +34,10 @@ async function main(
       break;
     case TOKEN_ACTION_TYPES.burn_pondo:
       await burnPondo(signer, address, BigInt(amount));
+      break;
+    case TOKEN_ACTION_TYPES.paleo_balance:
+      const balance = await getPAleoBalance(signer); // In this case we expect signer to be an address
+      console.log('Balance for account', signer, 'is', balance, 'pAleo');
       break;
   }
 }

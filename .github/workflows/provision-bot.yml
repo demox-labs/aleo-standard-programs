@@ -12,12 +12,6 @@ on:
       github_actions_role:
         required: true
         type: string
-      default_validator_address:
-        required: true
-        type: string
-      pondo_foundation_address:
-        required: true
-        type: string
       network:
         required: true
         type: string
@@ -47,8 +41,6 @@ on:
         type: string
     
     secrets:
-      KEY_PAIR_NAME:
-        required: true
       PRIVATE_KEY:
         required: true
       ADDRESS:
@@ -92,8 +84,6 @@ jobs:
       run: |
         echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" > .env
         echo "ADDRESS=${{ secrets.ADDRESS }}" >> .env
-        echo "DEFAULT_VALIDATOR_ADDRESS=${{ inputs.default_validator_address }}" >> .env
-        echo "PONDO_FOUNDATION_ADDRESS=${{ inputs.pondo_foundation_address }}" >> .env
         echo "NETWORK=${{ inputs.network }}" >> .env
         echo "RPC_URL=${{ inputs.rpc_url }}" >> .env
         echo "CLIENT_URL=${{ inputs.client_url }}" >> .env
@@ -135,6 +125,5 @@ jobs:
         capabilities: 'CAPABILITY_NAMED_IAM'
         no-fail-on-empty-changeset: "1"
         parameter-overrides: >-
-          KeyPairName=${{ secrets.KEY_PAIR_NAME }}
           BranchName=${{ env.BRANCH_NAME }}
           LatestTag=${{ steps.rename-pondo-bot-image.outputs.pondo-bot-image-tag }}

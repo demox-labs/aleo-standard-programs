@@ -5,6 +5,7 @@ import path from 'path';
 
 import { AuthorizeTransaction } from '../workers/authorizeTransaction';
 import { delegateTransaction, pollDelegatedTransaction } from './client';
+import { calculatedFees } from '../protocol/calculatedFees';
 
 type AuthorizePool = Pool<
   FunctionThread<[network: string, privateKey: string, program: string, functionName: string, inputs: string[], feeCredits: number, feeRecord?: string, imports?: {
@@ -52,6 +53,8 @@ export const submitTransaction = async (
   feeRecord?: string,
   imports?: { [key: string]: string }
 ): Promise<any> => {
+  // Get the fee for the program and function or use the input as a default
+  feeCredits = Number(calculatedFees[program]?.[functionName]) / 999_995 || feeCredits;
   // Authorize the transaction
   const authorization = await authorizeTransaction(network, privateKey, program, functionName, inputs, feeCredits, feeRecord, imports);
   const aleoProgram = Aleo.Program.fromString(network, program);
