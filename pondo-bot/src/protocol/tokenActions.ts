@@ -1,3 +1,5 @@
+import * as Aleo from '@demox-labs/aleo-sdk';
+
 import { getMappingValue } from '../aleo/client';
 import { submitTransaction } from '../aleo/execute';
 import { resolveImports } from '../aleo/deploy';
@@ -120,3 +122,15 @@ export const burnPondo = async (
     resolvedImports
   );
 };
+
+export const getPAleoBalance = async (
+  address: string
+): Promise<bigint> => {
+  const balanceKey = getTokenOwnerHash(address, PALEO_TOKEN_ID);
+  const balanceStruct = await getMappingValue(balanceKey, MTSP_PROGRAM, 'authorized_balances');
+  if (!balanceStruct) {
+    return BigInt(0);
+  }
+  const balance = BigInt(JSON.parse(formatAleoString(balanceStruct))['balance'].slice(0, -4));
+  return balance;
+}
