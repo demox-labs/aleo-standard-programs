@@ -8,7 +8,7 @@
     "build:dev": "NODE_ENV=development webpack --mode development",
     "start:dev": "NODE_ENV=development nodemon",
     "build:prod": "NODE_ENV=production webpack --mode production",
-    "start:prod": "yarn build:prod && NODE_ENV=production node --experimental-modules --max-old-space-size=14384 ./dist/index.js",
+    "start:prod": "NODE_ENV=production node --experimental-modules --max-old-space-size=14384 ./dist/index.js",
     "call:protocol": "yarn build:dev && node ./dist/runTestScript.js",
     "call:token": "yarn build:dev && node ./dist/runTokenActions.js",
     "call": "yarn call:protocol",

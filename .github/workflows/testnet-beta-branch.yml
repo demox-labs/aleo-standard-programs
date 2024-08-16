@@ -5,12 +5,16 @@ on:
     branches:
       - 'testnet-beta'
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  pondo-bot-ap-southeast-1:
+  pondo-bot-us-east-2:
     uses: ./.github/workflows/provision-bot.yml
     with:
       environment: TestnetBeta
-      region: 'ap-southeast-1'
+      region: 'us-east-2'
       github_actions_role: 'pondo-bot-role'
       network: 'TestnetV0'
       rpc_url: 'https://testnetbeta.aleorpc.com'

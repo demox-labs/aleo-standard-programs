@@ -46,7 +46,6 @@ on:
       ADDRESS:
         required: true
 
-
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   AWS_REGION: ap-southeast-1
@@ -125,5 +124,4 @@ jobs:
         capabilities: 'CAPABILITY_NAMED_IAM'
         no-fail-on-empty-changeset: "1"
         parameter-overrides: >-
-          BranchName=${{ env.BRANCH_NAME }}
           LatestTag=${{ steps.rename-pondo-bot-image.outputs.pondo-bot-image-tag }}
