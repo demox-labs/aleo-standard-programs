@@ -19,35 +19,37 @@ export const calculatedFees: CalculatedFees = {
   "pondo_staked_aleo_tokenv1.aleo": {},
   "pondo_tokenv1.aleo": {},
   "pondo_delegator1v1.aleo": {
-    bond: "388200",
-    unbond: "780078",
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
   "pondo_delegator2v1.aleo": {
-    bond: "388200",
-    unbond: "780078",
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
   "pondo_delegator3v1.aleo": {
-    bond: "388200",
-    unbond: "780078",
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
   "pondo_delegator4v1.aleo": {
-    bond: "388200",
-    unbond: "780078",
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
   "pondo_delegator5v1.aleo": {},
   "pondo_core_protocolv1.aleo": {
     initialize: "1032812",
-    prep_rebalance: "529697",
-    deposit_public_as_signer: "669023",
-    distribute_deposits: "594708",
-    withdraw_public: "738315",
-    rebalance_retrieve_credits: "1466846",
-    rebalance_redistribute: "1103486",
-    set_oracle_tvl: "204334",
+    prep_rebalance: "355766", // Manually set to lower value
+    deposit_public_as_signer: "487534", // Manually set to lower value
+    distribute_deposits: "346768", // Manually set to lower value
+    instant_withdraw_public: "556319", // Manually set to lower value
+    withdraw_public: "532935", // Manually set to lower value
+    claim_withdrawal_public: "126015", // Manually set to lower value
+    rebalance_retrieve_credits: "732545", // Manually set to lower value
+    rebalance_redistribute: "677000", // Manually set to lower value
+    set_oracle_tvl: "193434", // Manually set to lower value
   },
   "reference_delegatorgizgkl.aleo": { initialize: "543166" },
 };
