@@ -2,9 +2,10 @@ import { JSONRPCClient } from 'json-rpc-2.0';
 import { delay, formatAleoString } from '../util';
 
 import { MemberData } from './types';
-import { CLIENT_URL, NETWORK, RPC_URL } from '../constants';
+import { CLIENT_URL, NETWORK, PALEO_TOKEN_ID, PONDO_TOKEN_ID, PRIVATE_KEY, RPC_URL } from '../constants';
 import * as Aleo from '@demox-labs/aleo-sdk';
 import { pondoPrograms } from '../compiledPrograms';
+import { submitTransaction } from './execute';
 
 export const getClient = () => {
   const client = new JSONRPCClient((jsonRPCRequest: any) =>
@@ -79,7 +80,8 @@ export async function getMappingValue(
 
 export async function getMTSPBalance(
   publicKey: string,
-  tokenId: string
+  tokenId: string,
+  authorized: boolean = false
 ): Promise<bigint> {
   const MTSP_PROGRAM = pondoPrograms.find((program) =>
     program.includes('multi_token_support_program')
@@ -89,17 +91,18 @@ export async function getMTSPBalance(
       NETWORK,
       tokenOwnerString
     ).hashBhp256();
-    const paleoBalance = await getMappingValue(
-      tokenOwnerHash,
-      MTSP_PROGRAM!,
-      'balances'
-    );
-    console.log(`Paleo balance: ${paleoBalance}`);
-    const paleoBalanceValue = paleoBalance
-      ? JSON.parse(formatAleoString(paleoBalance))['balance'].slice(0, -4)
-      : '0';
 
-    return BigInt(paleoBalanceValue);
+  const mtspMappingName = authorized ? 'authorized_balances' : 'balances';
+  const paleoBalance = await getMappingValue(
+    tokenOwnerHash,
+    MTSP_PROGRAM!,
+    mtspMappingName
+  );
+  const paleoBalanceValue = paleoBalance
+    ? JSON.parse(formatAleoString(paleoBalance))['balance'].slice(0, -4)
+    : '0';
+
+  return BigInt(paleoBalanceValue);
 }
 
 export async function getPublicBalance(
@@ -241,7 +244,7 @@ export const delegateDeployment = async (program: string, imports = {}): Promise
   }
 };
 
-type GeneratedTransactionResponse = {
+export type GeneratedTransactionResponse = {
   transaction: string;
   status: string;
   error: string;
@@ -287,6 +290,7 @@ export const pollDelegatedTransaction = async (
   requestId: string,
   retryTime: number = 5000
 ): Promise<GeneratedTransactionResponse> => {
+  console.log('Polling transaction:', requestId);
   const transaction = await getDelegatedTransaction(requestId);
   if (transaction.status === 'Failed' || transaction.status === 'Completed' || transaction.status === 'Broadcasted') {
     console.log(transaction);
@@ -321,6 +325,18 @@ export const getChainHeight = async (): Promise<number> => {
     throw new Error('Height endpoint errored.');
   }
 };
+
+export const airDropCredits = async (publicKey: string, amount: bigint) => {
+  console.log(`Airdropping ${amount} microcredits to ${publicKey}`);
+  return await submitTransaction(
+    NETWORK!,
+    PRIVATE_KEY!,
+    Aleo.Program.getCreditsProgram(NETWORK).toString(),
+    'transfer_public',
+    [publicKey, `${amount.toString()}u64`],
+    2
+  );
+}
 
 export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 10): Promise<boolean> => {
   if (retriesRemaining <= 0) {
