@@ -332,10 +332,10 @@ const setOracleTVL = async (): Promise<void> => {
     }
   } else {
     const lastUpdateTVL = BigInt(previousTVLUpdates[previousTVLUpdates.length - 1].transaction.execution.transitions[0].inputs[0].value.slice(0, -3));
-    // If the TVL has changed by more than 25%, update the oracle TVL
+    // If the TVL has changed by more than 50%, update the oracle TVL
     const tvlChange = Math.abs(Number(totalTVL - lastUpdateTVL) / Number(lastUpdateTVL));
-    if (tvlChange > 0.25) {
-      console.log('TVL has changed by more than 25%, updating oracle TVL');
+    if (tvlChange > 0.50) {
+      console.log('TVL has changed by more than 50%, updating oracle TVL');
       const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
       const resolvedImports = await resolveImports(imports);
       const inputs = [`${totalTVL}u64`];
@@ -384,14 +384,15 @@ export const runProtocol = async (): Promise<void> => {
   const epochPeriod = await getEpochPeriod(blockHeight);
   console.log(`Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
 
-  // Set the oracle TVL if it's changed by more than 25%
-  await setOracleTVL();
-
   const pondoDelegatorStates = await getPondoDelegatorStates();
   if (epochPeriod === 'rebalance') {
     await prepRebalance(pondoDelegatorStates);
   } else if (epochPeriod == 'updateOracle') {
+    // Update the reference delegators if necessary
     await updateReferenceDelegatorsIfNecessary(blockHeight);
+  } else {
+    // Set the oracle TVL if it's changed by more than 50%
+    await setOracleTVL();
   }
 
   // Can be run in any epoch period
