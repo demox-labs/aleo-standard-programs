@@ -83,9 +83,11 @@ async function main() {
   await startDevNet();
   await waitUntilRPCReady();
   await runTests(testName);
+  console.log('Tests complete. Stopping devnet...');
   await stopDevNet();
   // let devnet spin down before we wipe out the files
-  await delay(5000);
+  console.log('Waiting 10 seconds for devnet to spin down...');
+  await delay(10_000);
   await clearLedger();
 }
 

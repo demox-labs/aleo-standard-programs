@@ -4,7 +4,7 @@ import { spawn, Pool, Worker, FunctionThread, ModuleThread } from 'threads';
 import path from 'path';
 
 import { AuthorizeTransaction } from '../workers/authorizeTransaction';
-import { delegateTransaction, pollDelegatedTransaction } from './client';
+import { delegateTransaction, GeneratedTransactionResponse, pollDelegatedTransaction } from './client';
 import { calculatedFees } from '../protocol/calculatedFees';
 
 type AuthorizePool = Pool<
@@ -43,6 +43,12 @@ export const authorizeTransaction = async (
   return result;
 };
 
+export const killAuthorizePool = async () => {
+  if (pool) {
+    await pool.terminate();
+  }
+};
+
 export const submitTransaction = async (
   network: string,
   privateKey: string,
@@ -52,7 +58,7 @@ export const submitTransaction = async (
   feeCredits: number,
   feeRecord?: string,
   imports?: { [key: string]: string }
-): Promise<any> => {
+): Promise<GeneratedTransactionResponse> => {
   const aleoProgram = Aleo.Program.fromString(network, program);
 
   // Get the fee for the program and function or use the input as a default

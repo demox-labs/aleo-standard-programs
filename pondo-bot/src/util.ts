@@ -1,5 +1,5 @@
 import * as Aleo from '@demox-labs/aleo-sdk';
-import { NETWORK } from './constants';
+import { NETWORK, PALEO_TOKEN_ID, PONDO_TOKEN_ID } from './constants';
 
 export const delay = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
