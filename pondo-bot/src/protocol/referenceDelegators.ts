@@ -237,18 +237,19 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
   }
 }
 
-export const updateReferenceDelegatorsIfNecessary = async () => {
+export const updateReferenceDelegatorsIfNecessary = async (blockHeight: number) => {
   console.log('Updating reference delegators data if necessary');
 
   const transactionHistory = await getPublicTransactionsForProgram(PONDO_ORACLE_PROGRAM, 'add_delegator', 0) as ExecuteTransaction[];
   const delegators = transactionHistory.map(tx => tx.transaction.execution.transitions[0].inputs[0].value);
   console.log('Delegators:', JSON.stringify(delegators));
+  const currentEpoch = BigInt(blockHeight) / BigInt(EPOCH_BLOCKS);
   
   for (let delegator of delegators) {
     const currentlyActive = await getMappingValue(delegator, PONDO_ORACLE_PROGRAM, 'validator_data');
     if (currentlyActive) {
       const lastUpdate = BigInt(JSON.parse(formatAleoString(currentlyActive))["block_height"].slice(0, -3)) / BigInt(EPOCH_BLOCKS);
-      const currentEpoch = BigInt(await getHeight()) / BigInt(EPOCH_BLOCKS);
+      console.log(`For Delegator: ${delegator} Last update: ${lastUpdate}, current epoch: ${currentEpoch}`);
       if (lastUpdate >= currentEpoch) {
         console.log(`Current delegator ${formatAleoString(currentlyActive)} has already been updated in this epoch, skipping`);
         continue;

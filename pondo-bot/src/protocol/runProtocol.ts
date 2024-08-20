@@ -391,7 +391,7 @@ export const runProtocol = async (): Promise<void> => {
   if (epochPeriod === 'rebalance') {
     await prepRebalance(pondoDelegatorStates);
   } else if (epochPeriod == 'updateOracle') {
-    await updateReferenceDelegatorsIfNecessary();
+    await updateReferenceDelegatorsIfNecessary(blockHeight);
   }
 
   // Can be run in any epoch period
@@ -413,6 +413,6 @@ export const runOracleProtocol = async (): Promise<void> => {
   console.log(`Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
 
   if (epochPeriod == 'updateOracle') {
-    await updateReferenceDelegatorsIfNecessary();
+    await updateReferenceDelegatorsIfNecessary(blockHeight);
   }
 }
