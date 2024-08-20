@@ -7,7 +7,8 @@ import {
   MULTI_SIG_PRIVATE_KEY_2,
   PRIVATE_KEY,
   TEST,
-  RPC_URL
+  RPC_URL,
+  BOT_DELAY
 } from './constants';
 import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
 import {
@@ -51,13 +52,11 @@ async function main() {
         await runTests();
       }
 
-      // Sleep for 15 seconds
-      await delay(15_000);
+      await delay(BOT_DELAY);
     } catch (error) {
       console.error(error);
 
-      // Sleep for 5 seconds
-      await delay(30_000);
+      await delay(BOT_DELAY);
     }
   }
 }

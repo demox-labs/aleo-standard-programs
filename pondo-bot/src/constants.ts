@@ -95,6 +95,7 @@ export const PONDO_ORACLE_PROGRAM = pondoPrograms.find(program => program.includ
 export const PONDO_ORACLE_PROGRAM_CODE = pondoProgramToCode[PONDO_ORACLE_PROGRAM!];
 export const MANUAL_DEPLOY = process.env.MANUAL_DEPLOY === 'true' || false;
 export const INITIALIZATION_AMOUNT = process.env.INITIALIZATION_AMOUNT || '101_000_000u64';
+export const BOT_DELAY = process.env.BOT_DELAY ? parseInt(process.env.BOT_DELAY) : 15_000;
 
 // Non .env constants
 export const CREDITS_PROGRAM = 'credits.aleo';
