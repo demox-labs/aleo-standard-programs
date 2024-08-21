@@ -453,7 +453,7 @@ finalize mint_public:
 
 function mint_private:
     input r0 as field.public;
-    input r1 as address.public;
+    input r1 as address.private;
     input r2 as u128.public;
     input r3 as boolean.public;
     input r4 as u32.public;

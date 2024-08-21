@@ -283,7 +283,7 @@ program multi_token_support_program.aleo {
 
   async transition mint_private(
     public token_id: field,
-    public recipient: address,
+    recipient: address,
     public amount: u128,
     public external_authorization_required: bool,
     public authorized_until: u32
