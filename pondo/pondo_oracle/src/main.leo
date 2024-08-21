@@ -17,6 +17,8 @@ program pondo_oracle.aleo {
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
   // The number of blocks to not allow updates, so updates must happen in the last 1 day of an epoch
   const UPDATE_BLOCKS_DISALLOWED: u32 = 103_680u32; // 6 day of blocks, assuming 5 sec per block
+  // The rebalance kickoff period copied from the pondo core protocol
+  const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
   // The max allowable commission by the validators
   const MAX_COMMISSION: u8 = 50u8;
   // The multiple for boosting
@@ -58,6 +60,7 @@ program pondo_oracle.aleo {
   const UPDATE_DELEGATOR_ALLOCATIONS_OPERATION: u8 = 2u8;
   const UPDATE_ADMIN_OPERATION: u8 = 3u8;
   const APPROVE_DELEGATOR_OPERATION: u8 = 4u8;
+  const UNBAN_VALIDATOR_OPERATION: u8 = 5u8;
 
   struct admin_operation {
     arg: field,
@@ -158,6 +161,11 @@ program pondo_oracle.aleo {
     let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
     assert(is_verified_1 && is_verified_2 && is_verified_3);
 
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
     return finalize_add_control_address(control_address, admin_1, admin_2, admin_3, admin_op);
   }
 
@@ -169,11 +177,6 @@ program pondo_oracle.aleo {
     public admin_op: admin_operation
   ) {
     /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
 
     // Ensure the admin addresses are each admins
     let is_admin_1: bool = control_addresses.get(admin_1);
@@ -219,7 +222,12 @@ program pondo_oracle.aleo {
     let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
     let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
     let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
-    assert(is_verified_1 && is_verified_2 && is_verified_3);  
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3); 
 
     return finalize_remove_control_address(control_address, admin_1, admin_2, admin_3, admin_op);
   }
@@ -232,11 +240,6 @@ program pondo_oracle.aleo {
     public admin_op: admin_operation
   ) {
     /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
 
     // Ensure the admin addresses are each admins
     let is_admin_1: bool = control_addresses.get(admin_1);
@@ -285,6 +288,11 @@ program pondo_oracle.aleo {
     let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
     assert(is_verified_1 && is_verified_2 && is_verified_3);
 
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
     return finalize_update_admin(old_admin, new_admin, admin_1, admin_2, admin_3, admin_op);
   }
 
@@ -297,11 +305,6 @@ program pondo_oracle.aleo {
     public admin_op: admin_operation
   ) {
     /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
 
     // Ensure the admin addresses are each admins
     let is_admin_1: bool = control_addresses.get(admin_1);
@@ -347,6 +350,11 @@ program pondo_oracle.aleo {
     let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
     assert(is_verified_1 && is_verified_2 && is_verified_3);
 
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
     return finalize_update_delegator_allocations(multiple, admin_1, admin_2, admin_3, admin_op);
   }
 
@@ -358,11 +366,6 @@ program pondo_oracle.aleo {
     public admin_op: admin_operation
   ) {
     /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
 
     // Ensure the admin addresses are each admins
     let is_admin_1: bool = control_addresses.get(admin_1);
@@ -432,6 +435,11 @@ program pondo_oracle.aleo {
     let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
     assert(is_verified_1 && is_verified_2 && is_verified_3);
 
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
     return finalize_add_delegator(delegator, admin_1, admin_2, admin_3, admin_op);
   }
 
@@ -443,11 +451,6 @@ program pondo_oracle.aleo {
     public admin_op: admin_operation
   ) {
     /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
 
     // Ensure the admin addresses are each admins
     let is_admin_1: bool = control_addresses.get(admin_1);
@@ -726,9 +729,9 @@ program pondo_oracle.aleo {
     public validator: address,
     public caller: address
   ) {
-    // Check if the caller is a control address
-    let is_control_address: bool = control_addresses.contains(caller);
-    assert(is_control_address);
+    // Check if the caller is an admin control address
+    let is_non_admin_control_address: bool = control_addresses.get(caller);
+    assert(!is_non_admin_control_address);
 
     banned_validators.set(validator, true);
   }
@@ -750,8 +753,8 @@ program pondo_oracle.aleo {
 
     // Check if the height is within the update window
     let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;
-    let is_update_period: bool = epoch_blocks >= UPDATE_BLOCKS_DISALLOWED;
-    assert(is_update_period);
+    let is_rebalance_period: bool = epoch_blocks >= REBALANCE_PERIOD;
+    assert(is_rebalance_period);
 
     // Default committee state of the validator
     let default_committee_state: committee_state = committee_state {
@@ -764,6 +767,66 @@ program pondo_oracle.aleo {
     assert(!validator_committee_state.is_open || validator_committee_state.commission > MAX_COMMISSION);
 
     banned_validators.set(validator, true);
+  }
+
+  // The Admin multi-sig can unban a validator
+  // As banning is very strict, unbanning can be done in cases where the validator was banned by accidentally/unknowly breaking the rules
+  async transition unban_validator(
+    public validator: address,
+    public sig_1: signature,
+    public admin_1: address,
+    public sig_2: signature,
+    public admin_2: address,
+    public sig_3: signature,
+    public admin_3: address,
+    public request_id: u64
+  ) -> Future {
+    let arg: field = BHP256::hash_to_field(validator);
+    let admin_op: admin_operation = admin_operation {
+      arg: arg,
+      op_type: UNBAN_VALIDATOR_OPERATION,
+      request_id: request_id
+    };
+    let op_hash: field = BHP256::hash_to_field(admin_op);
+    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
+    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
+    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
+    assert(is_verified_1 && is_verified_2 && is_verified_3);
+
+    // Ensure the admin addresses are not the same
+    assert_neq(admin_1, admin_2);
+    assert_neq(admin_1, admin_3);
+    assert_neq(admin_2, admin_3);
+
+    return finalize_unban_validator(validator, admin_1, admin_2, admin_3, admin_op);
+  }
+
+  async function finalize_unban_validator(
+    public validator: address,
+    public admin_1: address,
+    public admin_2: address,
+    public admin_3: address,
+    public admin_op: admin_operation
+  ) {
+    /* Start Verify Admin Operation */
+
+    // Ensure the admin addresses are each admins
+    let is_admin_1: bool = control_addresses.get(admin_1);
+    let is_admin_2: bool = control_addresses.get(admin_2);
+    let is_admin_3: bool = control_addresses.get(admin_3);
+    assert(is_admin_1 && is_admin_2 && is_admin_3);
+
+    // Ensure the request hasn't been made before
+    let request_exists: bool = admin_operations.contains(admin_op.request_id);
+    assert_eq(request_exists, false);
+
+    // Set the admin operation
+    admin_operations.set(admin_op.request_id, admin_op);
+
+    /* End Verify Admin Operation */
+
+    // Remove the validator from the banned validators
+    banned_validators.remove(validator);
   }
 
   // Set the pondo tvl from the core protocol
