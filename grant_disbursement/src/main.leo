@@ -79,17 +79,17 @@ program grant_disbursement.aleo {
     grants.set(id, grant);
   }
 
-  async transition withdrawal_rewards(
+  async transition withdraw_rewards(
     id: u64,
     paleo_amount: u64
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
     let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
 
-    return finalize_withdrawal_rewards(f0, id, paleo_amount, self.caller);
+    return finalize_withdraw_rewards(f0, id, paleo_amount, self.caller);
   }
 
-  async function finalize_withdrawal_rewards(
+  async function finalize_withdraw_rewards(
     f0: Future,
     id: u64,
     paleo_amount: u64,
@@ -136,17 +136,17 @@ program grant_disbursement.aleo {
     grants.set(id, updated_grant);
   }
 
-  async transition withdrawal_principal(
+  async transition withdraw_principal(
     id: u64,
     paleo_amount: u64
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
     let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
 
-    return finalize_withdrawal_principal(f0, id, paleo_amount, self.caller);
+    return finalize_withdraw_principal(f0, id, paleo_amount, self.caller);
   }
 
-  async function finalize_withdrawal_principal(
+  async function finalize_withdraw_principal(
     f0: Future,
     id: u64,
     paleo_amount: u64,

@@ -92,15 +92,15 @@ finalize create_grant:
 
 
 
-function withdrawal_rewards:
+function withdraw_rewards:
     input r0 as u64.private;
     input r1 as u64.private;
     cast r1 into r2 as u128;
     call multi_token_support_program.aleo/transfer_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.caller r2 into r3;
-    async withdrawal_rewards r3 r0 r1 self.caller into r4;
-    output r4 as grant_disbursement.aleo/withdrawal_rewards.future;
+    async withdraw_rewards r3 r0 r1 self.caller into r4;
+    output r4 as grant_disbursement.aleo/withdraw_rewards.future;
 
-finalize withdrawal_rewards:
+finalize withdraw_rewards:
     input r0 as multi_token_support_program.aleo/transfer_public.future;
     input r1 as u64.public;
     input r2 as u64.public;
@@ -129,15 +129,15 @@ finalize withdrawal_rewards:
 
 
 
-function withdrawal_principal:
+function withdraw_principal:
     input r0 as u64.private;
     input r1 as u64.private;
     cast r1 into r2 as u128;
     call multi_token_support_program.aleo/transfer_public 1751493913335802797273486270793650302076377624243810059080883537084141842600field self.caller r2 into r3;
-    async withdrawal_principal r3 r0 r1 self.caller into r4;
-    output r4 as grant_disbursement.aleo/withdrawal_principal.future;
+    async withdraw_principal r3 r0 r1 self.caller into r4;
+    output r4 as grant_disbursement.aleo/withdraw_principal.future;
 
-finalize withdrawal_principal:
+finalize withdraw_principal:
     input r0 as multi_token_support_program.aleo/transfer_public.future;
     input r1 as u64.public;
     input r2 as u64.public;
