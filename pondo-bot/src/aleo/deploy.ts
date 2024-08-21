@@ -296,6 +296,8 @@ export const deploymentCost = (program: string) => {
     fee = 65; // At time of writing, the fee for deploying the pondo vault program is 61379725 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
     fee = 8; // At time of writing, the fee for deploying a reference delegator program is 7761100 microcredits
+  } else if (program.indexOf('grant_disbursement') !== -1) {
+    fee = 20;
   } else if (program.indexOf('test_program') !== -1) {
     fee = 20; // At time of writing, the fee for deploying the test program is 19054425 microcredits
   }

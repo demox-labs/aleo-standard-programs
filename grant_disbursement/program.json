@@ -1,0 +1,23 @@
+{
+  "program": "grant_disbursement.aleo",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+        {
+            "name": "credits.aleo",
+            "location": "network",
+            "network": "testnet"
+        },
+        {
+            "name": "multi_token_support_program.aleo",
+            "location": "local",
+            "path": "../multi_token_support_program"
+        },
+        {
+            "name": "pondo_core_protocol.aleo",
+            "location": "local",
+            "path": "../pondo/pondo_core_protocol"
+        }
+    ]
+}

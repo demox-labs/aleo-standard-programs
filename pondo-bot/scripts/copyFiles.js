@@ -19,6 +19,7 @@ const filesToCopy = [
   '../pondo/delegators/pondo_delegator3/build/main.aleo',
   '../pondo/delegators/pondo_delegator4/build/main.aleo',
   '../pondo/delegators/pondo_delegator5/build/main.aleo',
+  '../grant_disbursement/build/main.aleo',
   '../pondo/test_program/build/main.aleo',
 ];
 
