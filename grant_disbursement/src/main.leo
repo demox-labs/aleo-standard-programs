@@ -118,7 +118,10 @@ program grant_disbursement.aleo {
     // We use this underestimate because it as significantly reduces gas costs and should be close to the actual amount
     // As it is an underestimate, the downside is it will slightly reduce the amount of paleo that can be withdrawn
     let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
-    let total_credits_pool: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let delegated_credits: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+    let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
     let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
     assert(grantee_credits_balance >= grant.credits_amount as u128);
@@ -175,7 +178,10 @@ program grant_disbursement.aleo {
     // We use this underestimate because it as significantly reduces gas costs and should be close to the actual amount
     // As it is an underestimate, the downside is it will slightly reduce the amount of paleo that can be withdrawn
     let total_paleo_pool: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
-    let total_credits_pool: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let delegated_credits: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+    let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
     let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
 
@@ -206,6 +212,7 @@ program grant_disbursement.aleo {
   const PROTOCOL_STATE_KEY: u8 = 0u8;
   const REBALANCING_STATE: u8 = 1u8;
   const DELEGATED_BALANCE: u8 = 0u8;
+  const CLAIMABLE_WITHDRAWALS: u8 = 2u8;
 
   // shadowed from multi_token_support_program.aleo
   struct TokenMetadata {
