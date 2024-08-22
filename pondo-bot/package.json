@@ -22,9 +22,11 @@
     "swapRpcDb": "node ./dist/swapRpcDb.js",
     "test": "node ./dist/testRunner.js",
     "startDevnet": "yarn cleanDevnet && ./src/tests/setupDevnet.sh",
+    "restartDevnet": "./src/tests/setupDevnet.sh",
     "stopDevnet": "tmux kill-session -t devnet",
     "watchDevnet": "tmux attach-session -t devnet",
-    "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*"
+    "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*",
+    "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh"
   },
   "repository": {
     "type": "git",

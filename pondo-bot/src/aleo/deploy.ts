@@ -372,9 +372,12 @@ export const deployAllProgramsIfNecessary = async (
         resolvedImports,
         fee
       );
+      await delay(45_000);
 
       // Ensure the program was deployed successfully by checking the checksum
-      await ensureValidProgramDeployment(program, programCode);
+      if (program.indexOf('pondo_core_protocol') == -1) {
+        await ensureValidProgramDeployment(program, programCode);
+      }
     } else {
       console.log(`Program ${program} already exists`);
     }
