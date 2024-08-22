@@ -62,7 +62,8 @@ export const submitTransaction = async (
   const aleoProgram = Aleo.Program.fromString(network, program);
 
   // Get the fee for the program and function or use the input as a default
-  feeCredits = Number(calculatedFees[aleoProgram.id()]?.[functionName]) / 999_995 || feeCredits;
+  const feeMicrocredits = feeCredits * 999_995;
+  feeCredits = Number(calculatedFees[aleoProgram.id()]?.[functionName] || feeMicrocredits) / 999_995;
   // Authorize the transaction
   const authorization = await authorizeTransaction(network, privateKey, program, functionName, inputs, feeCredits, feeRecord, imports);
   console.log(`Authorized transaction ${aleoProgram.id()} ${functionName}`);

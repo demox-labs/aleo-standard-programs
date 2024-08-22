@@ -36,7 +36,7 @@ for validator_index in "${validator_indices[@]}"; do
     # Create a new window with a unique name
     window_index=$((validator_index + index_offset))
     tmux new-window -t "devnet:$window_index" -n "window$validator_index"
-    tmux send-keys -t "devnet:window$validator_index" "snarkos start --nodisplay --network $network_id --dev $validator_index --allow-external-peers --dev-num-validators $total_validators --validator --logfile $log_file" C-m
+    tmux send-keys -t "devnet:window$validator_index" "snarkos start --nodisplay --network $network_id --dev $validator_index --allow-external-peers --dev-num-validators $total_validators --validator --logfile $log_file --rest-rps 1000" C-m
   fi
 done
 

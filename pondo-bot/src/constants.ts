@@ -4,6 +4,7 @@ import { pondoProgramToCode, pondoPrograms } from './compiledPrograms';
 // Load environment variables
 dotenv.config();
 
+export const ADDRESS = process.env.ADDRESS;
 export const PRIVATE_KEY = process.env.PRIVATE_KEY;
 export const NETWORK = process.env.NETWORK;
 

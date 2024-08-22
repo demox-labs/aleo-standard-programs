@@ -338,7 +338,7 @@ export const airDropCredits = async (publicKey: string, amount: bigint) => {
   );
 }
 
-export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 10): Promise<boolean> => {
+export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 25): Promise<boolean> => {
   if (retriesRemaining <= 0) {
     return false;
   }
