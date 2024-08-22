@@ -5,7 +5,7 @@ import pondo_core_protocol.aleo;
 // The 'grant_disbursement' program.
 program grant_disbursement.aleo {
   struct Grant {
-    credits_amount: u64, // The amount of paleo to be distributed
+    credits_amount: u64, // The amount of Aleo credits to be distributed
     paleo_amount: u64, // The amount of paleo to be distributed
     recipient_rewards_key: address, // The address that can withdraw the rewards
     recipient_principal_key: address, // The address that can withdraw the principal
@@ -22,6 +22,7 @@ program grant_disbursement.aleo {
     public paleo_amount: u64,
     public recipient_rewards_key: address,
     public recipient_principal_key: address,
+    public start_block: u32,
     public cliff_block: u32,
     public fully_vested_block: u32
   ) -> Future {
@@ -30,6 +31,7 @@ program grant_disbursement.aleo {
     // Transfer the pAleo to the grant disbursement program
     let f1: Future = multi_token_support_program.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
 
+    assert(start_block > cliff_block);
     assert(fully_vested_block > cliff_block);
 
     return finalize_create_grant(
@@ -40,6 +42,7 @@ program grant_disbursement.aleo {
       paleo_amount,
       recipient_rewards_key,
       recipient_principal_key,
+      start_block,
       cliff_block,
       fully_vested_block
       );
@@ -53,6 +56,7 @@ program grant_disbursement.aleo {
     paleo_amount: u64,
     recipient_rewards_key: address,
     recipient_principal_key: address,
+    start_block: u32,
     cliff_block: u32,
     fully_vested_block: u32
   ) {
@@ -64,13 +68,13 @@ program grant_disbursement.aleo {
       paleo_amount: paleo_amount,
       recipient_rewards_key: recipient_rewards_key,
       recipient_principal_key: recipient_principal_key,
-      start_block: block.height,
+      start_block: start_block,
       cliff_block: cliff_block,
       fully_vested_block: fully_vested_block
     };
 
     // Ensure the cliff block is in the future
-    assert(block.height < grant.cliff_block);
+    assert(block.height < grant.start_block);
 
     // Ensure the mapping doesn't already contain the id
     assert(!grants.contains(id));

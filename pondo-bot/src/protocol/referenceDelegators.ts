@@ -237,39 +237,41 @@ export const approveReferenceDelegatorsIfNecessary = async () => {
   }
 }
 
+const updateReferenceDelegatorIfNecessary = async (blockHeight: number, delegator: string): Promise<void> => {
+  const currentlyActive = await getMappingValue(delegator, PONDO_ORACLE_PROGRAM, 'validator_data');
+  if (currentlyActive) {
+    const lastUpdate = BigInt(JSON.parse(formatAleoString(currentlyActive))["block_height"].slice(0, -3)) / BigInt(EPOCH_BLOCKS);
+    const currentEpoch = BigInt(blockHeight) / BigInt(EPOCH_BLOCKS);
+    if (lastUpdate >= currentEpoch) {
+      console.log(`Current delegator ${formatAleoString(currentlyActive)} has already been updated in this epoch, skipping`);
+      return;
+    }
+  }
+
+  console.log(`Updating ${delegator} reference delegator data`);
+  let imports = pondoDependencyTree[PONDO_ORACLE_PROGRAM];
+  let resolvedImports = await resolveImports(imports);
+
+  await submitTransaction(
+    NETWORK,
+    PRIVATE_KEY,
+    PONDO_ORACLE_PROGRAM_CODE,
+    'update_data',
+    [delegator],
+    4, // TODO: set the correct fee
+    undefined,
+    resolvedImports
+  );
+};
+
 export const updateReferenceDelegatorsIfNecessary = async (blockHeight: number) => {
   console.log('Updating reference delegators data if necessary');
 
   const transactionHistory = await getPublicTransactionsForProgram(PONDO_ORACLE_PROGRAM, 'add_delegator', 0) as ExecuteTransaction[];
   const delegators = transactionHistory.map(tx => tx.transaction.execution.transitions[0].inputs[0].value);
   console.log('Delegators:', JSON.stringify(delegators));
-  const currentEpoch = BigInt(blockHeight) / BigInt(EPOCH_BLOCKS);
   
-  for (let delegator of delegators) {
-    const currentlyActive = await getMappingValue(delegator, PONDO_ORACLE_PROGRAM, 'validator_data');
-    if (currentlyActive) {
-      const lastUpdate = BigInt(JSON.parse(formatAleoString(currentlyActive))["block_height"].slice(0, -3)) / BigInt(EPOCH_BLOCKS);
-      console.log(`For Delegator: ${delegator} Last update: ${lastUpdate}, current epoch: ${currentEpoch}`);
-      if (lastUpdate >= currentEpoch) {
-        console.log(`Current delegator ${formatAleoString(currentlyActive)} has already been updated in this epoch, skipping`);
-        continue;
-      }
-
-      console.log(`Updating ${delegator} reference delegator data`);
-      let imports = pondoDependencyTree[PONDO_ORACLE_PROGRAM];
-      let resolvedImports = await resolveImports(imports);
-
-      await submitTransaction(
-        NETWORK,
-        PRIVATE_KEY,
-        PONDO_ORACLE_PROGRAM_CODE,
-        'update_data',
-        [delegator],
-        4, // TODO: set the correct fee
-        undefined,
-        resolvedImports
-      );
-    }
-  }
+  const updatePromises = delegators.map(delegator => updateReferenceDelegatorIfNecessary(blockHeight, delegator));
+  await Promise.all(updatePromises);
 }
 

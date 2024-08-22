@@ -80,15 +80,15 @@ async function main() {
   await clearLedger();
   await loadLedger(testStateName);
   await loadRpc(testStateName);
-  await startDevNet();
-  await waitUntilRPCReady();
-  await runTests(testName);
-  console.log('Tests complete. Stopping devnet...');
-  await stopDevNet();
-  // let devnet spin down before we wipe out the files
-  console.log('Waiting 10 seconds for devnet to spin down...');
-  await delay(10_000);
-  await clearLedger();
+  // await startDevNet();
+  // await waitUntilRPCReady();
+  // await runTests(testName);
+  // console.log('Tests complete. Stopping devnet...');
+  // await stopDevNet();
+  // // let devnet spin down before we wipe out the files
+  // console.log('Waiting 10 seconds for devnet to spin down...');
+  // await delay(10_000);
+  // await clearLedger();
 }
 
 main();

@@ -133,6 +133,8 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
     initialStateTest:
       path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
+    oracleUpdateTest:
+      path.resolve(__dirname, "src") + "/tests/cases/oracleUpdate.test.ts",
     oracleNonUpdateTest:
       path.resolve(__dirname, "src") + "/tests/cases/oracleNonUpdate.test.ts",
     snapshotRpcDb:

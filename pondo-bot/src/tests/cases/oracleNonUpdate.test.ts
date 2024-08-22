@@ -6,7 +6,6 @@ import { ADDRESS, NETWORK, PRIVATE_KEY } from "../../constants";
 import { ExecuteTransaction } from "../../aleo/types";
 import { submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
-import { extractValidatorAddressAndProgramName, getOracleProposalTransactionHistory } from "../../protocol/referenceDelegators.ts";
 import assert from "node:assert";
 import { formatAleoString } from "../../util";
 

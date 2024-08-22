@@ -61,13 +61,16 @@ function create_grant:
     input r4 as address.public;
     input r5 as u32.public;
     input r6 as u32.public;
-    call pondo_core_protocol.aleo/deposit_public_as_signer r1 r2 grant_disbursement.aleo into r7;
-    cast r2 into r8 as u128;
-    call multi_token_support_program.aleo/transfer_public_as_signer 1751493913335802797273486270793650302076377624243810059080883537084141842600field grant_disbursement.aleo r8 into r9;
-    gt r6 r5 into r10;
-    assert.eq r10 true;
-    async create_grant r7 r9 r0 r1 r2 r3 r4 r5 r6 into r11;
-    output r11 as grant_disbursement.aleo/create_grant.future;
+    input r7 as u32.public;
+    call pondo_core_protocol.aleo/deposit_public_as_signer r1 r2 grant_disbursement.aleo into r8;
+    cast r2 into r9 as u128;
+    call multi_token_support_program.aleo/transfer_public_as_signer 1751493913335802797273486270793650302076377624243810059080883537084141842600field grant_disbursement.aleo r9 into r10;
+    gt r5 r6 into r11;
+    assert.eq r11 true;
+    gt r7 r6 into r12;
+    assert.eq r12 true;
+    async create_grant r8 r10 r0 r1 r2 r3 r4 r5 r6 r7 into r13;
+    output r13 as grant_disbursement.aleo/create_grant.future;
 
 finalize create_grant:
     input r0 as pondo_core_protocol.aleo/deposit_public_as_signer.future;
@@ -79,15 +82,16 @@ finalize create_grant:
     input r6 as address.public;
     input r7 as u32.public;
     input r8 as u32.public;
+    input r9 as u32.public;
     await r0;
     await r1;
-    cast r3 r4 r5 r6 block.height r7 r8 into r9 as Grant;
-    lt block.height r9.cliff_block into r10;
-    assert.eq r10 true;
-    contains grants[r2] into r11;
-    not r11 into r12;
-    assert.eq r12 true;
-    set r9 into grants[r2];
+    cast r3 r4 r5 r6 r7 r8 r9 into r10 as Grant;
+    lt block.height r10.start_block into r11;
+    assert.eq r11 true;
+    contains grants[r2] into r12;
+    not r12 into r13;
+    assert.eq r13 true;
+    set r10 into grants[r2];
 
 
 

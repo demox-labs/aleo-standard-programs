@@ -356,7 +356,7 @@ const setOracleTVL = async (): Promise<void> => {
         console.log('set_oracle_tvl transaction was accepted');
       }
     } else {
-      console.log('TVL has not changed by more than 25%, skipping');
+      console.log('TVL has not changed by more than 50%, skipping');
     }
   }
 }
@@ -382,7 +382,7 @@ const continueRebalanceIfNeccessary = async (
 export const runProtocol = async (): Promise<void> => {
   const blockHeight = await getHeight();
   const epochPeriod = await getEpochPeriod(blockHeight);
-  console.log(`Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
+  console.log("\x1b[36m%s\x1b[0m", `Block height: ${blockHeight}, Epoch period: ${epochPeriod}`);
 
   const pondoDelegatorStates = await getPondoDelegatorStates();
   if (epochPeriod === 'rebalance') {
