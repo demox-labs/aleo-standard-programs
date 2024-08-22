@@ -127,8 +127,10 @@ const testConfig = {
     snapshotLedger:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotLedger.ts",
     testRunner: path.resolve(__dirname, "src") + "/tests/testRunner.ts",
-    depositTest:
-      path.resolve(__dirname, "src") + "/tests/cases/deposit.test.ts",
+    depositRebalanceTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositRebalance.test.ts",
+    depositNormalTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
     initialStateTest:
       path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
     snapshotRpcDb:

@@ -22,6 +22,15 @@ Optionally, run Haruka's explorer:
 3. If redis is failing to connect, from within the redis container created: `redis-cli` && then `ACL SETUSER username on >password ~* +@all` && then restart the container
 4. Navigate to `http://localhost:8800/` to see the explorer
 
+## Testing:
+Testing pondo uses a couple of different states preloaded for unit tests.
+1. In order to work with the aleo SDK, we have to build our test scripts with webpack. Make sure your test script is included in webpack (named `TEST_NAME.test.ts`), and then run `yarn build:dev`
+2. Make sure snarkos is installed.
+3. You can either create a saved ledger + rpc state yourself, or download prebuilt ones from s3. This is a manual process, but if you are creating the ledger state yourself, run snarkos with `yarn startDevnet`, run the rpc. Get the ledger and rpc into the state you want, then run `yarn stopDevnet` to kill the devnet. Then run `yarn snapshotLedger THE_NAME_OF_THE_STATE`, and run `yarn snapshotRpcDb THE_NAME_OF_THE_STATE`. These will save both the sql and ledger files into the saved-states directory. If you want other people to be able to use this saved state, you need to zip the saved-state subfolder and upload it to s3.
+4. Run `yarn test TEST_NAME SAVED_STATE_NAME`. (Note, the testRunner appends the `test` suffix automatically.) This will set up the ledger and rpc states, and start the devnet process. Once the rpc begins to advance (this can take up to a few minutes), your test suite will begin.
+Troubleshooting:
+1. Tests hanging? You probably need to add `await killAuthorizePool()` to kill the pool of webworkers that authorize transactions that are then delegated. This process pool will not autoterminate.
+
 ## Reset the network:
 
 1. Kill the `./devnet.sh` by `tmux kill-session -t devnet`

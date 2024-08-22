@@ -205,8 +205,6 @@ export const ensureValidProgramDeployment = async (programId: string, programCod
   }
 }
 
-
-
 export const authorizeDeployment = async (
   network: string,
   privateKey: string,
