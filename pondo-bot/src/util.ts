@@ -147,3 +147,20 @@ export const getTokenOwnerHash = (address: string, tokenId: string) => {
 export const getAddressFromProgram = (network: string, program: string) => {
   return Aleo.Program.fromString(network, program).toAddress();
 }
+
+export function areListsEqual<T>(list1: T[], list2: T[]): boolean {
+  // First, check if both lists have the same length
+  if (list1.length !== list2.length) {
+      return false;
+  }
+
+  // Then, check if each item in the two lists is the same (including order)
+  for (let i = 0; i < list1.length; i++) {
+      if (list1[i] !== list2[i]) {
+          return false;
+      }
+  }
+
+  // If all checks pass, the lists are equal
+  return true;
+}

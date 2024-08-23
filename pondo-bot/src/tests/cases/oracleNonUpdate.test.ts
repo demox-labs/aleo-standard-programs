@@ -1,10 +1,19 @@
-import { before, describe, it } from "node:test";
+import { after, before, describe, it } from "node:test";
 import * as Aleo from "@demox-labs/aleo-sdk";
 import { pondoDependencyTree, pondoPrograms } from "../../compiledPrograms";
 import { getMappingValue, getProgram, getPublicTransactionsForProgram, isTransactionAccepted } from "../../aleo/client";
-import { ADDRESS, NETWORK, PRIVATE_KEY } from "../../constants";
+import {
+  ADDRESS,
+  MULTI_SIG_ADDRESS_0,
+  MULTI_SIG_ADDRESS_1,
+  MULTI_SIG_ADDRESS_2,
+  MULTI_SIG_PRIVATE_KEY_0,
+  MULTI_SIG_PRIVATE_KEY_1,
+  MULTI_SIG_PRIVATE_KEY_2,
+  NETWORK, PRIVATE_KEY
+} from "../../constants";
 import { ExecuteTransaction } from "../../aleo/types";
-import { submitTransaction } from "../../aleo/execute";
+import { killAuthorizePool, submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
 import assert from "node:assert";
 import { formatAleoString } from "../../util";
@@ -23,6 +32,10 @@ describe('oracleNonUpdate', async () => {
     const transactionHistory = await getPublicTransactionsForProgram(oracleId, 'add_delegator', 0) as ExecuteTransaction[];
     delegators = transactionHistory.map(tx => tx.transaction.execution.transitions[0].inputs[0].value);
     console.log('Delegators:', JSON.stringify(delegators));
+  });
+
+  after(async () => {
+    await killAuthorizePool();
   });
 
   describe('updateData', async () => {
@@ -146,6 +159,189 @@ describe('oracleNonUpdate', async () => {
 
         const isBanned = await getMappingValue(ADDRESS!, oracleId, 'banned_validators');
         assert(isBanned, 'Validator was not banned');
+      }
+    });
+  });
+
+  describe('multi-sig', async () => {
+    // Get a random bigint to use as the requestId
+    let requestId = BigInt(Math.floor(Math.random() * 1_000_000_000));
+
+    it('add_control_address should succeed', async () => {
+      // Random address to add as a control address
+      const address = 'aleo1uhnc88hr8wl538cwufh3ce5czctspm2852rts4xyrhj4hav83vysy4us43';
+      const addressHash = Aleo.Plaintext.fromString(NETWORK!, address).hashBhp256();
+      const plaintextString = `{
+        arg: ${addressHash},
+        op_type: 0u8,
+        request_id: ${requestId.toString()}u64
+      }`;
+      const hashedField = Aleo.Plaintext.fromString(NETWORK!, plaintextString).hashBhp256();
+
+      // Sign the hash with the oracle private keys
+      const signature0 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_0!, hashedField).to_string();
+      const signature1 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_1!, hashedField).to_string();
+      const signature2 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_2!, hashedField).to_string();
+
+      let imports = pondoDependencyTree[oracleId];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        oracleProgram,
+        'add_control_address',
+        [
+          address,
+          signature0,
+          MULTI_SIG_ADDRESS_0!,
+          signature1,
+          MULTI_SIG_ADDRESS_1!,
+          signature2,
+          MULTI_SIG_ADDRESS_2!,
+          `${requestId.toString()}u64`
+        ],
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(wasAccepted, 'add_control_address was rejected, but should have been accepted');
+    });
+
+    it('add_control_address should fail, duplicate requestId', async () => {
+      // Random address to add as a control address
+      const address = 'aleo1gg58mwncplp93aecr2c2qr70phh06l8st3aetzx6e0vfjx0k6sgq6appp6';
+      const addressHash = Aleo.Plaintext.fromString(NETWORK!, address).hashBhp256();
+      const plaintextString = `{
+        arg: ${addressHash},
+        op_type: 0u8,
+        request_id: ${requestId.toString()}u64
+      }`;
+      const hashedField = Aleo.Plaintext.fromString(NETWORK!, plaintextString).hashBhp256();
+
+      // Sign the hash with the oracle private keys
+      const signature0 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_0!, hashedField).to_string();
+      const signature1 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_1!, hashedField).to_string();
+      const signature2 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_2!, hashedField).to_string();
+
+      let imports = pondoDependencyTree[oracleId];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        oracleProgram,
+        'add_control_address',
+        [
+          address,
+          signature0,
+          MULTI_SIG_ADDRESS_0!,
+          signature1,
+          MULTI_SIG_ADDRESS_1!,
+          signature2,
+          MULTI_SIG_ADDRESS_2!,
+          `${requestId.toString()}u64`
+        ],
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(!wasAccepted, 'add_control_address was accepted, but should have been accepted');
+    });
+
+    it('add_control_address should fail, invalid signer', async () => {
+      requestId = BigInt(Math.floor(Math.random() * 1_000_000_000));
+
+      // Random address to add as a control address
+      const address = 'aleo1gg58mwncplp93aecr2c2qr70phh06l8st3aetzx6e0vfjx0k6sgq6appp6';
+      const addressHash = Aleo.Plaintext.fromString(NETWORK!, address).hashBhp256();
+      const plaintextString = `{
+        arg: ${addressHash},
+        op_type: 0u8,
+        request_id: ${requestId.toString()}u64
+      }`;
+      const hashedField = Aleo.Plaintext.fromString(NETWORK!, plaintextString).hashBhp256();
+
+      // Sign the hash with the oracle private keys
+      const signature0 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_0!, hashedField).to_string();
+      const signature1 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_1!, hashedField).to_string();
+      const signature2 = Aleo.Signature.sign_plaintext(NETWORK!, PRIVATE_KEY!, hashedField).to_string();
+
+      let imports = pondoDependencyTree[oracleId];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        oracleProgram,
+        'add_control_address',
+        [
+          address,
+          signature0,
+          MULTI_SIG_ADDRESS_0!,
+          signature1,
+          MULTI_SIG_ADDRESS_1!,
+          signature2,
+          ADDRESS!,
+          `${requestId.toString()}u64`
+        ],
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(!wasAccepted, 'add_control_address was accepted, but should have been accepted');
+    });
+
+    it('add_control_address should fail, duplicate signer', async () => {
+      requestId = BigInt(Math.floor(Math.random() * 1_000_000_000));
+
+      // Random address to add as a control address
+      const address = 'aleo1gg58mwncplp93aecr2c2qr70phh06l8st3aetzx6e0vfjx0k6sgq6appp6';
+      const addressHash = Aleo.Plaintext.fromString(NETWORK!, address).hashBhp256();
+      const plaintextString = `{
+        arg: ${addressHash},
+        op_type: 0u8,
+        request_id: ${requestId.toString()}u64
+      }`;
+      const hashedField = Aleo.Plaintext.fromString(NETWORK!, plaintextString).hashBhp256();
+
+      // Sign the hash with the oracle private keys
+      const signature0 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_0!, hashedField).to_string();
+      const signature1 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_1!, hashedField).to_string();
+      const signature2 = Aleo.Signature.sign_plaintext(NETWORK!, MULTI_SIG_PRIVATE_KEY_1!, hashedField).to_string();
+
+      let imports = pondoDependencyTree[oracleId];
+      let resolvedImports = await resolveImports(imports);
+
+      try {
+        await submitTransaction(
+          NETWORK!,
+          PRIVATE_KEY!,
+          oracleProgram,
+          'add_control_address',
+          [
+            address,
+            signature0,
+            MULTI_SIG_ADDRESS_0!,
+            signature1,
+            MULTI_SIG_ADDRESS_1!,
+            signature2,
+            MULTI_SIG_ADDRESS_1!,
+            `${requestId.toString()}u64`
+          ],
+          4,
+          undefined,
+          resolvedImports
+        );
+        assert(false, 'add_control_address was successfully broadcasted, but should have failed');
+      } catch (err) {
+        console.log('Failed to generate transaction as expected');
       }
     });
   });

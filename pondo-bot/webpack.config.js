@@ -118,8 +118,6 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/scripts/getTokenOwnerHash.ts",
     runTokenActions:
       path.resolve(__dirname, "src") + "/tests/scripts/runTokenActions.ts",
-    runOracleTests:
-      path.resolve(__dirname, "src") + "/tests/scripts/runOracleTests.ts",
     testProgramCalls:
       path.resolve(__dirname, "src") + "/tests/scripts/testProgramCalls.ts",
     estimateFees:

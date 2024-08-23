@@ -275,3 +275,13 @@ export const updateReferenceDelegatorsIfNecessary = async (blockHeight: number) 
   await Promise.all(updatePromises);
 }
 
+export const calculateReferenceDelegatorYield = (
+  startBlock: bigint,
+  endBlock: bigint,
+  startMicrocredits: bigint,
+  endMicrocredits: bigint
+): bigint => {
+  const blocks = endBlock - startBlock;
+  const delegatorYield = (endMicrocredits - startMicrocredits) * BigInt(10_000_000_000) / startMicrocredits;
+  return delegatorYield * BigInt(EPOCH_BLOCKS) / blocks;
+};

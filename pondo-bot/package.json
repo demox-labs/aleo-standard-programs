@@ -12,7 +12,6 @@
     "call:protocol": "yarn build:dev && node ./dist/runTestScript.js",
     "call:token": "yarn build:dev && node ./dist/runTokenActions.js",
     "call": "yarn call:protocol",
-    "runOracleTests": "yarn build:dev && node ./dist/runOracleTests.js",
     "call:test": "yarn build:dev && node ./dist/testProgramCalls.js",
     "getTokenOwnerHash": "node ./dist/getTokenOwnerHash.js",
     "estimateFees": "node ./dist/estimateFees.js",
