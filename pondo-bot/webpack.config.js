@@ -131,6 +131,10 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/depositRebalance.test.ts",
     depositNormalTest:
       path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
+    depositNormalBondedTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositNormalBonded.test.ts",
+    depositPrepRebalanceTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositPrepRebalance.test.ts",
     initialStateTest:
       path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
     oracleNonUpdateTest:
