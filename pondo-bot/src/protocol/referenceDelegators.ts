@@ -21,7 +21,7 @@ import {
 } from '../constants';
 
 
-const REFERENCE_DELEGATOR_PROGRAM = pondoPrograms.find(program => program.includes('reference_delegator'));
+export const REFERENCE_DELEGATOR_PROGRAM = pondoPrograms.find(program => program.includes('reference_delegator'));
 const REFERENCE_DELEGATOR_PROGRAM_CODE = pondoProgramToCode[REFERENCE_DELEGATOR_PROGRAM!];
 
 // Returns the addresses of the current validators

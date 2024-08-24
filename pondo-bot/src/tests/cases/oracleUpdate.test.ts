@@ -6,7 +6,7 @@ import { ADDRESS, NETWORK, PRIVATE_KEY } from "../../constants";
 import { ExecuteTransaction } from "../../aleo/types";
 import { killAuthorizePool, submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
-import { calculateReferenceDelegatorYield } from "../../protocol/referenceDelegators";
+import { calculateReferenceDelegatorYield, extractValidatorAddressAndProgramName, getOracleProposalTransactionHistory, REFERENCE_DELEGATOR_PROGRAM } from "../../protocol/referenceDelegators";
 import assert from "node:assert";
 import { delay, formatAleoString, areListsEqual } from "../../util";
 
@@ -17,6 +17,7 @@ type ReferenceDelegatorPrintState = {
   commission: string;
 };
 
+// Use oracleUpdate save state for the ledger
 describe('oracleUpdate', async () => {
   let oracleProgram: string;
   let delegators: string[];
@@ -323,6 +324,32 @@ describe('oracleUpdate', async () => {
           `Top validators are not as expected: ${JSON.stringify(topValidators)}, expected: ${JSON.stringify(expectedTopValidators[i])}`
         );
       }
+    });
+  });
+
+  describe('reference delegator', async () => {
+    it('should fails to remove a reference delegator during the update period', async () => {
+      const transactionHistory = await getOracleProposalTransactionHistory();
+      const delegatorsAndValidators = transactionHistory.map(tx => extractValidatorAddressAndProgramName(tx));
+      const { programName } = delegatorsAndValidators[0];
+      const programCode = await getProgram(programName!);
+
+      let imports = pondoDependencyTree[REFERENCE_DELEGATOR_PROGRAM!];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        programCode,
+        'remove',
+        ['10_000_000_000u64'], // 10_000 credits
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(!wasAccepted, 'remove_reference_delegator was accepted, but should have been rejected');
     });
   });
 })

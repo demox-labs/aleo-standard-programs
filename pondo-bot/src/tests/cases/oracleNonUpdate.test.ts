@@ -17,7 +17,13 @@ import { killAuthorizePool, submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
 import assert from "node:assert";
 import { formatAleoString } from "../../util";
+import {
+  extractValidatorAddressAndProgramName,
+  getOracleProposalTransactionHistory,
+  REFERENCE_DELEGATOR_PROGRAM
+} from "../../protocol/referenceDelegators";
 
+// Use oracleNonUpdate save state for the ledger
 describe('oracleNonUpdate', async () => {
   let oracleProgram: string;
   let delegators: string[];
@@ -343,6 +349,97 @@ describe('oracleNonUpdate', async () => {
       } catch (err) {
         console.log('Failed to generate transaction as expected');
       }
+    });
+  });
+
+  describe('reference delegator', async () => {
+    // Transfer credits to the multi-sig
+    it('should be able to transfer credits to the multi-sig', async () => {
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        Aleo.Program.getCreditsProgram(NETWORK!).toString(),
+        'transfer_public',
+        [MULTI_SIG_ADDRESS_0!, '250000000u64'], // 250 credits
+        4,
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(wasAccepted, 'transfer_public was rejected, but should have been accepted');
+    });
+
+    it('removing less than full bonded balance should fail', async () => {
+      const transactionHistory = await getOracleProposalTransactionHistory();
+      const delegatorsAndValidators = transactionHistory.map(tx => extractValidatorAddressAndProgramName(tx));
+      const { programName } = delegatorsAndValidators[0];
+      const programCode = await getProgram(programName!);
+
+      let imports = pondoDependencyTree[REFERENCE_DELEGATOR_PROGRAM!];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        programCode,
+        'remove',
+        ['1u64'], // 1000 microcredits, not enough to fully unbond
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(!wasAccepted, 'remove_reference_delegator with remaining bonded balance was accepted, but should have been rejected');
+    });
+
+    it('non-admin removing reference delegator should fail', async () => {
+      const transactionHistory = await getOracleProposalTransactionHistory();
+      const delegatorsAndValidators = transactionHistory.map(tx => extractValidatorAddressAndProgramName(tx));
+      const { programName } = delegatorsAndValidators[0];
+      const programCode = await getProgram(programName!);
+
+      let imports = pondoDependencyTree[REFERENCE_DELEGATOR_PROGRAM!];
+      let resolvedImports = await resolveImports(imports);
+
+      try {
+        await submitTransaction(
+          NETWORK!,
+          MULTI_SIG_ADDRESS_0!,
+          programCode,
+          'remove',
+          ['10_000_000_000u64'], // 1000 microcredits, not enough to fully unbond
+          4,
+          undefined,
+          resolvedImports
+        );
+        assert(false, 'remove_reference_delegator with wrong validator, but should have been rejected');
+      } catch (err) {
+        console.log('Failed to generate transaction as expected');
+      }
+    });
+
+    it('should be able to remove a reference delegator', async () => {
+      const transactionHistory = await getOracleProposalTransactionHistory();
+      const delegatorsAndValidators = transactionHistory.map(tx => extractValidatorAddressAndProgramName(tx));
+      const { programName } = delegatorsAndValidators[0];
+      const programCode = await getProgram(programName!);
+
+      let imports = pondoDependencyTree[REFERENCE_DELEGATOR_PROGRAM!];
+      let resolvedImports = await resolveImports(imports);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        programCode,
+        'remove',
+        ['10_000_000_000u64'], // 10_000 credits
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(wasAccepted, 'remove_reference_delegator was rejected, but should have been accepted');
     });
   });
 })
