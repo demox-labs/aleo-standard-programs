@@ -57,7 +57,7 @@ const getEpochPeriod = async (blockHeight: number): Promise<EPOCH_PERIOD> => {
   }
 };
 
-const getPondoDelegatorStates = async (): Promise<string[]> => {
+export const getPondoDelegatorStates = async (): Promise<string[]> => {
   let states: string[] = [];
   let printStates: object[] = [];
   for (let index = 1; index < 6; index++) {
