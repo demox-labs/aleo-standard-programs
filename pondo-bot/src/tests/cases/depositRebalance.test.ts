@@ -7,6 +7,7 @@ import { killAuthorizePool } from '../../aleo/execute';
 import { pondoPrograms } from '../../compiledPrograms';
 import { calculatePaleoForDeposit, depositAsSigner } from '../../protocol/userActions';
 
+// meant to be run when programs are deployed and initialized
 describe('deposit', async () => {
   let protocolProgram: string;
   let paleoProgram: string;
@@ -49,7 +50,6 @@ describe('deposit', async () => {
     const owedCommission = await getMappingValue('0u8', protocolId, 'owed_commission');
     console.log(`Owed commission: ${owedCommission}`);
     console.log(`Protocol program address: ${protocolProgramAddress}`);
-    console.log('expected minted address: aleo1f2feyx0alhy4tx0chs5f3z66u03nekzav90ry388jcrummghegxq0rcg7k');
     paleoMintedToCoreProtocol = await getMTSPBalance(protocolProgramAddress, PALEO_TOKEN_ID, true);
     console.log(`Paleo minted to core protocol: ${paleoMintedToCoreProtocol}`);
     assert(paleoMintedToCoreProtocol === BigInt(101000000));
@@ -84,8 +84,8 @@ describe('deposit', async () => {
         const testUserPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         console.log(`Test user paleo balance: ${testUserPaleo}`);
 
-        assert(testUserPaleo === BigInt(0));
-        assert(!depositComplete);
+        assert(testUserPaleo === BigInt(0), 'Test user should not have received any paleo');
+        assert(!depositComplete, 'Deposit transaction should not have completed.');
       });
     });
   });

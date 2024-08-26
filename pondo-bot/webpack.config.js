@@ -129,6 +129,10 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/depositRebalance.test.ts",
     depositNormalTest:
       path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
+    depositNormalBondedTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositNormalBonded.test.ts",
+    depositPrepRebalanceTest:
+      path.resolve(__dirname, "src") + "/tests/cases/depositPrepRebalance.test.ts",
     initialStateTest:
       path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
     oracleUpdateTest:
@@ -140,6 +144,8 @@ const testConfig = {
     snapshotRpcDb:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotRpcDb.ts",
     swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",
+    buildLedger:
+      path.resolve(__dirname, "src") + "/tests/scripts/buildLedger.ts",
   },
 
   // Output configuration

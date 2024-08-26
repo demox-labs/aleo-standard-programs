@@ -338,6 +338,24 @@ export const airDropCredits = async (publicKey: string, amount: bigint) => {
   );
 }
 
+export const transactionAcceptedBlockHeight = async (transactionResult: any, retriesRemaining: number = 25): Promise<number> => {
+  if (retriesRemaining <= 0) {
+    return -1;
+  }
+
+  const transaction = JSON.parse(transactionResult.transaction);
+  const transactionId = transaction.id;
+  console.log(`Checking block height for accepted or rejected with id ${transactionId}`);
+  const client = getClient();
+  try {
+    const foundTransaction = await client.request('transaction', { id: transactionId });
+    return foundTransaction.block_id;
+  } catch (e: any) {
+    await delay(2_000);
+    return await transactionAcceptedBlockHeight(transactionResult, retriesRemaining - 1);
+  }
+}
+
 export const isTransactionAccepted = async (transactionResult: any, retriesRemaining: number = 25): Promise<boolean> => {
   if (retriesRemaining <= 0) {
     return false;

@@ -23,7 +23,8 @@
     "stopDevnet": "tmux kill-session -t devnet",
     "watchDevnet": "tmux attach-session -t devnet",
     "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*",
-    "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh"
+    "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh",
+    "buildLedger": "node ./dist/buildLedger.js"
   },
   "repository": {
     "type": "git",

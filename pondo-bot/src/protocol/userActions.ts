@@ -283,7 +283,7 @@ export const batchedWithdraw = async (
 ) => {
   const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
 
-  await submitTransaction(
+  return await submitTransaction(
     NETWORK!,
     privateKey || TEST_USER0_PRIVATE_KEY!,
     CORE_PROTOCOL_PROGRAM_CODE,
