@@ -60,13 +60,14 @@ export const runActions = async (userActions: UserActions, validatorActions: Val
 
   for (const [testUser, state] of userActions) {
     console.log('Running actions for user: ' + testUser);
-    for (const deposit of state.deposits) {
-      if (deposit.blockHeight <= blockHeight) {
+
+    const depositPromises = state.deposits
+      .map(async (deposit) => {
         const currentPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         const txResponse = await depositAsSigner(deposit.microcredits, state.privateKey);
         const blockFinished = await transactionAcceptedBlockHeight(txResponse);
         if (blockFinished === -1) {
-          throw new Error('Transaction failed: ' +  txResponse);
+          throw new Error('Transaction failed: ' + txResponse);
         }
         const newPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         const paleoDelta = newPaleo - currentPaleo;
@@ -78,26 +79,15 @@ export const runActions = async (userActions: UserActions, validatorActions: Val
           deposits: [{ micropaleo: paleoDelta, blockHeight: blockFinished }, ...(previousState?.deposits || [])],
           withdraws: [...(previousState?.withdraws || [])],
         });
-      }
-    }
+      });
 
-    for (const validatorAction of validatorActions) {
-      if (validatorAction.blockHeight <= blockHeight) {
-        switch (validatorAction.action) {
-          case 'distributeDeposits':
-            await distributeDeposits();
-            break;
-        }
-      }
-    }
-
-    for (const withdraw of state.withdraws) {
-      if (withdraw.blockHeight <= blockHeight) {
+    const withdrawPromises = state.withdraws
+      .map(async (withdraw) => {
         const currentPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         const txResponse = await batchedWithdraw(withdraw.micropaleo, state.privateKey);
         const blockFinished = await transactionAcceptedBlockHeight(txResponse);
         if (blockFinished === -1) {
-          throw new Error('Transaction failed: ' +  txResponse);
+          throw new Error('Transaction failed: ' + txResponse);
         }
         const newPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         const paleoDelta = newPaleo - currentPaleo;
@@ -107,8 +97,17 @@ export const runActions = async (userActions: UserActions, validatorActions: Val
           privateKey: state.privateKey,
           microcredits,
           deposits: [...(previousState?.deposits || [])],
-          withdraws: [ { micropaleo: paleoDelta, blockHeight: blockFinished }, ...(previousState?.withdraws || [])],
+          withdraws: [{ micropaleo: paleoDelta, blockHeight: blockFinished }, ...(previousState?.withdraws || [])],
         });
+      });
+
+    await Promise.all([...depositPromises, ...withdrawPromises]);
+
+    for (const validatorAction of validatorActions) {
+      switch (validatorAction.action) {
+        case 'distributeDeposits':
+          await distributeDeposits();
+          break;
       }
     }
   }
@@ -117,6 +116,7 @@ export const runActions = async (userActions: UserActions, validatorActions: Val
 
   return testUserStates;
 };
+
 
 
 export const createLedger = async (
@@ -153,8 +153,37 @@ export const createLedger = async (
   let currentBlockHeight = 0;
 
   let testUserStates: TestUserStates = new Map();
-  while (currentBlockHeight < stopHeight) {
-    const newTestUserStates = (await runActions(userActions, validatorActions, currentBlockHeight));
+  while (currentBlockHeight < stopHeight || userActions.size > 0 || validatorActions.length > 0) {
+    console.log(`Current block height: ${currentBlockHeight} && stop height: ${stopHeight}`);
+    console.log(`User actions size: ${userActions.size} && validator actions length: ${validatorActions.length}`);
+    let userActionsInBlock = new Map();
+    for (const [testUser, state] of userActions) {
+      let deposits = state.deposits.filter((deposit) => deposit.blockHeight <= currentBlockHeight);
+      let withdraws = state.withdraws.filter((withdraw) => withdraw.blockHeight <= currentBlockHeight);
+      userActionsInBlock.set(testUser, {
+        privateKey: state.privateKey,
+        microcredits: state.microcredits,
+        deposits,
+        withdraws
+      });
+    }
+    for (const [testUser, state] of userActions) {
+      let deposits = state.deposits.filter((deposit) => deposit.blockHeight > currentBlockHeight);
+      let withdraws = state.withdraws.filter((withdraw) => withdraw.blockHeight > currentBlockHeight);
+      if (deposits.length > 0 || withdraws.length > 0) {
+        userActions.set(testUser, {
+          privateKey: state.privateKey,
+          microcredits: state.microcredits,
+          deposits,
+          withdraws
+        });
+      } else {
+        userActions.delete(testUser);
+      }
+    }
+    let validatorActionsInBlock = validatorActions.filter((action) => action.blockHeight <= currentBlockHeight);
+    validatorActions = validatorActions.filter((action) => action.blockHeight > currentBlockHeight);
+    const newTestUserStates = (await runActions(userActionsInBlock, validatorActionsInBlock, currentBlockHeight));
     for (const [testUser, state] of newTestUserStates) {
       const prevUserState = testUserStates.get(testUser);
       testUserStates.set(testUser, {
@@ -166,7 +195,7 @@ export const createLedger = async (
     }
 
     // Run the protocol
-    await runProtocol();
+    // await runProtocol();
 
     await delay(BOT_DELAY);
     currentBlockHeight = await getHeight();

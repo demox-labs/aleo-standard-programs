@@ -295,6 +295,24 @@ export const batchedWithdraw = async (
   );
 };
 
+export const batchedWithdrawSigner = async (
+  withdrawalPaleo: bigint,
+  privateKey?: string
+) => {
+  const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
+
+  return await submitTransaction(
+    NETWORK!,
+    privateKey || TEST_USER0_PRIVATE_KEY!,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'withdraw_public_as_signer',
+    [`${withdrawalPaleo}u64`],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
 export const claimWithdrawal = async (
   address: string,
   withdrawAll: boolean = false,
@@ -328,14 +346,37 @@ export const claimWithdrawal = async (
   );
 };
 
+export const instantWithdrawSigner = async (
+  withdrawalPaleo: bigint,
+  privateKey: string,
+  expectedAleo?: bigint
+) => {
+  const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
+  const aleoForWithdrawal = expectedAleo || await calculateAleoForWithdrawal(withdrawalPaleo);
+
+  return await submitTransaction(
+    NETWORK!,
+    privateKey,
+    CORE_PROTOCOL_PROGRAM_CODE,
+    'instant_withdraw_public_signer',
+    [`${withdrawalPaleo}u64`, `${aleoForWithdrawal}u64`],
+    3,
+    undefined,
+    resolvedImports
+  );
+};
+
+
+
 export const instantWithdraw = async (
   withdrawalPaleo: bigint,
-  privateKey?: string
+  privateKey?: string,
+  expectedAleo?: bigint
 ) => {
-  const aleoForWithdrawal = await calculateAleoForWithdrawal(withdrawalPaleo);
+  const aleoForWithdrawal = expectedAleo || await calculateAleoForWithdrawal(withdrawalPaleo);
   const resolvedImports = await resolveImports(CORE_PROTOCOL_PROGRAM_IMPORTS);
 
-  await submitTransaction(
+  return await submitTransaction(
     NETWORK!,
     privateKey || TEST_USER0_PRIVATE_KEY!,
     CORE_PROTOCOL_PROGRAM_CODE,
