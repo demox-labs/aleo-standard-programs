@@ -67,7 +67,7 @@ export const runActions = async (userActions: UserActions, validatorActions: Val
         const txResponse = await depositAsSigner(deposit.microcredits, state.privateKey);
         const blockFinished = await transactionAcceptedBlockHeight(txResponse);
         if (blockFinished === -1) {
-          throw new Error('Transaction failed: ' + txResponse);
+          throw new Error('Transaction failed: ' + txResponse.transaction.toString());
         }
         const newPaleo = await getMTSPBalance(testUser, PALEO_TOKEN_ID, true);
         const paleoDelta = newPaleo - currentPaleo;
@@ -150,7 +150,7 @@ export const createLedger = async (
     throw new Error('Airdrop failed');
   }
   console.log('****************** All test users have been airdropped credits ******************');
-  let currentBlockHeight = 0;
+  let currentBlockHeight = await getHeight();
 
   let testUserStates: TestUserStates = new Map();
   while (currentBlockHeight < stopHeight || userActions.size > 0 || validatorActions.length > 0) {
@@ -195,7 +195,7 @@ export const createLedger = async (
     }
 
     // Run the protocol
-    // await runProtocol();
+    await runProtocol();
 
     await delay(BOT_DELAY);
     currentBlockHeight = await getHeight();

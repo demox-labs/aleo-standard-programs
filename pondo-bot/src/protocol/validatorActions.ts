@@ -25,7 +25,7 @@ const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
 );
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
 
-export const distributeDeposits = async (): Promise<void> => {
+export const distributeDeposits = async () => {
   // Get the rebalance amounts
   const rebalanceAmounts = await determineDistributionAmounts();
   // Format the inputs
@@ -39,7 +39,7 @@ export const distributeDeposits = async (): Promise<void> => {
   // Resolve imports
   const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM!];
   let resolvedImports = await resolveImports(imports);
-  await submitTransaction(
+  return await submitTransaction(
     NETWORK!,
     PRIVATE_KEY!,
     programCode,

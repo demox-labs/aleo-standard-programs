@@ -1,7 +1,7 @@
 import { after, before, describe, it } from 'node:test';
 import { NETWORK, PALEO_TOKEN_ID, PALEO_TOKEN_ID_DEFAULT, PRIVATE_KEY } from '../../constants';
 import * as Aleo from '@demox-labs/aleo-sdk';
-import { getMappingValue, getMTSPBalance, getProgram, getPublicBalance, isTransactionAccepted } from '../../aleo/client';
+import { getHeight, getMappingValue, getMTSPBalance, getProgram, getPublicBalance, isTransactionAccepted } from '../../aleo/client';
 import { killAuthorizePool } from '../../aleo/execute';
 import { pondoPrograms } from '../../compiledPrograms';
 import { batchedWithdraw, batchedWithdrawSigner, calculateAleoForWithdrawal, instantWithdraw, instantWithdrawSigner } from '../../protocol/userActions';
@@ -219,9 +219,12 @@ describe('withdraw', async () => {
         const withdrawComplete = await isTransactionAccepted(withdrawTx);
         const newPaleo = await getMTSPBalance(userFail, PALEO_TOKEN_ID, true);
         const deltaPaleo = currentPaleo - newPaleo;
+        const currentHeight = await getHeight();
 
         const withdrawalState = await getMappingValue(userFail, protocolId, 'withdrawals');
+        console.log(`Withdrawal state: ${withdrawalState}`);
         assert(withdrawalState !== null, 'user should have a withdrawal state');
+        // assert(withdrawalState.claim_block >= currentHeight);
         assert(deltaPaleo === withdrawPaleoAmount, 'User paleo balance should be reduced by the amount withdrawn');
         assert(withdrawComplete, 'Withdraw should be complete');
       });

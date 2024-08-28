@@ -129,6 +129,8 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/depositRebalance.test.ts",
     withdrawNormalTest:
       path.resolve(__dirname, "src") + "/tests/cases/withdrawNormal.test.ts",
+    withdrawPostRebalanceTest:
+      path.resolve(__dirname, "src") + "/tests/cases/withdrawPostRebalance.test.ts",
     depositNormalTest:
       path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
     depositNormalBondedTest:

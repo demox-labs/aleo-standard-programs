@@ -44,7 +44,7 @@ const CORE_PROTOCOL_PROGRAM_IMPORTS =
 
 export const depositAsSigner = async (deposit: bigint, privateKey?: string, expectedPaleo?: bigint) => {
   const paleoForDeposit = expectedPaleo ??
-    (await calculatePaleoForDeposit(deposit)) - BigInt(1000);
+    (await calculatePaleoForDeposit(deposit)) - BigInt(100_000);
   const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
   const resolvedImports = await resolveImports(imports);
   const coreCode = await getProgram(CORE_PROTOCOL_PROGRAM);
@@ -55,7 +55,7 @@ export const depositAsSigner = async (deposit: bigint, privateKey?: string, expe
     coreCode,
     'deposit_public_as_signer',
     [`${deposit}u64`, `${paleoForDeposit}u64`, ZERO_ADDRESS],
-    1,
+    2,
     undefined,
     resolvedImports
   );

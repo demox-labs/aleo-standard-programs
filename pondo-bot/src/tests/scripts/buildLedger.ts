@@ -4,7 +4,7 @@ import { delay } from "../../util";
 import { createLedger, TestUserState, TestUserStates, UserAction, UserActions, ValidatorActions } from "../../utils/ledgerCreator";
 import { clearLedger } from "../../utils/ledgerManager";
 import { exec } from "child_process";
-import { getWithdrawTestUserActions } from "./ledgerActions";
+import { getWithdrawRebalanceActions, getWithdrawTestUserActions, runOutTheClockActions } from "./ledgerActions";
 import { killAuthorizePool } from "../../aleo/execute";
 
 const execPromise = promisify(exec);
@@ -48,8 +48,10 @@ async function startDevNet() {
 async function buildLedger() {
   await startDevNet();
   await waitUntilRPCReady();
-  const userActions = getWithdrawTestUserActions();
-  const testUserStates = await createLedger(userActions, [], 350, false);
+  // const userActions = getWithdrawTestUserActions();
+  // const userActions = getWithdrawRebalanceActions();
+  const userActions = runOutTheClockActions();
+  const testUserStates = await createLedger(userActions, [], 1350, false);
   console.log(testUserStates);
   testUserStates.forEach((state: TestUserState, user: string) => {
     console.log(`User: ${user}`);

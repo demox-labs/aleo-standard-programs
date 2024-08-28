@@ -45,3 +45,42 @@ export const getWithdrawTestUserActions = (): UserActions => {
   testUserActions.set(depositUser3, userAction3);
   return testUserActions;
 };
+
+export const getWithdrawRebalanceActions = (): UserActions => {
+  let testUserActions: UserActions = new Map();
+
+  const noDeposits = 'aleo1se69lfndps5yk2dm8vtf0xxujxhylhzz76wkwyxunkvwjc3sfg8smekrc2';
+  const noDepositsPK = 'APrivateKey1zkpCgWYg72g3gM1kvRA2xrADx969aN6epL7SuxBukFf9CsH';
+  const bigMoney = 'aleo107knze72u4slh92nt86jrp8cawphmemalt22g8cfap6hvp945u9s29vew7';
+  const bigMoneyPK = 'APrivateKey1zkp9jqUKPWBHRvVzzDo3PsEDGBupAkXAQbRud3FxP6VfGzo';
+  const smallWithdraw = 'aleo17epfc7c9wqnxst5t9093s2tpwwsn5s7r80kt2yqegxezd3ggn59qqsl6m7';
+  const smallWithdrawPK = 'APrivateKey1zkpJStjQEFY5NciEfHDVCHTnLcfSSDnMFn3z6bhF95Mkk3T';
+
+  const noDepositsAction: UserAction = {
+    privateKey: noDepositsPK,
+    microcredits: BigInt(150_000_000_000),
+    deposits: [],
+    withdraws: []
+  };
+  const bigMoneyAction: UserAction = {
+    privateKey: bigMoneyPK,
+    microcredits: BigInt(150_000_000_000),
+    deposits: [ { microcredits: BigInt(10_000_000_000), blockHeight: 350 } ],
+    withdraws: [ { micropaleo: BigInt(7_500_000_000), blockHeight: 550 } ]
+  };
+  const smallWithdrawAction: UserAction = {
+    privateKey: smallWithdrawPK,
+    microcredits: BigInt(200_000_000),
+    deposits: [ { microcredits: BigInt(87_800_000), blockHeight: 450 } ],
+    withdraws: [ { micropaleo: BigInt(70_800_000), blockHeight: 600 } ]
+  };
+
+  testUserActions.set(noDeposits, noDepositsAction);
+  testUserActions.set(bigMoney, bigMoneyAction);
+  testUserActions.set(smallWithdraw, smallWithdrawAction);
+  return testUserActions;
+};
+
+export const runOutTheClockActions = (): UserActions => {
+  return new Map();
+};
