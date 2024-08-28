@@ -143,6 +143,8 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/oracleNonUpdate.test.ts",
     pondoDelegatorNormalTest:
       path.resolve(__dirname, "src") + "/tests/cases/pondoDelegatorNormal.test.ts",
+    pondoCorePrepRebalanceTest:
+      path.resolve(__dirname, "src") + "/tests/cases/pondoCorePrepRebalance.test.ts",
     snapshotRpcDb:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotRpcDb.ts",
     swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",

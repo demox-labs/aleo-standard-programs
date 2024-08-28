@@ -1,28 +1,16 @@
 import { after, before, describe, it } from "node:test";
 import * as Aleo from "@demox-labs/aleo-sdk";
 import { pondoDependencyTree, pondoPrograms } from "../../compiledPrograms";
-import { airDropCredits, getMappingValue, getProgram, getPublicTransactionsForProgram, isTransactionAccepted } from "../../aleo/client";
+import { airDropCredits, getMappingValue, getProgram, isTransactionAccepted } from "../../aleo/client";
 import {
   ADDRESS,
-  MULTI_SIG_ADDRESS_0,
-  MULTI_SIG_ADDRESS_1,
-  MULTI_SIG_ADDRESS_2,
-  MULTI_SIG_PRIVATE_KEY_0,
-  MULTI_SIG_PRIVATE_KEY_1,
-  MULTI_SIG_PRIVATE_KEY_2,
   NETWORK, PRIVATE_KEY
 } from "../../constants";
-import { ExecuteTransaction } from "../../aleo/types";
 import { killAuthorizePool, submitTransaction } from "../../aleo/execute";
 import { resolveImports } from "../../aleo/deploy";
 import { getPondoDelegatorStates } from "../../protocol/runProtocol";
 import assert from "node:assert";
 import { formatAleoString } from "../../util";
-import {
-  extractValidatorAddressAndProgramName,
-  getOracleProposalTransactionHistory,
-  REFERENCE_DELEGATOR_PROGRAM
-} from "../../protocol/referenceDelegators";
 
 
 // Use the oracleUpdate saved ledger state
@@ -56,6 +44,12 @@ describe("State Machine Tests", () => {
   )!;
   const pondoDelegatorId5: string = pondoPrograms.find((program) =>
     program.includes('pondo_delegator5')
+  )!;
+  const oracleId: string = pondoPrograms.find((program) =>
+    program.includes('pondo_oracle')
+  )!;
+  const pondoCoreProtocolId: string = pondoPrograms.find((program) =>
+    program.includes('pondo_core_protocol')
   )!;
 
   before(async () => {
@@ -198,7 +192,7 @@ describe("State Machine Tests", () => {
         PRIVATE_KEY!,
         pondoDelegatorProgram1,
         'bond',
-        [validator, `${amount - maxTolerance - BigInt(10)}u64`],
+        [validator, `${amount - maxTolerance - BigInt(1)}u64`],
         4,
         undefined,
         resolvedImports
@@ -315,6 +309,8 @@ describe("State Machine Tests", () => {
 
       const wasAccepted3 = await isTransactionAccepted(txResult3);
       assert(wasAccepted3, 'ban_validator was rejected, but should have been accepted');
+      const isValidatorBanned = await getMappingValue(ADDRESS!, oracleId, 'banned_validators');
+      assert(isValidatorBanned, 'Validator was not banned');
     });
   });
 
@@ -380,6 +376,28 @@ describe("State Machine Tests", () => {
       } catch (err) {
         console.log('set_validator was rejected as expected');
       }
+    });
+  });
+
+  describe('Pondo Core protocol', async () => {
+    it('Should not be able to call prep_rebalance outside of the rebalance period', async () => {
+      const imports = pondoDependencyTree[pondoCoreProtocolId];
+      const resolvedImports = await resolveImports(imports);
+      const pondoCoreProtocolProgram = await getProgram(pondoCoreProtocolId);
+
+      const txResult = await submitTransaction(
+        NETWORK!,
+        PRIVATE_KEY!,
+        pondoCoreProtocolProgram,
+        'prep_rebalance',
+        [],
+        4,
+        undefined,
+        resolvedImports
+      );
+
+      const wasAccepted = await isTransactionAccepted(txResult);
+      assert(!wasAccepted, 'prep_rebalance was accepted, but should have been rejected');
     });
   });
 });
