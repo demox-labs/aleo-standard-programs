@@ -342,7 +342,7 @@ program pondo_oracle.aleo {
     let admin_op: admin_operation = admin_operation {
       arg: multiple_hash,
       op_type: UPDATE_DELEGATOR_ALLOCATIONS_OPERATION,
-      request_id: 0u64
+      request_id: request_id
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);
     let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
