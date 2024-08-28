@@ -224,7 +224,7 @@ const rebalanceRetrieveCredits = async (): Promise<void> => {
   // Resolve imports
   const imports = pondoDependencyTree[CORE_PROTOCOL_PROGRAM];
   let resolvedImports = await resolveImports(imports);
-  await submitTransaction(
+  const txResult = await submitTransaction(
     NETWORK,
     PRIVATE_KEY,
     programCode,
@@ -234,6 +234,14 @@ const rebalanceRetrieveCredits = async (): Promise<void> => {
     undefined,
     resolvedImports
   );
+
+  // Wait for the transaction to be accepted
+  const isAccepted = await isTransactionAccepted(txResult);
+
+  // If accepted, immediately try to rebalance_redistribute
+  if (isAccepted) {
+    await rebalanceRedistribute();
+  }
 };
 
 /// Call rebalance_redistribute on the core protocol program if all pondo delegators are in terminal state
