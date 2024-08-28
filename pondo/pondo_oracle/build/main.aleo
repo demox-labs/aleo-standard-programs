@@ -251,7 +251,7 @@ function update_delegator_allocations:
     input r6 as address.public;
     input r7 as u64.public;
     hash.bhp256 r0 into r8 as field;
-    cast r8 2u8 0u64 into r9 as admin_operation;
+    cast r8 2u8 r7 into r9 as admin_operation;
     hash.bhp256 r9 into r10 as field;
     sign.verify r1 r2 r10 into r11;
     sign.verify r3 r4 r10 into r12;
