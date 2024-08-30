@@ -49,7 +49,7 @@ export const calculatedFees: CalculatedFees = {
     claim_withdrawal_public: "126015", // Manually set to lower value
     rebalance_retrieve_credits: "732545", // Manually set to lower value
     rebalance_redistribute: "677000", // Manually set to lower value
-    set_oracle_tvl: "193434", // Manually set to lower value
+    set_oracle_tvl: "293434",
   },
   "reference_delegatorgizgkl.aleo": { initialize: "543166" },
 };

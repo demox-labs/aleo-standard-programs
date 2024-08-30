@@ -989,18 +989,8 @@ program pondo_oracle.aleo {
     let first_yield: u128 = datum_0.microcredits_yield_per_epoch + datum_0.boost * BOOST_PRECISION / boost_multiple;
     let second_yield: u128 = datum_1.microcredits_yield_per_epoch + datum_1.boost * BOOST_PRECISION / boost_multiple;
 
-    // Choose the datum with the higher yield in the normal case
-    // In the case where they reference the same validator, return the one with the lower yield
-    // If we return the one with the higher yield, a validator may keep 2 reference delegators around and alternate them
-    // such that they could raise their commission to 100% during the update period up to a day if they execute it perfectly
-    // without the oracle knowing anything
-    // The alternative is that if we choose the lower one, it's much more difficult and expensive for competing validators
-    // to keep around many delegators with slightly different ranges and try to choose the worst one for their competitors.
-    // all the while paying transaction fees while giving their competitors commissions from delegations.
-    let is_same_validator: bool = datum_0.validator == datum_1.validator;
-    let should_swap: bool = is_same_validator ? first_yield > second_yield : first_yield < second_yield;
-
-    return should_swap ? (datum_1, datum_0) : (datum_0, datum_1);
+    // Choose the datum with the higher yield
+    return first_yield < second_yield ? (datum_1, datum_0) : (datum_0, datum_1);
   }
 
   // Swap the zero group address to the end of the list
