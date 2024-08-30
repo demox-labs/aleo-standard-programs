@@ -1054,14 +1054,14 @@ program pondo_core_protocol.aleo {
     f5.await();
 
     let bonded_withdrawals: u64 = balances.get(BONDED_WITHDRAWALS);
-    let transfers_total: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8] - bonded_withdrawals;
+    let transfers_total: u64 = transfer_amounts[0u8] + transfer_amounts[1u8] + transfer_amounts[2u8] + transfer_amounts[3u8] + transfer_amounts[4u8];
     let delegator_balance_1: u64 = credits.aleo/account.get_or_use(pondo_delegator1.aleo, 0u64);
     let delegator_balance_2: u64 = credits.aleo/account.get_or_use(pondo_delegator2.aleo, 0u64);
     let delegator_balance_3: u64 = credits.aleo/account.get_or_use(pondo_delegator3.aleo, 0u64);
     let delegator_balance_4: u64 = credits.aleo/account.get_or_use(pondo_delegator4.aleo, 0u64);
     let delegator_balance_5: u64 = credits.aleo/account.get_or_use(pondo_delegator5.aleo, 0u64);
     let delegators_total: u64 = delegator_balance_1 + delegator_balance_2 + delegator_balance_3 + delegator_balance_4 + delegator_balance_5;
-    let full_balance: u64 = transfers_total + delegators_total;
+    let full_balance: u64 = transfers_total + delegators_total - bonded_withdrawals;
 
     let saved_currently_delegated: u64 = balances.get(DELEGATED_BALANCE); // get the total delegated value since the last time we calculated rewards
     let current_balance: u64 = saved_currently_delegated > full_balance ? full_balance : saved_currently_delegated;
