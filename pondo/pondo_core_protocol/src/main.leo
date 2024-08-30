@@ -24,6 +24,7 @@ program pondo_core_protocol.aleo {
   // The number of blocks in an epoch
   const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
   const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
+  const ORACLE_UPDATE_PERIOD: u32 = 103_680u32; // 6 days of blocks, assuming 5 sec per block
   const PROTOCOL_FEE: u128 = 1000u128; // out of 10,000, 10% fee
 
   const WITHDRAW_WAIT_MINIMUM: u32 = 43_200u32; // aproximately 2.5 days of blocks, assuming 5 sec per block
@@ -1219,6 +1220,10 @@ program pondo_core_protocol.aleo {
     public tvl: u64
   ) {
     f0.await();
+
+    // Don't allow setting the TVL while the oracle is updating
+    let epoch_block: u32 = block.height % BLOCKS_PER_EPOCH;
+    assert(epoch_block <= ORACLE_UPDATE_PERIOD);
 
     // Ensure the tvl matches what exists in the core protocol
     // Get all of the delegator balances
