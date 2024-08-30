@@ -749,7 +749,7 @@ program pondo_oracle.aleo {
     public reference_delegator: address
   ) {
     // Get the validator address
-    let validator: address = delegator_to_validator.get(reference_delegator);
+    let validator: address = validator_data.get(reference_delegator).validator;
 
     // Check if the height is within the update window
     let epoch_blocks: u32 = block.height % BLOCKS_PER_EPOCH;

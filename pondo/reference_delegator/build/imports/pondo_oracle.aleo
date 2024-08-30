@@ -251,7 +251,7 @@ function update_delegator_allocations:
     input r6 as address.public;
     input r7 as u64.public;
     hash.bhp256 r0 into r8 as field;
-    cast r8 2u8 0u64 into r9 as admin_operation;
+    cast r8 2u8 r7 into r9 as admin_operation;
     hash.bhp256 r9 into r10 as field;
     sign.verify r1 r2 r10 into r11;
     sign.verify r3 r4 r10 into r12;
@@ -1567,18 +1567,18 @@ function ban_validator:
 
 finalize ban_validator:
     input r0 as address.public;
-    get delegator_to_validator[r0] into r1;
+    get validator_data[r0] into r1;
     rem block.height 120_960u32 into r2;
     gte r2 17_280u32 into r3;
     assert.eq r3 true;
     add 50u8 1u8 into r4;
     cast false r4 into r5 as committee_state;
-    get.or_use credits.aleo/committee[r1] r5 into r6;
+    get.or_use credits.aleo/committee[r1.validator] r5 into r6;
     not r6.is_open into r7;
     gt r6.commission 50u8 into r8;
     or r7 r8 into r9;
     assert.eq r9 true;
-    set true into banned_validators[r1];
+    set true into banned_validators[r1.validator];
 
 
 
