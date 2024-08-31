@@ -189,7 +189,7 @@ const prepRebalance = async (pondoDelegatorStates: string[]): Promise<void> => {
   }
 };
 
-const getTopValidators = async (): Promise<string> => {
+export const getTopValidators = async (): Promise<string> => {
   let topValidators = await getMappingValue(
     '1u8',
     CORE_PROTOCOL_PROGRAM,

@@ -45,7 +45,12 @@ const unbondDelegator = async (delegatorProgramId: string) => {
   console.log(`Unbonding delegator ${delegatorProgramId}`);
   const delegatorProgram = await getProgram(delegatorProgramId);
   const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
-  const bondedState = JSON.parse(formatAleoString(await getMappingValue(delegatorProgramAddress, CREDITS_PROGRAM, 'bonded')));
+  const bondedStateString = await getMappingValue(delegatorProgramAddress, CREDITS_PROGRAM, 'bonded');
+  if (!bondedStateString) {
+    console.log(`Delegator ${delegatorProgramId} was forcibly unbonded`);
+    return finalizeToTerminalState(delegatorProgramId);
+  }
+  const bondedState = JSON.parse(formatAleoString(bondedStateString));
   const balance = BigInt(bondedState["microcredits"].slice(0, -3));
 
   console.log(`Delegator ${delegatorProgramId} has balance ${balance}`);
