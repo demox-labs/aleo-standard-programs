@@ -19,6 +19,12 @@ const bondDelegator = async (delegatorProgramId: string, minBalance: bigint, del
   const validatorDatum = await getMappingValue('0u8', delegatorProgramId, 'validator_mapping');
   const validator = extractValidator(validatorDatum);
   console.log(`Delegator ${delegatorProgramId} is bonding to ${validator}`);
+  const validatorUnbondingState = await getMappingValue(validator, 'credits.aleo', 'unbonding');
+
+  if (!!validatorUnbondingState) {
+    console.log(`Delegator ${delegatorProgramId} cannot bond to ${validator} because it is unbonding`);
+    return;
+  }
 
   const imports = pondoDependencyTree[delegatorProgramId];
   const resolvedImports = await resolveImports(imports);

@@ -46,8 +46,8 @@ snarkos developer execute "credits.aleo" unbond_public "aleo1p9sg8gapg22p3j42tan
 */
 
 
-// Use the oracleUpdate saved ledger state
-describe("State Machine Tests", () => {
+// Use the pondoRebalance saved ledger state
+describe("Rebalance State Machine Tests", () => {
   let pondoCoreProtocolProgram: string;
   let pondoDelegatorProgram1: string;
   let pondoDelegatorProgram2: string;

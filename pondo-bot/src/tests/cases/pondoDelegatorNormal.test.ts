@@ -13,7 +13,7 @@ import assert from "node:assert";
 import { formatAleoString } from "../../util";
 
 
-// Use the oracleUpdate saved ledger state
+// Use the pondoCorePrepRebalance saved ledger state
 describe("State Machine Tests", () => {
   let pondoDelegatorProgram1: string;
   let pondoDelegatorProgram2: string;

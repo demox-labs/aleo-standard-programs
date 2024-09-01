@@ -149,6 +149,8 @@ const testConfig = {
       path.resolve(__dirname, "src") + "/tests/cases/pondoCorePrepRebalance.test.ts",
     pondoRebalanceTest:
       path.resolve(__dirname, "src") + "/tests/cases/pondoRebalance.test.ts",
+    pondoTokenTest:
+      path.resolve(__dirname, "src") + "/tests/cases/pondoToken.test.ts",
     snapshotRpcDb:
       path.resolve(__dirname, "src") + "/tests/scripts/snapshotRpcDb.ts",
     swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",
