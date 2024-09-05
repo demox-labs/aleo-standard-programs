@@ -24,7 +24,8 @@
     "watchDevnet": "tmux attach-session -t devnet",
     "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*",
     "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh",
-    "buildLedger": "node ./dist/buildLedger.js"
+    "buildLedger": "node ./dist/buildLedger.js",
+    "runOracleApproval": "node ./dist/runOracleApproval.js"
   },
   "repository": {
     "type": "git",
