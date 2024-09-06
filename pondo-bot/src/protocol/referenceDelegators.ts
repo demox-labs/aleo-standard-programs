@@ -17,7 +17,8 @@ import {
   MULTI_SIG_PRIVATE_KEY_2,
   PONDO_ORACLE_PROGRAM,
   PONDO_ORACLE_PROGRAM_CODE,
-  PRIVATE_KEY
+  PRIVATE_KEY,
+  REFERENCE_DELEGATOR_ADMIN
 } from '../constants';
 
 
@@ -97,7 +98,7 @@ const updateReferenceDelegatorProgram = (program: string, adminAddress: string, 
 
 const deployReferenceDelegator = async (validatorAddress: string) => {
   // Get the address of the admin
-  const address = Aleo.PrivateKey.from_string(NETWORK, PRIVATE_KEY).to_address().to_string();
+  const address = REFERENCE_DELEGATOR_ADMIN;
 
   // Get the reference delegator program
   const referenceDelegatorProgramId = pondoPrograms.filter(program => program.includes('reference_delegator'))[0];
@@ -114,6 +115,7 @@ const deployReferenceDelegator = async (validatorAddress: string) => {
 
   // Update the reference delegator program with the admin and validator addresses
   const { updatedProgram, updatedProgramId} = updateReferenceDelegatorProgram(referenceDelegatorProgram, address, validatorAddress);
+  console.log(updatedProgram);
   // Deploy the reference delegator
   console.log(`Deploying program ${updatedProgramId} for validator ${validatorAddress}`);
   let fee = deploymentCost(referenceDelegatorProgramId);
@@ -132,7 +134,7 @@ const initializeReferenceDelegator = async (program: string, imports: { [key: st
     program,
     'initialize',
     [],
-    1,
+    0.284921,
     undefined,
     imports
   )

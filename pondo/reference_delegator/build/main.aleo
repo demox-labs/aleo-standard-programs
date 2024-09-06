@@ -15,7 +15,6 @@ mapping initialized:
 
 
 function initialize:
-    assert.eq self.caller aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
     call credits.aleo/transfer_public_as_signer reference_delegator.aleo 10_000_000_000u64 into r0;
     call credits.aleo/bond_public aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt reference_delegator.aleo 10_000_000_000u64 into r1;
     call pondo_oracle.aleo/propose_delegator aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt into r2;

@@ -45,6 +45,7 @@ export const MULTI_SIG_ADDRESS_4 = process.env.MULTI_SIG_ADDRESS_4;
 export const DEFAULT_VALIDATOR_ADDRESS = process.env.DEFAULT_VALIDATOR_ADDRESS;
 export const DEFAULT_PONDO_FOUNDATION_ADDRESS = 'aleo1hmrpe0ts2khluprhex3y46cqqy44pme7lwc40ls9nexftx0xhu8sxxpnd0';
 export const PONDO_FOUNDATION_ADDRESS = process.env.PONDO_FOUNDATION_ADDRESS || DEFAULT_PONDO_FOUNDATION_ADDRESS;
+export const REFERENCE_DELEGATOR_ADMIN = process.env.REFERENCE_DELEGATOR_ADMIN || ADDRESS;
 
 export const EPOCH_BLOCKS_DEFAULT = 120_960;
 export const EPOCH_BLOCKS = process.env.EPOCH_BLOCKS
@@ -92,6 +93,7 @@ export const PONDO_TOKEN_ID = process.env.PONDO_TOKEN_ID
   : PONDO_TOKEN_ID_DEFAULT;
 export const VERSION = process.env.VERSION ? process.env.VERSION : '';
 export const ORACLE_ONLY = process.env.ORACLE_ONLY === 'true' || false;
+export const RUN_PROTOCOL_ONLY = process.env.RUN_PROTOCOL_ONLY === 'true' || false;
 export const PONDO_ORACLE_PROGRAM = pondoPrograms.find(program => program.includes('pondo_oracle'));
 export const PONDO_ORACLE_PROGRAM_CODE = pondoProgramToCode[PONDO_ORACLE_PROGRAM!];
 export const MANUAL_DEPLOY = process.env.MANUAL_DEPLOY === 'true' || false;

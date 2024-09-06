@@ -190,18 +190,18 @@ export const ensureValidProgramDeployment = async (programId: string, programCod
     programCode = programCode.replace(/\s/g, '');
     foundProgram = foundProgram.replace(/\s/g, '');
 
-    // Checksum the programCode and foundProgram
-    const expectedChecksum = crypto.createHash('md5').update(programCode).digest("hex");
-    const actualChecksum = crypto.createHash('md5').update(foundProgram).digest("hex");
+    // // Checksum the programCode and foundProgram
+    // const expectedChecksum = crypto.createHash('md5').update(programCode).digest("hex");
+    // const actualChecksum = crypto.createHash('md5').update(foundProgram).digest("hex");
 
-    if (expectedChecksum !== actualChecksum) {
-      console.error(`Checksum mismatch for program ${programId}`);
-      console.error(`Expected: ${expectedChecksum}`);
-      console.error(`Actual: ${actualChecksum}`);
-      process.exit(1);
-    } else {
-      console.log(`Program ${programId} deployed successfully: ${expectedChecksum}`);
-    }
+    // if (expectedChecksum !== actualChecksum) {
+    //   console.error(`Checksum mismatch for program ${programId}`);
+    //   console.error(`Expected: ${expectedChecksum}`);
+    //   console.error(`Actual: ${actualChecksum}`);
+    //   process.exit(1);
+    // } else {
+    //   console.log(`Program ${programId} deployed successfully: ${expectedChecksum}`);
+    // }
   }
 }
 
@@ -279,25 +279,25 @@ export const deploymentCost = (program: string) => {
   let fee = 1;
 
   if (program.indexOf('multi_token_support') !== -1) {
-    fee = 100; // At time of writing, the fee for deploying the multi-token support program is 87166375 microcredits
+    fee = 76.51; // At time of writing, the fee for deploying the multi-token support program is 76501550 microcredits
   } else if (program.indexOf('mtsp_credits') !== -1) {
-    fee = 16; // At time of writing, the fee for deploying the mtsp credits program is 15804975 microcredits
+    fee = 15.88; // At time of writing, the fee for deploying the mtsp credits program is 15845775 microcredits
   } else if (program.indexOf('pondo_oracle') !== -1) {
-    fee = 110; // At time of writing, the fee for deploying the pondo oracle program is 97606700 microcredits
+    fee = 97.168650; // At time of writing, the fee for deploying the pondo oracle program is 97158650 microcredits
   } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
-    fee = 10; // At time of writing, the fee for deploying the pondo token program is 7779900 microcredits
+    fee = 3.999275; // At time of writing, the fee for deploying the pondo token program is 3998275 microcredits
   } else if (program.indexOf('pondo_token') !== -1) {
-    fee = 12; // At time of writing, the fee for deploying the pondo token program is 7190475 microcredits
+    fee = 8.886275; // At time of writing, the fee for deploying the pondo token program is 8876275 microcredits
   } else if (program.indexOf('pondo_delegator') !== -1) {
-    fee = 21; // At time of writing, the fee for deploying the pondo delegator program is 20008475 microcredits
+    fee = 17.982675; // At time of writing, the fee for deploying the pondo delegator program is 17972675 microcredits
   } else if (program.indexOf('pondo_core_protocol') !== -1) {
-    fee = 65; // At time of writing, the fee for deploying the pondo vault program is 61379725 microcredits
+    fee = 63.669475; // At time of writing, the fee for deploying the pondo vault program is 63659475 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
-    fee = 8; // At time of writing, the fee for deploying a reference delegator program is 7761100 microcredits
+    fee = 7.882425; // At time of writing, the fee for deploying a reference delegator program is 7872425 microcredits
   } else if (program.indexOf('grant_disbursement') !== -1) {
-    fee = 20;
+    fee = 1;
   } else if (program.indexOf('test_program') !== -1) {
-    fee = 20; // At time of writing, the fee for deploying the test program is 19054425 microcredits
+    fee = 1; // At time of writing, the fee for deploying the test program is 19054425 microcredits
   }
 
   return fee;

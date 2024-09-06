@@ -83,11 +83,11 @@ finalize initialize:
     assert.eq r0 false;
     contains top_validators[0u8] into r1;
     assert.eq r1 false;
-    set true into control_addresses[aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0];
-    set true into control_addresses[aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr];
-    set true into control_addresses[aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew];
-    set true into control_addresses[aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a];
-    set true into control_addresses[aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s];
+    set true into control_addresses[aleo1rgrwlanlqgt9zwsp44mu9auamv4n9psgej952hfhf3gwnv6zfypqjp0nd0];
+    set true into control_addresses[aleo1xghzslag90d5vmy3s4szptyf6xxtutkruj2fknw96966sz53m5gqvp0nd0];
+    set true into control_addresses[aleo10jmv5a8tcwuaf3ydr7uhe43s5d7zr450vlkjz3nx0jvkygdn5upq20racl];
+    set true into control_addresses[aleo1asrq67xpp9vxtnllkw5dxupxr52q7eqptndhce7nlzqt785ltqpq4tpnd0];
+    set true into control_addresses[aleo1vc3gp7cs49lwsxevvfzl7hva68yqtcd9jcc4dr96h0rg3zfnduyqkyh9y4];
     set false into control_addresses[pondo_delegator1.aleo];
     set false into control_addresses[pondo_delegator2.aleo];
     set false into control_addresses[pondo_delegator3.aleo];
@@ -377,25 +377,25 @@ finalize update_data:
     get validator_data[r0] into r1;
     contains banned_validators[r1.validator] into r2;
     assert.eq r2 false;
-    rem block.height 120_960u32 into r3;
-    gte r3 103_680u32 into r4;
+    rem block.height 80_888u32 into r3;
+    gte r3 78_008u32 into r4;
     assert.eq r4 true;
     sub block.height r1.block_height into r5;
-    gt r5 103_680u32 into r6;
+    gt r5 78_008u32 into r6;
     assert.eq r6 true;
     get credits.aleo/committee[r1.validator] into r7;
     lt r7.commission 50u8 into r8;
     assert.eq r8 true;
     assert.eq r7.is_open true;
     get credits.aleo/bonded[r0] into r9;
-    div block.height 120_960u32 into r10;
+    div block.height 80_888u32 into r10;
     cast r9.microcredits into r11 as u128;
     cast r1.bonded_microcredits into r12 as u128;
     sub r11 r12 into r13;
     mul r13 10_000_000_000u128 into r14;
     cast r1.bonded_microcredits into r15 as u128;
     div r14 r15 into r16;
-    cast 120_960u32 into r17 as u128;
+    cast 80_888u32 into r17 as u128;
     mul r16 r17 into r18;
     cast r5 into r19 as u128;
     div r18 r19 into r20;
@@ -409,7 +409,7 @@ finalize update_data:
     mul r25 10_000_000_000u128 into r28;
     cast r27 into r29 as u128;
     div r28 r29 into r30;
-    div r1.block_height 120_960u32 into r31;
+    div r1.block_height 80_888u32 into r31;
     add r31 1u32 into r32;
     is.eq r32 r10 into r33;
     ternary r33 r20 0u128 into r34;
@@ -426,7 +426,7 @@ finalize update_data:
     get.or_use validator_data[r36[7u32]] r37 into r45;
     get.or_use validator_data[r36[8u32]] r37 into r46;
     get.or_use validator_data[r36[9u32]] r37 into r47;
-    mul r10 120_960u32 into r48;
+    mul r10 80_888u32 into r48;
     get delegator_allocation[0u8] into r49;
     lt r38.block_height r48 into r50;
     lt r35.block_height r48 into r51;
@@ -1444,8 +1444,8 @@ function remove_delegator:
 
 finalize remove_delegator:
     input r0 as address.public;
-    rem block.height 120_960u32 into r1;
-    lt r1 103_680u32 into r2;
+    rem block.height 80_888u32 into r1;
+    lt r1 78_008u32 into r2;
     assert.eq r2 true;
     contains delegator_to_validator[r0] into r3;
     branch.eq r3 false to end_then_0_0;
@@ -1538,8 +1538,8 @@ function ban_validator:
 finalize ban_validator:
     input r0 as address.public;
     get validator_data[r0] into r1;
-    rem block.height 120_960u32 into r2;
-    gte r2 17_280u32 into r3;
+    rem block.height 80_888u32 into r2;
+    gte r2 2_880u32 into r3;
     assert.eq r3 true;
     add 50u8 1u8 into r4;
     cast false r4 into r5 as committee_state;
@@ -1639,9 +1639,9 @@ finalize boost_validator:
     input r1 as address.public;
     input r2 as u64.public;
     await r0;
-    div block.height 120_960u32 into r3;
-    rem block.height 120_960u32 into r4;
-    gte r4 103_680u32 into r5;
+    div block.height 80_888u32 into r3;
+    rem block.height 80_888u32 into r4;
+    gte r4 78_008u32 into r5;
     not r5 into r6;
     assert.eq r6 true;
     cast 0u32 0u64 into r7 as validator_boost;

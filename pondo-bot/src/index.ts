@@ -10,7 +10,8 @@ import {
   TEST,
   RPC_URL,
   BOT_DELAY,
-  PALEO_TOKEN_ID
+  PALEO_TOKEN_ID,
+  RUN_PROTOCOL_ONLY
 } from './constants';
 import { initializeProgramsIfNecessary } from './protocol/initializePrograms';
 import {
@@ -26,16 +27,20 @@ import { delay } from './util';
 async function main() {
   // Log start up information
   console.log(`Starting Pondo bot with RPC URL: ${RPC_URL} on network: ${NETWORK}`);
-  // Deploy all programs if necessary
-  await deployAllProgramsIfNecessary(NETWORK, PRIVATE_KEY);
-  // Initialize all programs if necessary
-  await initializeProgramsIfNecessary();
-  // Deploy reference delegators if necessary
-  // await deployReferenceDelegatorsIfNecessary();
 
-  console.log('****************** All programs have been deployed and initialized ******************');
+  if (!RUN_PROTOCOL_ONLY) {
+    console.log('Deploying programs if necessary');
+    // Deploy all programs if necessary
+    await deployAllProgramsIfNecessary(NETWORK, PRIVATE_KEY);
+    // Initialize all programs if necessary
+    await initializeProgramsIfNecessary();
+    // Deploy reference delegators if necessary
+    await deployReferenceDelegatorsIfNecessary();
 
-  if (TEST) {
+    console.log('****************** All programs have been deployed and initialized ******************');
+  }
+
+  if (TEST && !RUN_PROTOCOL_ONLY) {
     await fundTestAccountsIfNecessary();
   }
 
@@ -52,7 +57,7 @@ async function main() {
         await runProtocol();
       }
 
-      if (TEST) {
+      if (TEST && !RUN_PROTOCOL_ONLY) {
         // deposit sum of 125_000_000_000 microcredits
         const balance = await getMTSPBalance("aleo12ux3gdauck0v60westgcpqj7v8rrcr3v346e4jtq04q7kkt22czsh808v2", PALEO_TOKEN_ID);
         console.log(`Balance: ${balance}`);

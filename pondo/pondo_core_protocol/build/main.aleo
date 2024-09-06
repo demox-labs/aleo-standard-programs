@@ -133,9 +133,9 @@ finalize initialize:
     set 0u64 into balances[2u8];
     set 0u64 into owed_commission[0u8];
     set 2u8 into protocol_state[0u8];
-    cast  aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 into r11 as [address; 10u32];
+    cast  aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx into r11 as [address; 10u32];
     get.or_use pondo_oracle.aleo/top_validators[0u8] r11 into r12;
-    cast aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 0u32 0u64 0u128 40u8 0u128 into r13 as validator_datum;
+    cast aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx 0u32 0u64 0u128 40u8 0u128 into r13 as validator_datum;
     get.or_use pondo_oracle.aleo/validator_data[r12[0u32]] r13 into r14;
     get.or_use pondo_oracle.aleo/validator_data[r12[1u32]] r13 into r15;
     get.or_use pondo_oracle.aleo/validator_data[r12[2u32]] r13 into r16;
@@ -148,7 +148,7 @@ finalize initialize:
     cast r18.validator r18.commission into r23 as validator_state;
     cast  r19 r20 r21 r22 r23 into r24 as [validator_state; 5u32];
     set r24 into validator_set[1u8];
-    div block.height 120_960u32 into r25;
+    div block.height 80_888u32 into r25;
     set r25 into last_rebalance_epoch[0u8];
 
 
@@ -174,7 +174,7 @@ finalize prep_rebalance:
     await r2;
     await r3;
     await r4;
-    div block.height 120_960u32 into r5;
+    div block.height 80_888u32 into r5;
     get last_rebalance_epoch[0u8] into r6;
     gt r5 r6 into r7;
     assert.eq r7 true;
@@ -183,14 +183,14 @@ finalize prep_rebalance:
     is.eq r8 0u8 into r9;
     assert.eq r9 true;
     set 1u8 into protocol_state[0u8];
-    rem block.height 120_960u32 into r10;
-    lt r10 17_280u32 into r11;
+    rem block.height 80_888u32 into r10;
+    lt r10 2_880u32 into r11;
     is.eq r6 4294967295u32 into r12;
     or r11 r12 into r13;
     assert.eq r13 true;
-    cast  aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 into r14 as [address; 10u32];
+    cast  aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx into r14 as [address; 10u32];
     get.or_use pondo_oracle.aleo/top_validators[0u8] r14 into r15;
-    cast aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0 0u32 0u64 0u128 40u8 0u128 into r16 as validator_datum;
+    cast aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx 0u32 0u64 0u128 40u8 0u128 into r16 as validator_datum;
     get.or_use pondo_oracle.aleo/validator_data[r15[0u32]] r16 into r17;
     get.or_use pondo_oracle.aleo/validator_data[r15[1u32]] r16 into r18;
     get.or_use pondo_oracle.aleo/validator_data[r15[2u32]] r16 into r19;
@@ -874,11 +874,11 @@ finalize withdraw_public:
     set r88 into balances[1u8];
     sub r78 r87 into r89;
     set r89 into balances[0u8];
-    add block.height 43_200u32 into r90;
-    div r90 120_960u32 into r91;
+    add block.height 8_080u32 into r90;
+    div r90 80_888u32 into r91;
     add r91 1u32 into r92;
-    mul r92 120_960u32 into r93;
-    add r93 17_280u32 into r94;
+    mul r92 80_888u32 into r93;
+    add r93 2_880u32 into r94;
     add r94 1u32 into r95;
     cast r87 r95 into r96 as withdrawal_state;
     set r96 into withdrawals[r2];
@@ -990,11 +990,11 @@ finalize withdraw_public_as_signer:
     set r88 into balances[1u8];
     sub r78 r87 into r89;
     set r89 into balances[0u8];
-    add block.height 43_200u32 into r90;
-    div r90 120_960u32 into r91;
+    add block.height 8_080u32 into r90;
+    div r90 80_888u32 into r91;
     add r91 1u32 into r92;
-    mul r92 120_960u32 into r93;
-    add r93 17_280u32 into r94;
+    mul r92 80_888u32 into r93;
+    add r93 2_880u32 into r94;
     add r94 1u32 into r95;
     cast r87 r95 into r96 as withdrawal_state;
     set r96 into withdrawals[r2];
@@ -1277,8 +1277,8 @@ finalize set_oracle_tvl:
     input r0 as pondo_oracle.aleo/set_pondo_tvl.future;
     input r1 as u64.public;
     await r0;
-    rem block.height 120_960u32 into r2;
-    lte r2 103_680u32 into r3;
+    rem block.height 80_888u32 into r2;
+    lte r2 78_008u32 into r3;
     assert.eq r3 true;
     get.or_use credits.aleo/account[pondo_delegator1.aleo] 0u64 into r4;
     get.or_use credits.aleo/account[pondo_delegator2.aleo] 0u64 into r5;

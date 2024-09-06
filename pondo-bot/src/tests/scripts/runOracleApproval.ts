@@ -13,3 +13,5 @@ const hashedField = Aleo.Plaintext.fromString(NETWORK!, plaintextString).hashBhp
 
 // Sign the hash with the oracle private keys
 const signature0 = Aleo.Signature.sign_plaintext(NETWORK!, privateKey, hashedField).to_string();
+
+console.log(signature0);

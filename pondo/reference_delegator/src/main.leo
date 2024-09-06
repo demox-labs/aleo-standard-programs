@@ -13,9 +13,6 @@ program reference_delegator.aleo {
   mapping initialized: u8 => u8;
 
   async transition initialize() -> Future {
-    // Ensure the admin is calling
-    assert_eq(self.caller, ADMIN);
-
     // Transfer 10K credits to the program
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, MIN_DELEGATION);
 

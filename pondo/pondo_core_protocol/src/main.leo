@@ -22,12 +22,12 @@ program pondo_core_protocol.aleo {
   const MINIMUM_BOND_INCREASE: u64 = 1_000_000u64; // 1 credit
 
   // The number of blocks in an epoch
-  const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
-  const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
-  const ORACLE_UPDATE_PERIOD: u32 = 103_680u32; // 6 days of blocks, assuming 5 sec per block
+  const BLOCKS_PER_EPOCH: u32 = 80_888u32;
+  const REBALANCE_PERIOD: u32 = 2_880u32;
+  const ORACLE_UPDATE_PERIOD: u32 = 78_008u32;
   const PROTOCOL_FEE: u128 = 1000u128; // out of 10,000, 10% fee
 
-  const WITHDRAW_WAIT_MINIMUM: u32 = 43_200u32; // aproximately 2.5 days of blocks, assuming 5 sec per block
+  const WITHDRAW_WAIT_MINIMUM: u32 = 8_080u32;
   const INSTANT_WITHDRAW_FEE: u128 = 025u128; // out of 10,000, 0.25% fee
   const MAX_GUARANTEED_LIQUIDITY: u64 = 250_000_000_000u64; // 250K credits
   const MIN_LIQUIDITY_PERCENT: u128 = 250u128; // 2.5% of the total aleo managed by the protocol
@@ -36,7 +36,7 @@ program pondo_core_protocol.aleo {
   const CREDITS_TOKEN_ID: field = 3443843282313283355522573239085696902919850365217539366784739393210722344986field;
 
   // The One Group Address
-  const ONE_GROUP_ADDRESS: address = aleo1qgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqanmpl0;
+  const ONE_GROUP_ADDRESS: address = aleo12tf856xd9we5ay090zkep0s3q5e8srzwqr37ds0ppvv5kkzad5fqvwndmx;
 
   // copied from credits.aleo, as structs are not importable
   struct bond_state {

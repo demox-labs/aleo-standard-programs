@@ -5,20 +5,20 @@ import credits.aleo;
 // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
 program pondo_oracle.aleo {
   // Address of the approver who can manually check that reference delegators follow the intended specification
-  const ADMIN_0: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
-  const ADMIN_1: address = aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr;
-  const ADMIN_2: address = aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew;
-  const ADMIN_3: address = aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a;
-  const ADMIN_4: address = aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s;
+  const ADMIN_0: address = aleo1rgrwlanlqgt9zwsp44mu9auamv4n9psgej952hfhf3gwnv6zfypqjp0nd0;
+  const ADMIN_1: address = aleo1xghzslag90d5vmy3s4szptyf6xxtutkruj2fknw96966sz53m5gqvp0nd0;
+  const ADMIN_2: address = aleo10jmv5a8tcwuaf3ydr7uhe43s5d7zr450vlkjz3nx0jvkygdn5upq20racl;
+  const ADMIN_3: address = aleo1asrq67xpp9vxtnllkw5dxupxr52q7eqptndhce7nlzqt785ltqpq4tpnd0;
+  const ADMIN_4: address = aleo1vc3gp7cs49lwsxevvfzl7hva68yqtcd9jcc4dr96h0rg3zfnduyqkyh9y4;
 
   // The precision used to calculate the return per epoch
   const PRECISION: u128 = 10_000_000_000u128; // Equal to 10K credits
   // The number of blocks in an epoch
-  const BLOCKS_PER_EPOCH: u32 = 120_960u32; // 1 week of blocks, assuming 5 sec per block
+  const BLOCKS_PER_EPOCH: u32 = 80_888u32;
   // The number of blocks to not allow updates, so updates must happen in the last 1 day of an epoch
-  const UPDATE_BLOCKS_DISALLOWED: u32 = 103_680u32; // 6 day of blocks, assuming 5 sec per block
+  const UPDATE_BLOCKS_DISALLOWED: u32 = 78_008u32;
   // The rebalance kickoff period copied from the pondo core protocol
-  const REBALANCE_PERIOD: u32 = 17_280u32; // 1 day of blocks, assuming 5 sec per block
+  const REBALANCE_PERIOD: u32 = 2_880u32;
   // The max allowable commission by the validators
   const MAX_COMMISSION: u8 = 50u8;
   // The multiple for boosting

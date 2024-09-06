@@ -12,7 +12,7 @@ program pondo_staked_aleo_token.aleo {
     let name: u128 = 1631421259099656974472467909989204u128; // "Pondo Aleo LST" ascii encoded
     let symbol: u128 = 482131854671u128; // "pALEO" ascii encoded
     let decimals: u8 = 6u8;
-    let max_supply: u128 = 1_000_000_000_000_000u128;
+    let max_supply: u128 = 10_000_000_000_000_000u128;
     let external_authorization_required: bool = false;
     let external_authorization_party: address = self.address;
 
