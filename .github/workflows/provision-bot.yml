@@ -87,7 +87,7 @@ jobs:
     - name: Create Dotenv File
       run: |
         echo "${{ secrets.ENV }}" > .env
-        echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" > .env
+        echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> .env
         echo "ADDRESS=${{ secrets.ADDRESS }}" >> .env
         echo "NETWORK=${{ inputs.network }}" >> .env
         echo "RPC_URL=${{ inputs.rpc_url }}" >> .env

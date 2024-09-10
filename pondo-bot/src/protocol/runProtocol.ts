@@ -404,7 +404,8 @@ export const runProtocol = async (): Promise<void> => {
     // Set the oracle TVL if it's changed by more than 50%
     await setOracleTVL();
     // Boost the validator if necessary
-    await boostValidator(VALIDATOR_TO_BOOST, BigInt(blockHeight) / BigInt(EPOCH_BLOCKS));
+    if (VALIDATOR_TO_BOOST != '')
+      await boostValidator(VALIDATOR_TO_BOOST, BigInt(blockHeight) / BigInt(EPOCH_BLOCKS));
   }
 
   // Can be run in any epoch period
