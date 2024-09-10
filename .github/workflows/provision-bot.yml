@@ -48,6 +48,8 @@ on:
         required: true
       ADDRESS:
         required: true
+      ENV:
+        required: true
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -84,6 +86,7 @@ jobs:
 
     - name: Create Dotenv File
       run: |
+        echo "${{ secrets.ENV }}" > .env
         echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" > .env
         echo "ADDRESS=${{ secrets.ADDRESS }}" >> .env
         echo "NETWORK=${{ inputs.network }}" >> .env
@@ -95,6 +98,7 @@ jobs:
         echo "VERSION=${{ inputs.version }}" >> .env
         echo "PALEO_TOKEN_ID=${{ inputs.paleo_token_id }}" >> .env
         echo "PONDO_TOKEN_ID=${{ inputs.pondo_token_id }}" >> .env
+        echo "RUN_PROTOCOL_ONLY=true" >> .env
         echo "BOT_DELAY=${{ inputs.bot_delay }}" >> .env
 
     - name: Build And Tag Pondo Bot Image

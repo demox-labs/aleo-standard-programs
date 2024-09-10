@@ -1,0 +1,29 @@
+name: Mainnet Pondo Bot Deployments Trigger
+
+on:
+  push:
+    branches:
+      - 'main'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  pondo-bot-us-east-2:
+    uses: ./.github/workflows/provision-bot.yml
+    with:
+      environment: Mainnet
+      region: 'us-east-2'
+      github_actions_role: 'pondo-bot-role'
+      network: 'TestnetV0'
+      rpc_url: 'https://mainnet.aleorpc.com'
+      client_url: 'https://mainnet.aleorpc.com'
+      epoch_blocks: '80888'
+      oracle_update_blocks: '78008'
+      rebalance_blocks: '2880'
+      version: ''
+      paleo_token_id: '1751493913335802797273486270793650302076377624243810059080883537084141842600field'
+      pondo_token_id: '1751493913335802797273486270793650302076377624243810059080883537084141842601field'
+      bot_delay: '30000'
+    secrets: inherit
