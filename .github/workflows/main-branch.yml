@@ -16,7 +16,7 @@ jobs:
       environment: Mainnet
       region: 'us-east-2'
       github_actions_role: 'pondo-bot-role'
-      network: 'TestnetV0'
+      network: 'MainnetV0'
       rpc_url: 'https://mainnet.aleorpc.com'
       client_url: 'https://mainnet.aleorpc.com'
       epoch_blocks: '80888'
