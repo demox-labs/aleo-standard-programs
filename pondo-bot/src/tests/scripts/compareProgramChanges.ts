@@ -85,6 +85,19 @@ const generateAndSaveDiff = (oldFileName: string, newFileName: string, oldProgra
   fs.writeFileSync(path.join(diffDir, diffFileName), diff);
 };
 
+const validateProgramContent = (programName: string, programContent: string) => {
+  if (!programContent) {
+    throw new Error('Program content is empty');
+  }
+
+  // Ensure that none of the programs contain the old program names
+  oldPondoPrograms.forEach((oldProgramName) => {
+    if (programContent.includes(oldProgramName)) {
+      throw new Error(`Program: ${programName} content contains old program name: ${oldProgramName}`);
+    }
+  });
+}
+
 // Main diffing logic
 pondoPrograms.forEach((newProgramName: string) => {
   const oldProgramName = newProgramToOldProgramMap[newProgramName];
@@ -100,4 +113,7 @@ pondoPrograms.forEach((newProgramName: string) => {
 
   // Generate the diff and save it
   generateAndSaveDiff(oldProgramName, newProgramName, oldProgramContent, newProgramContent);
+
+  // Validate the program content
+  validateProgramContent(newProgramName, newProgramContent);
 });

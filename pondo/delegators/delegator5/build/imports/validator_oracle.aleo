@@ -88,11 +88,11 @@ finalize initialize:
     set true into control_addresses[aleo10jmv5a8tcwuaf3ydr7uhe43s5d7zr450vlkjz3nx0jvkygdn5upq20racl];
     set true into control_addresses[aleo1asrq67xpp9vxtnllkw5dxupxr52q7eqptndhce7nlzqt785ltqpq4tpnd0];
     set true into control_addresses[aleo1vc3gp7cs49lwsxevvfzl7hva68yqtcd9jcc4dr96h0rg3zfnduyqkyh9y4];
-    set false into control_addresses[pondo_delegator1.aleo];
-    set false into control_addresses[pondo_delegator2.aleo];
-    set false into control_addresses[pondo_delegator3.aleo];
-    set false into control_addresses[pondo_delegator4.aleo];
-    set false into control_addresses[pondo_delegator5.aleo];
+    set false into control_addresses[delegator1.aleo];
+    set false into control_addresses[delegator2.aleo];
+    set false into control_addresses[delegator3.aleo];
+    set false into control_addresses[delegator4.aleo];
+    set false into control_addresses[delegator5.aleo];
     cast  3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r2 as [u128; 10u32];
     set r2 into delegator_allocation[0u8];
     cast  validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo validator_oracle.aleo into r3 as [address; 10u32];

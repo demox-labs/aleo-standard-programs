@@ -105,11 +105,11 @@ program validator_oracle.aleo {
     control_addresses.set(ADMIN_4, true);
 
     // Set the non-admin control addresses
-    control_addresses.set(pondo_delegator1.aleo, false);
-    control_addresses.set(pondo_delegator2.aleo, false);
-    control_addresses.set(pondo_delegator3.aleo, false);
-    control_addresses.set(pondo_delegator4.aleo, false);
-    control_addresses.set(pondo_delegator5.aleo, false);
+    control_addresses.set(delegator1.aleo, false);
+    control_addresses.set(delegator2.aleo, false);
+    control_addresses.set(delegator3.aleo, false);
+    control_addresses.set(delegator4.aleo, false);
+    control_addresses.set(delegator5.aleo, false);
 
     delegator_allocation.set(0u8, [
       3700u128,

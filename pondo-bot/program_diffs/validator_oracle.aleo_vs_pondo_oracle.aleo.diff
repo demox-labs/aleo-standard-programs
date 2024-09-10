@@ -18,7 +18,7 @@
  struct validator_datum:
      delegator as address;
      validator as address;
-@@ -28,51 +28,61 @@
+@@ -28,66 +28,79 @@
      op_type as u8;
      request_id as u64;
  
@@ -101,11 +101,19 @@
      set true into control_addresses[aleo1rgrwlanlqgt9zwsp44mu9auamv4n9psgej952hfhf3gwnv6zfypqjp0nd0];
      set true into control_addresses[aleo1xghzslag90d5vmy3s4szptyf6xxtutkruj2fknw96966sz53m5gqvp0nd0];
      set true into control_addresses[aleo10jmv5a8tcwuaf3ydr7uhe43s5d7zr450vlkjz3nx0jvkygdn5upq20racl];
-@@ -83,11 +93,14 @@
-     set false into control_addresses[pondo_delegator3.aleo];
-     set false into control_addresses[pondo_delegator4.aleo];
-     set false into control_addresses[pondo_delegator5.aleo];
+     set true into control_addresses[aleo1asrq67xpp9vxtnllkw5dxupxr52q7eqptndhce7nlzqt785ltqpq4tpnd0];
+     set true into control_addresses[aleo1vc3gp7cs49lwsxevvfzl7hva68yqtcd9jcc4dr96h0rg3zfnduyqkyh9y4];
+-    set false into control_addresses[pondo_delegator1.aleo];
+-    set false into control_addresses[pondo_delegator2.aleo];
+-    set false into control_addresses[pondo_delegator3.aleo];
+-    set false into control_addresses[pondo_delegator4.aleo];
+-    set false into control_addresses[pondo_delegator5.aleo];
 -    cast 3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r2 as [u128; 10u32];
++    set false into control_addresses[delegator1.aleo];
++    set false into control_addresses[delegator2.aleo];
++    set false into control_addresses[delegator3.aleo];
++    set false into control_addresses[delegator4.aleo];
++    set false into control_addresses[delegator5.aleo];
 +    cast  3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r2 as [u128; 10u32];
      set r2 into delegator_allocation[0u8];
 -    cast pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo pondo_oracle.aleo into r3 as [address; 10u32];

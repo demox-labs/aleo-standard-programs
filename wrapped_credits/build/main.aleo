@@ -51,7 +51,7 @@ function deposit_credits_private:
 
 finalize deposit_credits_private:
     input r0 as credits.aleo/transfer_private_to_public.future;
-    input r1 as multi_token_support_program.aleo/mint_private.future;
+    input r1 as token_registry.aleo/mint_private.future;
     await r0;
     await r1;
 
@@ -105,7 +105,7 @@ function withdraw_credits_private:
 
 finalize withdraw_credits_private:
     input r0 as credits.aleo/transfer_public_to_private.future;
-    input r1 as multi_token_support_program.aleo/burn_private.future;
+    input r1 as token_registry.aleo/burn_private.future;
     await r0;
     await r1;
 
