@@ -20,20 +20,37 @@ The amount of vested credits is `= (current_block_height - start_block) / (fully
 
 ## Available methods
 
-### create_grant
+### initialize
 
-Used to create and start the grant.
+Used to create all of the grants. All grants must be hard coded into the initialize method so they can be funded by a simple credits.aleo/transfer_public
 
-The `paleo_amount` should be calculated similarly to a deposit in Pondo to maximize the pAleo received and minimize the slippage.
+The `paleo_amount` is set to 0 initially.
 ```
 async transition create_grant(
     public id: u64,
     public credits_amount: u64,
-    public paleo_amount: u64,
+    public paleo_amount: u128,
     public recipient_rewards_key: address,
     public recipient_principal_key: address,
     public cliff_block: u32,
     public fully_vested_block: u32
+  ) -> Future
+```
+
+### process_grant
+
+The actual funder for the grant is expected to transfer credits (using credits.aleo transfer_public or transfer_public_as_signer) directly to the program address.
+
+Once the credits are transferred to the program. Anyone can call `process_grant` to deposit the credits into pAleo.
+By default, the pondo deposit is constrained to be within 99.99% of the ideal pAleo minted given a certain credits balance.
+
+Calling `process_grant` deposits the credits into the Pondo Protocol, mints the near ideal pAleo and then transfers the pAleo to this program, later to be distributed.
+
+```
+async transition process_grant(
+    grant_id: u8,
+    credits_amount: u64,
+    paleo_amount: u128,
   ) -> Future
 ```
 
@@ -43,8 +60,8 @@ Used by the grantee with the `recipient_rewards_key` to claim `pAleo` without to
 
 ```
 async transition withdraw_rewards(
-    id: u64,
-    paleo_amount: u64
+    id: u8,
+    paleo_amount: u128
   ) -> Future
 ```
 
@@ -54,7 +71,7 @@ Used by the grantee with the `recipient_principal_key` to claim `pAleo` vested p
 
 ```
 async transition withdraw_principal(
-    id: u64,
-    paleo_amount: u64
+    id: u8,
+    paleo_amount: u128
   ) -> Future 
 ```
