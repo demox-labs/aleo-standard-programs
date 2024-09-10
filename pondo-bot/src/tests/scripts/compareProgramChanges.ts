@@ -48,6 +48,20 @@ const newProgramToOldProgramMap = {
   "reference_delegator.aleo": "reference_delegatornkpuru.aleo",
 };
 
+const oldProgramAddresses = [
+  'aleo10s82sqc2yp67kq4w56k4h5rna55vqsmd9xq4dz6fsgf69w7r7yys60rpz5', // multi_token_support_program.aleo
+  'aleo1qj5kef9c72e7szmcjyg730a99gkm90yp2pzht4zfp43c7p45dqqsh60nt7', // mtsp_credits.aleo
+  'aleo1uz3hqa3yj6d09dapg2kqlu56jvnc86sxdx7vc9nljcng7a0k4srqa4lxq5', // pondo_oracle.aleo
+  'aleo19pk6q22kk5vdwpkuh3ag8lmrvallu5kqpsm0t4f3ul6je3ec0gyqkvnycl', // pondo_staked_aleo_token.aleo
+  'aleo1z7m9qvmpkdwpwe465j5hae7mgcfcp36mnguf7qe2r8qnjnch6crqt34tsk', // pondo_token.aleo
+  'aleo15hmen38v5tlcw7qm6xklzsgegfsfnhrxumje5nr78jv478eyeyqsvj0w2x', // pondo_delegator1.aleo
+  'aleo19tmr4mhyvlrhjet0nrtfnnf2y9tmm0k86y7n392zzhufcykafqyqmvyjmn', // pondo_delegator2.aleo
+  'aleo1fpa8ylpdu79qfl4gd3x00mh9savw7f0c208gvktccwc0nawm558ql29ckc', // pondo_delegator3.aleo
+  'aleo1pjam0gr659pyhqtf0eas2zsz04k3rfxagk2e7lyjua5n6y795uzs7fcksk', // pondo_delegator4.aleo
+  'aleo1mpfm6vlxr0cl2l0q9lkuuu66dpszdyur9ywphpnm0g3zaq6wscysnwg5ct', // pondo_delegator5.aleo
+  'aleo1a6rhakcgjqcfr869z9pznktnghpd7swc47pz884c3zup2xa8guzsmfhxeq', // pondo_core_protocol.aleo
+]
+
 const programDir = './programs';
 
 // Ensure the old_programs directory exists
@@ -96,6 +110,15 @@ const validateProgramContent = (programName: string, programContent: string) => 
       throw new Error(`Program: ${programName} content contains old program name: ${oldProgramName}`);
     }
   });
+
+  // Ensure that none of the programs contain the old program addresses
+  oldProgramAddresses.forEach((oldProgramAddress) => {
+    if (programContent.includes(oldProgramAddress)) {
+      throw new Error(`Program: ${programName} content contains old program address: ${oldProgramAddress}`);
+    }
+  });
+
+  console.log(`Program: ${programName} content is valid`);
 }
 
 // Main diffing logic
