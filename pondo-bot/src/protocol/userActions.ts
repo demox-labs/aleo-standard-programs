@@ -25,16 +25,16 @@ import {
 } from '../compiledPrograms';
 
 const MTSP_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('multi_token_support_program')
+  program.includes('token_registry')
 );
 const MTSP_PROGRAM_CODE = pondoProgramToCode[MTSP_PROGRAM!];
 const MTSP_CREDITS_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('mtsp_credits')
+  program.includes('wrapped_credits')
 );
 const MTSP_CREDITS_PROGRAM_CODE = pondoProgramToCode[MTSP_CREDITS_PROGRAM];
 
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_core_protocol')
+  program.includes('pondo_protocol')
 )!;
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM];
 const CORE_PROTOCOL_PROGRAM_IMPORTS =
@@ -138,7 +138,7 @@ const calculateAleoAndPaleoPools = async () => {
   let totalProtocolBalance = BigInt(0);
   // Handle updating all of the delegators
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+    const delegatorProgramId = `delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(
       NETWORK!,

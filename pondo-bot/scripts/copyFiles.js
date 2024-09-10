@@ -7,18 +7,18 @@ const versionNumber = process.env.VERSION || '';
 
 // Source files
 const filesToCopy = [
-  '../multi_token_support_program/build/main.aleo',
-  '../mtsp_credits/build/main.aleo',
-  '../pondo/pondo_core_protocol/build/main.aleo',
-  '../pondo/pondo_oracle/build/main.aleo',
-  '../pondo/pondo_staked_aleo_token/build/main.aleo',
-  '../pondo/pondo_token/build/main.aleo',
+  '../token_registry/build/main.aleo',
+  '../wrapped_credits/build/main.aleo',
+  '../pondo/pondo_protocol/build/main.aleo',
+  '../pondo/validator_oracle/build/main.aleo',
+  '../pondo/paleo_token/build/main.aleo',
+  '../pondo/pondo_protocol_token/build/main.aleo',
   '../pondo/reference_delegator/build/main.aleo',
-  '../pondo/delegators/pondo_delegator1/build/main.aleo',
-  '../pondo/delegators/pondo_delegator2/build/main.aleo',
-  '../pondo/delegators/pondo_delegator3/build/main.aleo',
-  '../pondo/delegators/pondo_delegator4/build/main.aleo',
-  '../pondo/delegators/pondo_delegator5/build/main.aleo',
+  '../pondo/delegators/delegator1/build/main.aleo',
+  '../pondo/delegators/delegator2/build/main.aleo',
+  '../pondo/delegators/delegator3/build/main.aleo',
+  '../pondo/delegators/delegator4/build/main.aleo',
+  '../pondo/delegators/delegator5/build/main.aleo',
   '../grant_disbursement/build/main.aleo',
   '../pondo/test_program/build/main.aleo',
 ];
@@ -81,6 +81,12 @@ filesToCopy.forEach((fileSrc) => {
   });
 
   pondoProgramToCode[newProgramName] = fileContent;
+
+  // Write the updated content to the target directory
+  const targetDir = path.join('.', 'programs');
+  const fileDest = path.join(targetDir, newProgramName);
+  pondoProgramToCode[newProgramName] = fileContent;
+  fs.writeFileSync(fileDest, fileContent);
 });
 
 // Function to parse dependencies from a program file

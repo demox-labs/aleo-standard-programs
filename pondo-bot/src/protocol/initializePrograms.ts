@@ -31,13 +31,13 @@ const hasProgramBeenInitialized = async (programId: string, programCode: string)
 export const initializeProgramsIfNecessary = async (): Promise<any> => {
   // For each of the pondo programs, initialize them if they haven't been initialized yet
   for (const program of pondoPrograms) {
-    // Only the multi_token_support_program, pondo_oracle, and pondo_core_protocol programs have initialization functions
-    if (!program.includes('multi_token_support_program') && !program.includes('pondo_oracle') && !program.includes('pondo_core_protocol')) {
+    // Only the token_registry, validator_oracle, and pondo_protocol programs have initialization functions
+    if (!program.includes('token_registry') && !program.includes('validator_oracle') && !program.includes('pondo_protocol')) {
       continue;
     }
 
     // Skip every program but the oracle program if ORACLE_ONLY is set to true
-    if (ORACLE_ONLY && !program.includes('pondo_oracle')) {
+    if (ORACLE_ONLY && !program.includes('validator_oracle')) {
       continue;
     }
 
@@ -62,7 +62,7 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
 
     // Set the inputs
     let inputs: string[] = [];
-    if (program.includes('pondo_core_protocol')) {
+    if (program.includes('pondo_protocol')) {
       inputs = [INITIALIZATION_AMOUNT]
     }
 

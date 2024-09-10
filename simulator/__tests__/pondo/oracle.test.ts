@@ -45,19 +45,19 @@ describe('Pondo oracle tests', () => {
       )
     ).toEqual(true);
     expect(
-      oracleInstance.control_addresses.get('pondo_delegator1.aleo')
+      oracleInstance.control_addresses.get('delegator1.aleo')
     ).toEqual(false);
     expect(
-      oracleInstance.control_addresses.get('pondo_delegator2.aleo')
+      oracleInstance.control_addresses.get('delegator2.aleo')
     ).toEqual(false);
     expect(
-      oracleInstance.control_addresses.get('pondo_delegator3.aleo')
+      oracleInstance.control_addresses.get('delegator3.aleo')
     ).toEqual(false);
     expect(
-      oracleInstance.control_addresses.get('pondo_delegator4.aleo')
+      oracleInstance.control_addresses.get('delegator4.aleo')
     ).toEqual(false);
     expect(
-      oracleInstance.control_addresses.get('pondo_delegator5.aleo')
+      oracleInstance.control_addresses.get('delegator5.aleo')
     ).toEqual(false);
     expect(oracleInstance.delegator_allocation.get(BigInt('0'))).toEqual(
       defaultDelegatorAllocation
@@ -68,7 +68,7 @@ describe('Pondo oracle tests', () => {
     oracleInstance.initialize();
 
     expect(() => {
-      oracleInstance.caller = 'pondo_delegator1.aleo';
+      oracleInstance.caller = 'delegator1.aleo';
       oracleInstance.add_control_address('control address');
     }).toThrow();
 
@@ -83,7 +83,7 @@ describe('Pondo oracle tests', () => {
     oracleInstance.initialize();
 
     expect(() => {
-      oracleInstance.caller = 'pondo_delegator1.aleo';
+      oracleInstance.caller = 'delegator1.aleo';
       oracleInstance.remove_control_address('control address');
     }).toThrow();
 
@@ -96,7 +96,7 @@ describe('Pondo oracle tests', () => {
     oracleInstance.initialize();
 
     expect(() => {
-      oracleInstance.caller = 'pondo_delegator1.aleo';
+      oracleInstance.caller = 'delegator1.aleo';
       oracleInstance.update_admin('new admin');
     }).toThrow();
 
@@ -120,7 +120,7 @@ describe('Pondo oracle tests', () => {
     oracleInstance.initialize();
 
     expect(() => {
-      oracleInstance.caller = 'pondo_delegator1.aleo';
+      oracleInstance.caller = 'delegator1.aleo';
       oracleInstance.update_delegator_allocations(newDelegatorAllocation);
     }).toThrow();
 
@@ -466,7 +466,7 @@ describe('Pondo oracle tests', () => {
       oracleInstance.pondo_ban_validator('validator');
     }).toThrow();
 
-    oracleInstance.caller = 'pondo_delegator1.aleo';
+    oracleInstance.caller = 'delegator1.aleo';
     oracleInstance.pondo_ban_validator('validator');
     expect(oracleInstance.banned_validators.get('validator')).toEqual(true);
 
@@ -545,7 +545,7 @@ describe('Pondo oracle tests', () => {
       oracleInstance.set_pondo_tvl(BigInt('100'));
     }).toThrow();
 
-    oracleInstance.caller = 'pondo_core_protocol.aleo';
+    oracleInstance.caller = 'pondo_protocol.aleo';
     oracleInstance.set_pondo_tvl(BigInt('100'));
     expect(oracleInstance.pondo_tvl.get(BigInt('0'))).toEqual(BigInt('100'));
   });
@@ -633,7 +633,7 @@ describe('Pondo oracle tests', () => {
       boost_amount: BigInt('10000'),
     });
     expect(creditsContract.account.get('validator')).toEqual(BigInt('0'));
-    expect(creditsContract.account.get('pondo_core_protocol.aleo')).toEqual(
+    expect(creditsContract.account.get('pondo_protocol.aleo')).toEqual(
       BigInt('10000')
     );
   });

@@ -1,0 +1,19 @@
+{
+  "program": "wrapped_credits.aleo",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "credits.aleo",
+      "location": "network",
+      "network": "testnet",
+      "path": null
+    },
+    {
+      "name": "token_registry.aleo",
+      "location": "local",
+      "path": "../token_registry"
+    }
+  ]
+}

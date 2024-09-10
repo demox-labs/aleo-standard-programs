@@ -1,5 +1,5 @@
 import credits.aleo;
-program pondo_oracle.aleo;
+program validator_oracle.aleo;
 
 struct committee_state:
     is_open as boolean;
@@ -66,15 +66,15 @@ mapping delegator_allocation:
 
 function initialize:
     async initialize into r0;
-    output r0 as pondo_oracle.aleo/initialize.future;
+    output r0 as validator_oracle.aleo/initialize.future;
 
 finalize initialize:
     set true into control_addresses[aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0];
-    set false into control_addresses[pondo_delegator1.aleo];
-    set false into control_addresses[pondo_delegator2.aleo];
-    set false into control_addresses[pondo_delegator3.aleo];
-    set false into control_addresses[pondo_delegator4.aleo];
-    set false into control_addresses[pondo_delegator5.aleo];
+    set false into control_addresses[delegator1.aleo];
+    set false into control_addresses[delegator2.aleo];
+    set false into control_addresses[delegator3.aleo];
+    set false into control_addresses[delegator4.aleo];
+    set false into control_addresses[delegator5.aleo];
     cast  3700u128 2600u128 1600u128 1200u128 900u128 900u128 900u128 900u128 900u128 900u128 into r0 as [u128; 10u32];
     set r0 into delegator_allocation[0u8];
     cast  aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc into r1 as [address; 10u32];
@@ -86,7 +86,7 @@ finalize initialize:
 function add_control_address:
     input r0 as address.public;
     async add_control_address r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/add_control_address.future;
+    output r1 as validator_oracle.aleo/add_control_address.future;
 
 finalize add_control_address:
     input r0 as address.public;
@@ -101,7 +101,7 @@ finalize add_control_address:
 function remove_control_address:
     input r0 as address.public;
     async remove_control_address r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/remove_control_address.future;
+    output r1 as validator_oracle.aleo/remove_control_address.future;
 
 finalize remove_control_address:
     input r0 as address.public;
@@ -116,7 +116,7 @@ finalize remove_control_address:
 function update_admin:
     input r0 as address.public;
     async update_admin r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/update_admin.future;
+    output r1 as validator_oracle.aleo/update_admin.future;
 
 finalize update_admin:
     input r0 as address.public;
@@ -132,7 +132,7 @@ finalize update_admin:
 function update_delegator_allocations:
     input r0 as [u128; 10u32].public;
     async update_delegator_allocations r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/update_delegator_allocations.future;
+    output r1 as validator_oracle.aleo/update_delegator_allocations.future;
 
 finalize update_delegator_allocations:
     input r0 as [u128; 10u32].public;
@@ -148,7 +148,7 @@ function propose_delegator:
     input r0 as address.public;
     assert.neq self.caller self.signer;
     async propose_delegator self.caller r0 into r1;
-    output r1 as pondo_oracle.aleo/propose_delegator.future;
+    output r1 as validator_oracle.aleo/propose_delegator.future;
 
 finalize propose_delegator:
     input r0 as address.public;
@@ -165,7 +165,7 @@ finalize propose_delegator:
 function add_delegator:
     input r0 as address.public;
     async add_delegator r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/add_delegator.future;
+    output r1 as validator_oracle.aleo/add_delegator.future;
 
 finalize add_delegator:
     input r0 as address.public;
@@ -200,7 +200,7 @@ finalize add_delegator:
 function update_data:
     input r0 as address.public;
     async update_data r0 into r1;
-    output r1 as pondo_oracle.aleo/update_data.future;
+    output r1 as validator_oracle.aleo/update_data.future;
 
 finalize update_data:
     input r0 as address.public;
@@ -1300,7 +1300,7 @@ finalize update_data:
 
 function remove_delegator:
     async remove_delegator self.caller into r0;
-    output r0 as pondo_oracle.aleo/remove_delegator.future;
+    output r0 as validator_oracle.aleo/remove_delegator.future;
 
 finalize remove_delegator:
     input r0 as address.public;
@@ -1377,7 +1377,7 @@ function pondo_ban_validator:
     input r0 as address.public;
     assert.neq r0 aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc;
     async pondo_ban_validator r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/pondo_ban_validator.future;
+    output r1 as validator_oracle.aleo/pondo_ban_validator.future;
 
 finalize pondo_ban_validator:
     input r0 as address.public;
@@ -1392,7 +1392,7 @@ finalize pondo_ban_validator:
 function ban_validator:
     input r0 as address.public;
     async ban_validator r0 into r1;
-    output r1 as pondo_oracle.aleo/ban_validator.future;
+    output r1 as validator_oracle.aleo/ban_validator.future;
 
 finalize ban_validator:
     input r0 as address.public;
@@ -1414,9 +1414,9 @@ finalize ban_validator:
 
 function set_pondo_tvl:
     input r0 as u64.public;
-    assert.eq self.caller pondo_core_protocol.aleo;
+    assert.eq self.caller pondo_protocol.aleo;
     async set_pondo_tvl r0 into r1;
-    output r1 as pondo_oracle.aleo/set_pondo_tvl.future;
+    output r1 as validator_oracle.aleo/set_pondo_tvl.future;
 
 finalize set_pondo_tvl:
     input r0 as u64.public;
@@ -1428,7 +1428,7 @@ finalize set_pondo_tvl:
 function ban_self:
     input r0 as address.private;
     async ban_self r0 self.caller into r1;
-    output r1 as pondo_oracle.aleo/ban_self.future;
+    output r1 as validator_oracle.aleo/ban_self.future;
 
 finalize ban_self:
     input r0 as address.public;
@@ -1445,9 +1445,9 @@ finalize ban_self:
 function boost_validator:
     input r0 as address.public;
     input r1 as u64.public;
-    call credits.aleo/transfer_public_as_signer pondo_core_protocol.aleo r1 into r2;
+    call credits.aleo/transfer_public_as_signer pondo_protocol.aleo r1 into r2;
     async boost_validator r2 r0 r1 into r3;
-    output r3 as pondo_oracle.aleo/boost_validator.future;
+    output r3 as validator_oracle.aleo/boost_validator.future;
 
 finalize boost_validator:
     input r0 as credits.aleo/transfer_public_as_signer.future;

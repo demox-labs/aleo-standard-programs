@@ -10,9 +10,9 @@
         "network": "testnet"
     },
     {
-        "name": "pondo_oracle.aleo",
+        "name": "validator_oracle.aleo",
         "location": "local",
-        "path": "../pondo_oracle"
+        "path": "../validator_oracle"
     }
   ]
 }

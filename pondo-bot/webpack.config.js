@@ -158,6 +158,8 @@ const testConfig = {
     swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",
     buildLedger:
       path.resolve(__dirname, "src") + "/tests/scripts/buildLedger.ts",
+    compareProgramChanges:
+      path.resolve(__dirname, "src") + "/tests/scripts/compareProgramChanges.ts",
   },
 
   // Output configuration

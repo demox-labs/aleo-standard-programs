@@ -1,6 +1,6 @@
 import credits.aleo;
-import multi_token_support_program.aleo;
-import pondo_core_protocol.aleo;
+import token_registry.aleo;
+import pondo_protocol.aleo;
 
 program test_program.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
@@ -10,8 +10,8 @@ program test_program.aleo {
 
 
   async transition double_deposit(deposit: u64, expected_paleo: u64) -> Future {
-    let f0: Future = pondo_core_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
-    let f1: Future = pondo_core_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
+    let f0: Future = pondo_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
+    let f1: Future = pondo_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
 
     return finalize_double_deposit(f0, f1);
   }
@@ -22,8 +22,8 @@ program test_program.aleo {
   }
 
   async transition deposit_withdraw_as_signer(deposit: u64, expected_paleo: u64) -> Future {
-    let f0: Future = pondo_core_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
-    let f1: Future = pondo_core_protocol.aleo/withdraw_public_as_signer(expected_paleo);
+    let f0: Future = pondo_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
+    let f1: Future = pondo_protocol.aleo/withdraw_public_as_signer(expected_paleo);
 
     return finalize_deposit_withdraw_as_signer(f0, f1);
   }
@@ -34,10 +34,10 @@ program test_program.aleo {
   }
 
   async transition deposit_instant_withdraw_signer(deposit: u64, expected_paleo: u64, subtract_fee: bool) -> Future {
-    let f0: Future = pondo_core_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
+    let f0: Future = pondo_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
 
     let expectedAleo: u128 = subtract_fee ? deposit as u128 - (deposit as u128 * INSTANT_WITHDRAW_FEE / PRECISION_UNSIGNED) : deposit as u128;
-    let f1: Future = pondo_core_protocol.aleo/instant_withdraw_public_signer(expected_paleo, expectedAleo as u64);
+    let f1: Future = pondo_protocol.aleo/instant_withdraw_public_signer(expected_paleo, expectedAleo as u64);
 
     return finalize_deposit_instant_withdraw_signer(f0, f1);
   }
@@ -48,11 +48,11 @@ program test_program.aleo {
   }
 
   async transition deposit_withdraw(deposit: u64, expected_paleo: u64, subtract_fee: bool) -> Future {
-    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
-    let f1: Future = multi_token_support_program.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
+    let f0: Future = token_registry.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
+    let f1: Future = token_registry.aleo/approve_public(CREDITS_TOKEN_ID, pondo_protocol.aleo, deposit as u128);
 
-    let f2: Future = pondo_core_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
-    let f3: Future = pondo_core_protocol.aleo/withdraw_public(expected_paleo);
+    let f2: Future = pondo_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
+    let f3: Future = pondo_protocol.aleo/withdraw_public(expected_paleo);
 
     return finalize_deposit_withdraw(f0, f1, f2, f3);
   }
@@ -65,12 +65,12 @@ program test_program.aleo {
   }
 
   async transition deposit_instant_withdraw(deposit: u64, expected_paleo: u64, subtract_fee: bool) -> Future {
-    let f0: Future = multi_token_support_program.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
-    let f1: Future = multi_token_support_program.aleo/approve_public(CREDITS_TOKEN_ID, pondo_core_protocol.aleo, deposit as u128);
+    let f0: Future = token_registry.aleo/transfer_from_public(CREDITS_TOKEN_ID, self.caller, self.address, deposit as u128);
+    let f1: Future = token_registry.aleo/approve_public(CREDITS_TOKEN_ID, pondo_protocol.aleo, deposit as u128);
 
     let expectedAleo: u128 = subtract_fee ? deposit as u128 - (deposit as u128 * INSTANT_WITHDRAW_FEE / PRECISION_UNSIGNED) : deposit as u128;
-    let f2: Future = pondo_core_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
-    let f3: Future = pondo_core_protocol.aleo/instant_withdraw_public(expected_paleo, expectedAleo as u64);
+    let f2: Future = pondo_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
+    let f3: Future = pondo_protocol.aleo/instant_withdraw_public(expected_paleo, expectedAleo as u64);
 
     return finalize_deposit_instant_withdraw(f0, f1, f2, f3);
   }

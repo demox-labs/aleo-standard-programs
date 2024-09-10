@@ -23,10 +23,10 @@ export interface validator_datum {
   commission: bigint;
   boost: bigint;
 }
-export class pondo_oracleProgram {
+export class validator_oracleProgram {
   signer: string = 'not set';
   caller: string = 'not set';
-  address: string = 'pondo_oracle.aleo';
+  address: string = 'validator_oracle.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -62,7 +62,7 @@ export class pondo_oracleProgram {
   // The program to permissionless calculate the yield of reference delegators to validators
   // Note: Many reference delegators for the same validator are supported
   // This is to prevent any sort of DOS by competing validators running the reference delegator for other validators
-  //program pondo_oracle.aleo {// Address of the approver who can manually check that reference delegators follow the intended specification
+  //program validator_oracle.aleo {// Address of the approver who can manually check that reference delegators follow the intended specification
   // The precision used to calculate the return per epoch
   // The number of blocks in an epoch
   // The number of blocks to not allow updates, so updates must happen in the last 1 day of an epoch
@@ -95,11 +95,11 @@ export class pondo_oracleProgram {
   finalize_initialize() {
     // Set the control addresses
     this.control_addresses.set(this.INITIAL_DELEGATOR_APPROVER_ADDRESS, true);
-    this.control_addresses.set('pondo_delegator1.aleo', false);
-    this.control_addresses.set('pondo_delegator2.aleo', false);
-    this.control_addresses.set('pondo_delegator3.aleo', false);
-    this.control_addresses.set('pondo_delegator4.aleo', false);
-    this.control_addresses.set('pondo_delegator5.aleo', false);
+    this.control_addresses.set('delegator1.aleo', false);
+    this.control_addresses.set('delegator2.aleo', false);
+    this.control_addresses.set('delegator3.aleo', false);
+    this.control_addresses.set('delegator4.aleo', false);
+    this.control_addresses.set('delegator5.aleo', false);
 
     this.delegator_allocation.set(BigInt('0'), [
       BigInt('3700'),
@@ -726,7 +726,7 @@ export class pondo_oracleProgram {
   // Set the pondo tvl from the core protocol
   // Used for boost pool normalization
   set_pondo_tvl(tvl: bigint) {
-    assert(this.caller === 'pondo_core_protocol.aleo');
+    assert(this.caller === 'pondo_protocol.aleo');
 
     return this.finalize_set_pondo_tvl(tvl);
   }
@@ -760,9 +760,9 @@ export class pondo_oracleProgram {
     // Transfer credits to the pondo core protocol
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_oracle.aleo';
+    this.credits.caller = 'validator_oracle.aleo';
     this.credits.transfer_public_as_signer(
-      'pondo_core_protocol.aleo',
+      'pondo_protocol.aleo',
       boost_amount
     );
 

@@ -1,4 +1,4 @@
-import { pondo_oracleProgram } from './pondo_oracle';
+import { validator_oracleProgram } from './validator_oracle';
 import { creditsProgram } from './credits';
 
 import assert from 'assert';
@@ -15,17 +15,17 @@ export class reference_delegatorProgram {
   MIN_DELEGATION = BigInt('10000000000');
   VALIDATOR: string;
   ADMIN: string;
-  pondo_oracle: pondo_oracleProgram;
+  validator_oracle: validator_oracleProgram;
   credits: creditsProgram;
   constructor(
     // constructor args
-    pondo_oracleContract: pondo_oracleProgram,
+    validator_oracleContract: validator_oracleProgram,
     creditsContract: creditsProgram,
     admin: string = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt',
     validator: string = 'aleo1j0zju7f0fpgv98gulyywtkxk6jca99l6425uqhnd5kccu4jc2grstjx0mt'
   ) {
     // constructor body
-    this.pondo_oracle = pondo_oracleContract;
+    this.validator_oracle = validator_oracleContract;
     this.credits = creditsContract;
     this.block = this.credits.block;
     this.ADMIN = admin;
@@ -56,9 +56,9 @@ export class reference_delegatorProgram {
 
     // Register the reference delegation with the pondo oracle
 
-    this.pondo_oracle.signer = this.signer;
-    this.pondo_oracle.caller = 'reference_delegator.aleo';
-    this.pondo_oracle.propose_delegator(this.VALIDATOR);
+    this.validator_oracle.signer = this.signer;
+    this.validator_oracle.caller = 'reference_delegator.aleo';
+    this.validator_oracle.propose_delegator(this.VALIDATOR);
 
     return this.finalize_initialize();
   }
@@ -91,9 +91,9 @@ export class reference_delegatorProgram {
 
     // Remove the reference delegator
 
-    this.pondo_oracle.signer = this.signer;
-    this.pondo_oracle.caller = 'reference_delegator.aleo';
-    this.pondo_oracle.remove_delegator();
+    this.validator_oracle.signer = this.signer;
+    this.validator_oracle.caller = 'reference_delegator.aleo';
+    this.validator_oracle.remove_delegator();
 
     return this.finalize_remove();
   }

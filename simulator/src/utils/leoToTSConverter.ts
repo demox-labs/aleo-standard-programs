@@ -708,8 +708,8 @@ const replaceMultilineGetOrUse = (leoLines: string): string => {
 };
 
 const removeVersionFromMTSP = (leoLines: string): string => {
-  const mtspRegex = /multi_token_support_program_v\d+/g;
-  return leoLines.replace(mtspRegex, 'multi_token_support_program');
+  const mtspRegex = /token_registry_v\d+/g;
+  return leoLines.replace(mtspRegex, 'token_registry');
 };
 
 const convertToInterface = (leoLines: string[], tsCode: string): string => {

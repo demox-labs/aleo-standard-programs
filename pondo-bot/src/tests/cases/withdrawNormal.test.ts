@@ -41,16 +41,16 @@ describe('withdraw', async () => {
   let protocolState: string;
 
   const protocolId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_core_protocol')
+    program.includes('pondo_protocol')
   )!;
   const paleoId: string = pondoPrograms.find((program) =>
     program.includes('pondo_staked_token')
   )!;
   const pondoTokenId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_token')
+    program.includes('pondo_protocol_token')
   )!;
   const mtspId: string = pondoPrograms.find((program) =>
-    program.includes('multi_token_support_program')
+    program.includes('token_registry')
   )!;
 
   let protocolProgramAddress: string;

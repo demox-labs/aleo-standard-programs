@@ -21,7 +21,7 @@ import { getMappingValue, getProgram, getPublicBalance } from '../aleo/client';
 import { formatAleoString } from '../util';
 
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_core_protocol')
+  program.includes('pondo_protocol')
 );
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
 
@@ -68,7 +68,7 @@ const determineDistributionAmounts = async (): Promise<bigint[]> => {
   let protocolBalance = await getPublicBalance(coreProtocolAddress);
   let pondoDelegatorTVLs: bigint[] = [];
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+    const delegatorProgramId = `delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(
       NETWORK!,

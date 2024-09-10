@@ -280,17 +280,17 @@ export const deploymentCost = (program: string) => {
 
   if (program.indexOf('multi_token_support') !== -1) {
     fee = 76.51; // At time of writing, the fee for deploying the multi-token support program is 76501550 microcredits
-  } else if (program.indexOf('mtsp_credits') !== -1) {
+  } else if (program.indexOf('wrapped_credits') !== -1) {
     fee = 15.88; // At time of writing, the fee for deploying the mtsp credits program is 15845775 microcredits
-  } else if (program.indexOf('pondo_oracle') !== -1) {
+  } else if (program.indexOf('validator_oracle') !== -1) {
     fee = 97.168650; // At time of writing, the fee for deploying the pondo oracle program is 97158650 microcredits
-  } else if (program.indexOf('pondo_staked_aleo_token') !== -1) {
+  } else if (program.indexOf('paleo_token') !== -1) {
     fee = 3.999275; // At time of writing, the fee for deploying the pondo token program is 3998275 microcredits
-  } else if (program.indexOf('pondo_token') !== -1) {
+  } else if (program.indexOf('pondo_protocol_token') !== -1) {
     fee = 8.886275; // At time of writing, the fee for deploying the pondo token program is 8876275 microcredits
-  } else if (program.indexOf('pondo_delegator') !== -1) {
+  } else if (program.indexOf('delegator') !== -1) {
     fee = 17.982675; // At time of writing, the fee for deploying the pondo delegator program is 17972675 microcredits
-  } else if (program.indexOf('pondo_core_protocol') !== -1) {
+  } else if (program.indexOf('pondo_protocol') !== -1) {
     fee = 63.669475; // At time of writing, the fee for deploying the pondo vault program is 63659475 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
     fee = 7.882425; // At time of writing, the fee for deploying a reference delegator program is 7872425 microcredits
@@ -328,7 +328,7 @@ export const deployAllProgramsIfNecessary = async (
   // For each of the pondo programs, deploy them if they haven't been deployed yet
   for (const program of pondoPrograms) {
     // Skip every program but the oracle program if ORACLE_ONLY is set to true
-    if (ORACLE_ONLY && !program.includes('pondo_oracle')) {
+    if (ORACLE_ONLY && !program.includes('validator_oracle')) {
       continue;
     }
     // Skip the reference delegator program, this needs to be customized for each deployment
@@ -373,7 +373,7 @@ export const deployAllProgramsIfNecessary = async (
       await delay(45_000);
 
       // Ensure the program was deployed successfully by checking the checksum
-      if (program.indexOf('pondo_core_protocol') == -1) {
+      if (program.indexOf('pondo_protocol') == -1) {
         await ensureValidProgramDeployment(program, programCode);
       }
     } else {

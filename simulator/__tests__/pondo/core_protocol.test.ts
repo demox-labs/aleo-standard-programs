@@ -1,4 +1,4 @@
-import { validator_state } from '../../src/contracts/pondo_core_protocol';
+import { validator_state } from '../../src/contracts/pondo_protocol';
 import {
   credits,
   coreProtocol,
@@ -176,10 +176,10 @@ describe('Pondo core protocol tests', () => {
       ]
     );
     const delegator1Account = creditsInstance.account.get(
-      'pondo_delegator1.aleo'
+      'delegator1.aleo'
     )!;
     creditsInstance.account.set(
-      'pondo_delegator1.aleo',
+      'delegator1.aleo',
       delegator1Account + BigInt(rewards)
     );
   };

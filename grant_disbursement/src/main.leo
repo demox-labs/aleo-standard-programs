@@ -1,6 +1,6 @@
 import credits.aleo;
-import multi_token_support_program.aleo;
-import pondo_core_protocol.aleo;
+import token_registry.aleo;
+import pondo_protocol.aleo;
 
 // The 'grant_disbursement' program.
 program grant_disbursement.aleo {
@@ -196,9 +196,9 @@ program grant_disbursement.aleo {
     public fully_vested_timestamp: u64
   ) -> Future {
     // Deposit the credits into the pondo core protocol
-    let f0: Future = pondo_core_protocol.aleo/deposit_public_as_signer(credits_amount, paleo_amount, self.address);
+    let f0: Future = pondo_protocol.aleo/deposit_public_as_signer(credits_amount, paleo_amount, self.address);
     // Transfer the pAleo to the grant disbursement program
-    let f1: Future = multi_token_support_program.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
+    let f1: Future = token_registry.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
 
     assert(start_timestamp > cliff_timestamp);
     assert(fully_vested_timestamp > cliff_timestamp);
@@ -260,7 +260,7 @@ program grant_disbursement.aleo {
     paleo_amount: u64
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
-    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
+    let f0: Future = token_registry.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
 
     return finalize_withdraw_rewards(f0, id, paleo_amount, self.caller);
   }
@@ -290,19 +290,19 @@ program grant_disbursement.aleo {
     let remaining_paleo: u64 = grant.paleo_amount - paleo_amount;
 
     // Assert Pondo not in rebalancing state
-    let current_state: u8 = pondo_core_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
+    let current_state: u8 = pondo_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
     assert(current_state != REBALANCING_STATE);
 
     // Ensure the number of credits in the principal remains above the initial deposit
     // Note: the paleo pool and the credits pool are always an underestimate (assuming no slashing) as it does not include rewards & owed commissions
     // We use this underestimate because it as significantly reduces gas costs and should be close to the actual amount
     // As it is an underestimate, the downside is it will slightly reduce the amount of paleo that can be withdrawn
-    let minted_paleo: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
-    let paleo_commission: u64 = pondo_core_protocol.aleo/owed_commission.get(0u8);
+    let minted_paleo: u128 = token_registry.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
+    let paleo_commission: u64 = pondo_protocol.aleo/owed_commission.get(0u8);
     let total_paleo_pool: u128 = minted_paleo + paleo_commission as u128;
-    let delegated_credits: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let delegated_credits: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
-    let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+    let reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
     let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
@@ -326,7 +326,7 @@ program grant_disbursement.aleo {
     paleo_amount: u64
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
-    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
+    let f0: Future = token_registry.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
 
     return finalize_withdraw_principal(f0, id, paleo_amount, self.caller);
   }
@@ -355,19 +355,19 @@ program grant_disbursement.aleo {
     let remaining_paleo: u64 = grant.paleo_amount - paleo_amount;
 
     // Assert Pondo not in rebalancing state
-    let current_state: u8 = pondo_core_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
+    let current_state: u8 = pondo_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
     assert(current_state != REBALANCING_STATE);
 
     // Ensure the number of credits in the principal remains above the initial deposit
     // Note: the paleo pool and the credits pool are always an underestimate (assuming no slashing) as it does not include rewards & owed commissions
     // We use this underestimate because it as significantly reduces gas costs and should be close to the actual amount
     // As it is an underestimate, the downside is it will slightly reduce the amount of paleo that can be withdrawn
-    let minted_paleo: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
-    let paleo_commission: u64 = pondo_core_protocol.aleo/owed_commission.get(0u8);
+    let minted_paleo: u128 = token_registry.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
+    let paleo_commission: u64 = pondo_protocol.aleo/owed_commission.get(0u8);
     let total_paleo_pool: u128 = minted_paleo + paleo_commission as u128;
-    let delegated_credits: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let delegated_credits: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
     let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
-    let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+    let reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
     let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
@@ -393,15 +393,15 @@ program grant_disbursement.aleo {
     grants.set(id, updated_grant);
   }
 
-  // Copied from pondo_token.aleo
+  // Copied from pondo_protocol_token.aleo
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
-  // Copied from pondo_core_protocol.aleo
+  // Copied from pondo_protocol.aleo
   const PROTOCOL_STATE_KEY: u8 = 0u8;
   const REBALANCING_STATE: u8 = 1u8;
   const DELEGATED_BALANCE: u8 = 0u8;
   const CLAIMABLE_WITHDRAWALS: u8 = 2u8;
 
-  // shadowed from multi_token_support_program.aleo
+  // shadowed from token_registry.aleo
   struct TokenMetadata {
     token_id: field,
     name: u128,
@@ -414,13 +414,13 @@ program grant_disbursement.aleo {
     external_authorization_party: address
   }
 
-  // shadowed from multi_token_support_program.aleo
+  // shadowed from token_registry.aleo
   struct TokenOwner {
     account: address,
     token_id: field
   }
 
-  // shadowed from multi_token_support_program.aleo
+  // shadowed from token_registry.aleo
   struct Balance {
     token_id: field,
     account: address,

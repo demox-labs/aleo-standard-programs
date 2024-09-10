@@ -10,14 +10,14 @@
             "network": "testnet"
         },
         {
-            "name": "multi_token_support_program.aleo",
+            "name": "token_registry.aleo",
             "location": "local",
-            "path": "../multi_token_support_program"
+            "path": "../token_registry"
         },
         {
-            "name": "pondo_core_protocol.aleo",
+            "name": "pondo_protocol.aleo",
             "location": "local",
-            "path": "../pondo/pondo_core_protocol"
+            "path": "../pondo/pondo_protocol"
         }
     ]
 }

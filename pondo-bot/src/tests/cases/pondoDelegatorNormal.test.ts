@@ -31,25 +31,25 @@ describe("State Machine Tests", () => {
   
 
   const pondoDelegatorId1: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator1')
+    program.includes('delegator1')
   )!;
   const pondoDelegatorId2: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator2')
+    program.includes('delegator2')
   )!;
   const pondoDelegatorId3: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator3')
+    program.includes('delegator3')
   )!;
   const pondoDelegatorId4: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator4')
+    program.includes('delegator4')
   )!;
   const pondoDelegatorId5: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator5')
+    program.includes('delegator5')
   )!;
   const oracleId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_oracle')
+    program.includes('validator_oracle')
   )!;
   const pondoCoreProtocolId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_core_protocol')
+    program.includes('pondo_protocol')
   )!;
 
   before(async () => {

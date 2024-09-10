@@ -1,12 +1,12 @@
-import { pondo_delegator5Program } from './pondo_delegator5';
-import { pondo_delegator4Program } from './pondo_delegator4';
-import { pondo_delegator3Program } from './pondo_delegator3';
-import { pondo_delegator2Program } from './pondo_delegator2';
-import { pondo_delegator1Program } from './pondo_delegator1';
-import { pondo_tokenProgram } from './pondo_token';
-import { pondo_staked_aleo_tokenProgram } from './pondo_staked_aleo_token';
-import { pondo_oracleProgram } from './pondo_oracle';
-import { multi_token_support_programProgram } from './multi_token_support_program';
+import { delegator5Program } from './delegator5';
+import { delegator4Program } from './delegator4';
+import { delegator3Program } from './delegator3';
+import { delegator2Program } from './delegator2';
+import { delegator1Program } from './delegator1';
+import { pondo_protocol_tokenProgram } from './pondo_protocol_token';
+import { paleo_tokenProgram } from './paleo_token';
+import { validator_oracleProgram } from './validator_oracle';
+import { token_registryProgram } from './token_registry';
 import { creditsProgram } from './credits';
 
 import assert from 'assert';
@@ -36,10 +36,10 @@ export interface bond_state {
   validator: string;
   microcredits: bigint;
 }
-export class pondo_core_protocolProgram {
+export class pondo_protocolProgram {
   signer: string = 'not set';
   caller: string = 'not set';
-  address: string = 'pondo_core_protocol.aleo';
+  address: string = 'pondo_protocol.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -81,44 +81,44 @@ export class pondo_core_protocolProgram {
   PORTION_2 = BigInt('2600');
   PORTION_1 = BigInt('3700');
   PRECISION_UNSIGNED = BigInt('10000');
-  pondo_delegator5: pondo_delegator5Program;
-  pondo_delegator4: pondo_delegator4Program;
-  pondo_delegator3: pondo_delegator3Program;
-  pondo_delegator2: pondo_delegator2Program;
-  pondo_delegator1: pondo_delegator1Program;
-  pondo_token: pondo_tokenProgram;
-  pondo_staked_aleo_token: pondo_staked_aleo_tokenProgram;
-  pondo_oracle: pondo_oracleProgram;
-  multi_token_support_program: multi_token_support_programProgram;
+  delegator5: delegator5Program;
+  delegator4: delegator4Program;
+  delegator3: delegator3Program;
+  delegator2: delegator2Program;
+  delegator1: delegator1Program;
+  pondo_protocol_token: pondo_protocol_tokenProgram;
+  paleo_token: paleo_tokenProgram;
+  validator_oracle: validator_oracleProgram;
+  token_registry: token_registryProgram;
   credits: creditsProgram;
   constructor(
     // constructor args
-    pondo_delegator5Contract: pondo_delegator5Program,
-    pondo_delegator4Contract: pondo_delegator4Program,
-    pondo_delegator3Contract: pondo_delegator3Program,
-    pondo_delegator2Contract: pondo_delegator2Program,
-    pondo_delegator1Contract: pondo_delegator1Program,
-    pondo_tokenContract: pondo_tokenProgram,
-    pondo_staked_aleo_tokenContract: pondo_staked_aleo_tokenProgram,
-    pondo_oracleContract: pondo_oracleProgram,
-    multi_token_support_programContract: multi_token_support_programProgram,
+    delegator5Contract: delegator5Program,
+    delegator4Contract: delegator4Program,
+    delegator3Contract: delegator3Program,
+    delegator2Contract: delegator2Program,
+    delegator1Contract: delegator1Program,
+    pondo_protocol_tokenContract: pondo_protocol_tokenProgram,
+    paleo_tokenContract: paleo_tokenProgram,
+    validator_oracleContract: validator_oracleProgram,
+    token_registryContract: token_registryProgram,
     creditsContract: creditsProgram
   ) {
     // constructor body
-    this.pondo_delegator5 = pondo_delegator5Contract;
-    this.pondo_delegator4 = pondo_delegator4Contract;
-    this.pondo_delegator3 = pondo_delegator3Contract;
-    this.pondo_delegator2 = pondo_delegator2Contract;
-    this.pondo_delegator1 = pondo_delegator1Contract;
-    this.pondo_token = pondo_tokenContract;
-    this.pondo_staked_aleo_token = pondo_staked_aleo_tokenContract;
-    this.pondo_oracle = pondo_oracleContract;
-    this.multi_token_support_program = multi_token_support_programContract;
+    this.delegator5 = delegator5Contract;
+    this.delegator4 = delegator4Contract;
+    this.delegator3 = delegator3Contract;
+    this.delegator2 = delegator2Contract;
+    this.delegator1 = delegator1Contract;
+    this.pondo_protocol_token = pondo_protocol_tokenContract;
+    this.paleo_token = paleo_tokenContract;
+    this.validator_oracle = validator_oracleContract;
+    this.token_registry = token_registryContract;
     this.credits = creditsContract;
     this.block = this.credits.block;
   }
 
-  //program pondo_core_protocol.aleo {
+  //program pondo_protocol.aleo {
   // The number of blocks in an epoch
 
   // Delegator states
@@ -127,7 +127,7 @@ export class pondo_core_protocolProgram {
 
   // copied from credits.aleo, as structs are not importable
 
-  // shadowed from pondo_oracle.aleo
+  // shadowed from validator_oracle.aleo
 
   // 0u8 -> the current validator set
   // 1u8 -> the next validator set
@@ -159,44 +159,44 @@ export class pondo_core_protocolProgram {
     // Transfer ALEO to the protocol
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
+    this.credits.caller = 'pondo_protocol.aleo';
     this.credits.transfer_public_as_signer(this.address, transfer_amount);
 
     // Initialize pALEO and PNDO tokens
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.register_token();
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.register_token();
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.mint_public(transfer_amount, this.signer);
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.mint_public(transfer_amount, this.signer);
 
-    this.pondo_token.signer = this.signer;
-    this.pondo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_token.initialize_token();
+    this.pondo_protocol_token.signer = this.signer;
+    this.pondo_protocol_token.caller = 'pondo_protocol.aleo';
+    this.pondo_protocol_token.initialize_token();
 
     // Initialize delegators
 
-    this.pondo_delegator1.signer = this.signer;
-    this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator1.initialize();
+    this.delegator1.signer = this.signer;
+    this.delegator1.caller = 'pondo_protocol.aleo';
+    this.delegator1.initialize();
 
-    this.pondo_delegator2.signer = this.signer;
-    this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator2.initialize();
+    this.delegator2.signer = this.signer;
+    this.delegator2.caller = 'pondo_protocol.aleo';
+    this.delegator2.initialize();
 
-    this.pondo_delegator3.signer = this.signer;
-    this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator3.initialize();
+    this.delegator3.signer = this.signer;
+    this.delegator3.caller = 'pondo_protocol.aleo';
+    this.delegator3.initialize();
 
-    this.pondo_delegator4.signer = this.signer;
-    this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator4.initialize();
+    this.delegator4.signer = this.signer;
+    this.delegator4.caller = 'pondo_protocol.aleo';
+    this.delegator4.initialize();
 
-    this.pondo_delegator5.signer = this.signer;
-    this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator5.initialize();
+    this.delegator5.signer = this.signer;
+    this.delegator5.caller = 'pondo_protocol.aleo';
+    this.delegator5.initialize();
 
     return this.finalize_initialize();
   }
@@ -208,7 +208,7 @@ export class pondo_core_protocolProgram {
     this.owed_commission.set(BigInt('0'), BigInt('0'));
     this.protocol_state.set(this.PROTOCOL_STATE_KEY, this.NORMAL_STATE);
 
-    let top_validators: string[] = this.pondo_oracle.top_validators.get(
+    let top_validators: string[] = this.validator_oracle.top_validators.get(
       BigInt('0')
     ) || [
       'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
@@ -234,15 +234,15 @@ export class pondo_core_protocolProgram {
       boost: BigInt('0'),
     };
     let validator1: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[0]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[0]) || default_datum;
     let validator2: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[1]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[1]) || default_datum;
     let validator3: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[2]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[2]) || default_datum;
     let validator4: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[3]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[3]) || default_datum;
     let validator5: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[4]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[4]) || default_datum;
 
     let next_validator_set: validator_state[] = [
       { validator: validator1.validator, commission: validator1.commission },
@@ -271,14 +271,14 @@ export class pondo_core_protocolProgram {
     // Transfer ALEO to pool
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
+    this.credits.caller = 'pondo_protocol.aleo';
     this.credits.transfer_public_as_signer(this.address, credits_deposit);
 
     // Mint pALEO to depositor
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.signer);
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.mint_public(expected_paleo_mint, this.signer);
 
     return this.finalize_deposit_public_as_signer(
       credits_deposit,
@@ -296,27 +296,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator1.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator2_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator2.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator3_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator3.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator4_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator4.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator5_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator5.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
 
@@ -326,49 +326,49 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator1.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator2_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator2.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator3_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator3.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator4_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator4.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator5_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator5.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
 
     let delegator1_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+      this.credits.account.get('delegator1.aleo') || BigInt('0')
     );
     let delegator2_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+      this.credits.account.get('delegator2.aleo') || BigInt('0')
     );
     let delegator3_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+      this.credits.account.get('delegator3.aleo') || BigInt('0')
     );
     let delegator4_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+      this.credits.account.get('delegator4.aleo') || BigInt('0')
     );
     let delegator5_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+      this.credits.account.get('delegator5.aleo') || BigInt('0')
     );
 
     let total_bonded: bigint = BigInt.asUintN(
@@ -417,7 +417,7 @@ export class pondo_core_protocolProgram {
     assert(current_owed_commission !== undefined);
     let total_paleo_pool: bigint = BigInt.asUintN(
       128,
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
         current_owed_commission -
@@ -536,24 +536,24 @@ export class pondo_core_protocolProgram {
 
     // Transfer ALEO to pool
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_core_protocol.aleo';
-    this.multi_token_support_program.transfer_from_public(
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol.aleo';
+    this.token_registry.transfer_from_public(
       this.CREDITS_TOKEN_ID,
       this.caller,
       this.address,
       credits_deposit
     );
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_core_protocol.aleo';
-    this.multi_token_support_program.withdraw_credits_public(credits_deposit);
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol.aleo';
+    this.token_registry.withdraw_credits_public(credits_deposit);
 
     // Mint pALEO to depositor
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.mint_public(expected_paleo_mint, this.caller);
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.mint_public(expected_paleo_mint, this.caller);
 
     return this.finalize_deposit_public(credits_deposit, expected_paleo_mint);
   }
@@ -568,27 +568,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator1.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator2_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator2.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator3_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator3.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator4_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator4.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator5_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator5.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
 
@@ -598,49 +598,49 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator1.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator2_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator2.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator3_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator3.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator4_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator4.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator5_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator5.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
 
     let delegator1_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+      this.credits.account.get('delegator1.aleo') || BigInt('0')
     );
     let delegator2_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+      this.credits.account.get('delegator2.aleo') || BigInt('0')
     );
     let delegator3_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+      this.credits.account.get('delegator3.aleo') || BigInt('0')
     );
     let delegator4_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+      this.credits.account.get('delegator4.aleo') || BigInt('0')
     );
     let delegator5_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+      this.credits.account.get('delegator5.aleo') || BigInt('0')
     );
 
     let total_bonded: bigint = BigInt.asUintN(
@@ -689,7 +689,7 @@ export class pondo_core_protocolProgram {
     assert(current_owed_commission !== undefined);
     let total_paleo_pool: bigint = BigInt.asUintN(
       128,
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
         current_owed_commission -
@@ -771,24 +771,24 @@ export class pondo_core_protocolProgram {
     // Transfer to each delegator
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator1.aleo', transfer_amounts[0]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator1.aleo', transfer_amounts[0]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator2.aleo', transfer_amounts[1]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator2.aleo', transfer_amounts[1]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator3.aleo', transfer_amounts[2]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator3.aleo', transfer_amounts[2]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator4.aleo', transfer_amounts[3]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator4.aleo', transfer_amounts[3]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator5.aleo', transfer_amounts[4]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator5.aleo', transfer_amounts[4]);
 
     return this.finalize_distribute_deposits();
   }
@@ -822,27 +822,27 @@ export class pondo_core_protocolProgram {
     // Confirm each delegator is already bonded and in the correct state
     let delegator1_state: bigint = BigInt.asUintN(
       8,
-      this.pondo_delegator1.state_mapping.get(BigInt('0'))!
+      this.delegator1.state_mapping.get(BigInt('0'))!
     );
     assert(delegator1_state !== undefined);
     let delegator2_state: bigint = BigInt.asUintN(
       8,
-      this.pondo_delegator2.state_mapping.get(BigInt('0'))!
+      this.delegator2.state_mapping.get(BigInt('0'))!
     );
     assert(delegator2_state !== undefined);
     let delegator3_state: bigint = BigInt.asUintN(
       8,
-      this.pondo_delegator3.state_mapping.get(BigInt('0'))!
+      this.delegator3.state_mapping.get(BigInt('0'))!
     );
     assert(delegator3_state !== undefined);
     let delegator4_state: bigint = BigInt.asUintN(
       8,
-      this.pondo_delegator4.state_mapping.get(BigInt('0'))!
+      this.delegator4.state_mapping.get(BigInt('0'))!
     );
     assert(delegator4_state !== undefined);
     let delegator5_state: bigint = BigInt.asUintN(
       8,
-      this.pondo_delegator5.state_mapping.get(BigInt('0'))!
+      this.delegator5.state_mapping.get(BigInt('0'))!
     );
     assert(delegator5_state !== undefined);
     assert(
@@ -896,12 +896,12 @@ export class pondo_core_protocolProgram {
   ) {
     // Burn pALEO for withdrawal
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.burn_public(paleo_burn_amount, this.caller);
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.burn_public(paleo_burn_amount, this.caller);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
+    this.credits.caller = 'pondo_protocol.aleo';
     this.credits.transfer_public(this.caller, withdrawal_credits);
 
     return this.finalize_instant_withdraw_public(
@@ -940,27 +940,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator1.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator2_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator2.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator3_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator3.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator4_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator4.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator5_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator5.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
 
@@ -970,49 +970,49 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator1.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator2_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator2.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator3_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator3.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator4_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator4.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator5_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator5.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
 
     let delegator1_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+      this.credits.account.get('delegator1.aleo') || BigInt('0')
     );
     let delegator2_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+      this.credits.account.get('delegator2.aleo') || BigInt('0')
     );
     let delegator3_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+      this.credits.account.get('delegator3.aleo') || BigInt('0')
     );
     let delegator4_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+      this.credits.account.get('delegator4.aleo') || BigInt('0')
     );
     let delegator5_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+      this.credits.account.get('delegator5.aleo') || BigInt('0')
     );
 
     let total_bonded: bigint = BigInt.asUintN(
@@ -1064,7 +1064,7 @@ export class pondo_core_protocolProgram {
     assert(current_owed_commission !== undefined);
     let paleo_minted_post_burn: bigint = BigInt.asUintN(
       128,
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission
     );
@@ -1156,9 +1156,9 @@ export class pondo_core_protocolProgram {
   withdraw_public(paleo_burn_amount: bigint) {
     // Burn pALEO for withdrawal
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.burn_public(paleo_burn_amount, this.caller);
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.burn_public(paleo_burn_amount, this.caller);
 
     return this.finalize_withdraw_public(paleo_burn_amount, this.caller);
   }
@@ -1175,27 +1175,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator1.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator2_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator2.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator3_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator3.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator4_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator4.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
     let delegator5_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator5.aleo')?.microcredits ||
         base_bond_state?.microcredits
     );
 
@@ -1205,49 +1205,49 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator1.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator2_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator2.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator3_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator3.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator4_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator4.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
     let delegator5_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator5.aleo')?.microcredits ||
         base_unbond_state?.microcredits
     );
 
     let delegator1_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+      this.credits.account.get('delegator1.aleo') || BigInt('0')
     );
     let delegator2_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+      this.credits.account.get('delegator2.aleo') || BigInt('0')
     );
     let delegator3_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+      this.credits.account.get('delegator3.aleo') || BigInt('0')
     );
     let delegator4_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+      this.credits.account.get('delegator4.aleo') || BigInt('0')
     );
     let delegator5_account: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+      this.credits.account.get('delegator5.aleo') || BigInt('0')
     );
 
     let total_bonded: bigint = BigInt.asUintN(
@@ -1299,7 +1299,7 @@ export class pondo_core_protocolProgram {
     assert(current_owed_commission !== undefined);
     let paleo_minted_post_burn: bigint = BigInt.asUintN(
       128,
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply + current_owed_commission
     );
@@ -1418,7 +1418,7 @@ export class pondo_core_protocolProgram {
     // Transfer to the owner
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
+    this.credits.caller = 'pondo_protocol.aleo';
     this.credits.transfer_public(owner, amount);
 
     return this.finalize_claim_withdrawal_public(owner, amount);
@@ -1461,25 +1461,25 @@ export class pondo_core_protocolProgram {
   // -------------------
 
   prep_rebalance() {
-    this.pondo_delegator1.signer = this.signer;
-    this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator1.prep_rebalance();
+    this.delegator1.signer = this.signer;
+    this.delegator1.caller = 'pondo_protocol.aleo';
+    this.delegator1.prep_rebalance();
 
-    this.pondo_delegator2.signer = this.signer;
-    this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator2.prep_rebalance();
+    this.delegator2.signer = this.signer;
+    this.delegator2.caller = 'pondo_protocol.aleo';
+    this.delegator2.prep_rebalance();
 
-    this.pondo_delegator3.signer = this.signer;
-    this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator3.prep_rebalance();
+    this.delegator3.signer = this.signer;
+    this.delegator3.caller = 'pondo_protocol.aleo';
+    this.delegator3.prep_rebalance();
 
-    this.pondo_delegator4.signer = this.signer;
-    this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator4.prep_rebalance();
+    this.delegator4.signer = this.signer;
+    this.delegator4.caller = 'pondo_protocol.aleo';
+    this.delegator4.prep_rebalance();
 
-    this.pondo_delegator5.signer = this.signer;
-    this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator5.prep_rebalance();
+    this.delegator5.signer = this.signer;
+    this.delegator5.caller = 'pondo_protocol.aleo';
+    this.delegator5.prep_rebalance();
 
     return this.finalize_prep_rebalance();
   }
@@ -1512,7 +1512,7 @@ export class pondo_core_protocolProgram {
       'rebalance is allowed during the first day of a new epoch'
     );
 
-    let top_validators: string[] = this.pondo_oracle.top_validators.get(
+    let top_validators: string[] = this.validator_oracle.top_validators.get(
       BigInt('0')
     ) || [
       'aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc',
@@ -1538,15 +1538,15 @@ export class pondo_core_protocolProgram {
       boost: BigInt('0'),
     };
     let validator1: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[0]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[0]) || default_datum;
     let validator2: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[1]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[1]) || default_datum;
     let validator3: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[2]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[2]) || default_datum;
     let validator4: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[3]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[3]) || default_datum;
     let validator5: validator_datum =
-      this.pondo_oracle.validator_data.get(top_validators[4]) || default_datum;
+      this.validator_oracle.validator_data.get(top_validators[4]) || default_datum;
 
     let next_validator_set: validator_state[] = [
       { validator: validator1.validator, commission: validator1.commission },
@@ -1562,31 +1562,31 @@ export class pondo_core_protocolProgram {
     transfer_amounts: bigint[],
     commission_mint: bigint
   ) {
-    this.pondo_delegator1.signer = this.signer;
-    this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator1.transfer_to_core_protocol(transfer_amounts[0]);
+    this.delegator1.signer = this.signer;
+    this.delegator1.caller = 'pondo_protocol.aleo';
+    this.delegator1.transfer_to_core_protocol(transfer_amounts[0]);
 
-    this.pondo_delegator2.signer = this.signer;
-    this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator2.transfer_to_core_protocol(transfer_amounts[1]);
+    this.delegator2.signer = this.signer;
+    this.delegator2.caller = 'pondo_protocol.aleo';
+    this.delegator2.transfer_to_core_protocol(transfer_amounts[1]);
 
-    this.pondo_delegator3.signer = this.signer;
-    this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator3.transfer_to_core_protocol(transfer_amounts[2]);
+    this.delegator3.signer = this.signer;
+    this.delegator3.caller = 'pondo_protocol.aleo';
+    this.delegator3.transfer_to_core_protocol(transfer_amounts[2]);
 
-    this.pondo_delegator4.signer = this.signer;
-    this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator4.transfer_to_core_protocol(transfer_amounts[3]);
+    this.delegator4.signer = this.signer;
+    this.delegator4.caller = 'pondo_protocol.aleo';
+    this.delegator4.transfer_to_core_protocol(transfer_amounts[3]);
 
-    this.pondo_delegator5.signer = this.signer;
-    this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator5.transfer_to_core_protocol(transfer_amounts[4]);
+    this.delegator5.signer = this.signer;
+    this.delegator5.caller = 'pondo_protocol.aleo';
+    this.delegator5.transfer_to_core_protocol(transfer_amounts[4]);
 
-    this.pondo_staked_aleo_token.signer = this.signer;
-    this.pondo_staked_aleo_token.caller = 'pondo_core_protocol.aleo';
-    this.pondo_staked_aleo_token.mint_public(
+    this.paleo_token.signer = this.signer;
+    this.paleo_token.caller = 'pondo_protocol.aleo';
+    this.paleo_token.mint_public(
       commission_mint,
-      'pondo_token.aleo'
+      'pondo_protocol_token.aleo'
     );
 
     return this.finalize_rebalance_retrieve_credits(
@@ -1621,7 +1621,7 @@ export class pondo_core_protocolProgram {
     // Total pALEO minted, including owed commission, minus the commission minted in the transition
     let total_paleo_minted: bigint = BigInt.asUintN(
       128,
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PALEO_TOKEN_ID
       )!.supply +
         current_owed_commission -
@@ -1711,56 +1711,56 @@ export class pondo_core_protocolProgram {
     // Transfer to each delegator and set validator
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator1.aleo', transfer_amounts[0]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator1.aleo', transfer_amounts[0]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator2.aleo', transfer_amounts[1]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator2.aleo', transfer_amounts[1]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator3.aleo', transfer_amounts[2]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator3.aleo', transfer_amounts[2]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator4.aleo', transfer_amounts[3]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator4.aleo', transfer_amounts[3]);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_core_protocol.aleo';
-    this.credits.transfer_public('pondo_delegator5.aleo', transfer_amounts[4]);
+    this.credits.caller = 'pondo_protocol.aleo';
+    this.credits.transfer_public('delegator5.aleo', transfer_amounts[4]);
 
-    this.pondo_delegator1.signer = this.signer;
-    this.pondo_delegator1.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator1.set_validator(
+    this.delegator1.signer = this.signer;
+    this.delegator1.caller = 'pondo_protocol.aleo';
+    this.delegator1.set_validator(
       validators[0].validator,
       validators[0].commission
     );
 
-    this.pondo_delegator2.signer = this.signer;
-    this.pondo_delegator2.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator2.set_validator(
+    this.delegator2.signer = this.signer;
+    this.delegator2.caller = 'pondo_protocol.aleo';
+    this.delegator2.set_validator(
       validators[1].validator,
       validators[1].commission
     );
 
-    this.pondo_delegator3.signer = this.signer;
-    this.pondo_delegator3.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator3.set_validator(
+    this.delegator3.signer = this.signer;
+    this.delegator3.caller = 'pondo_protocol.aleo';
+    this.delegator3.set_validator(
       validators[2].validator,
       validators[2].commission
     );
 
-    this.pondo_delegator4.signer = this.signer;
-    this.pondo_delegator4.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator4.set_validator(
+    this.delegator4.signer = this.signer;
+    this.delegator4.caller = 'pondo_protocol.aleo';
+    this.delegator4.set_validator(
       validators[3].validator,
       validators[3].commission
     );
 
-    this.pondo_delegator5.signer = this.signer;
-    this.pondo_delegator5.caller = 'pondo_core_protocol.aleo';
-    this.pondo_delegator5.set_validator(
+    this.delegator5.signer = this.signer;
+    this.delegator5.caller = 'pondo_protocol.aleo';
+    this.delegator5.set_validator(
       validators[4].validator,
       validators[4].commission
     );
@@ -1787,7 +1787,7 @@ export class pondo_core_protocolProgram {
     }
     // Check that each validator has the correct portion of credits
     let delegator_allocation: bigint[] =
-      this.pondo_oracle.delegator_allocation.get(BigInt('0')) || [
+      this.validator_oracle.delegator_allocation.get(BigInt('0')) || [
         this.PORTION_1,
         this.PORTION_2,
         this.PORTION_3,
@@ -1870,9 +1870,9 @@ export class pondo_core_protocolProgram {
 
   // A crank to set the oracle tvl
   set_oracle_tvl(tvl: bigint) {
-    this.pondo_oracle.signer = this.signer;
-    this.pondo_oracle.caller = 'pondo_core_protocol.aleo';
-    this.pondo_oracle.set_pondo_tvl(tvl);
+    this.validator_oracle.signer = this.signer;
+    this.validator_oracle.caller = 'pondo_protocol.aleo';
+    this.validator_oracle.set_pondo_tvl(tvl);
 
     return this.finalize_set_oracle_tvl(tvl);
   }
@@ -1882,23 +1882,23 @@ export class pondo_core_protocolProgram {
     // Get all of the delegator balances
     let delegator1_balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator1.aleo') || BigInt('0')
+      this.credits.account.get('delegator1.aleo') || BigInt('0')
     );
     let delegator2_balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator2.aleo') || BigInt('0')
+      this.credits.account.get('delegator2.aleo') || BigInt('0')
     );
     let delegator3_balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator3.aleo') || BigInt('0')
+      this.credits.account.get('delegator3.aleo') || BigInt('0')
     );
     let delegator4_balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator4.aleo') || BigInt('0')
+      this.credits.account.get('delegator4.aleo') || BigInt('0')
     );
     let delegator5_balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo') || BigInt('0')
+      this.credits.account.get('delegator5.aleo') || BigInt('0')
     );
     // Get all of the bonded balances
     let default_bond_state: bond_state = {
@@ -1907,27 +1907,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator1.aleo')?.microcredits ||
         default_bond_state?.microcredits
     );
     let delegator2_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator2.aleo')?.microcredits ||
         default_bond_state?.microcredits
     );
     let delegator3_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator3.aleo')?.microcredits ||
         default_bond_state?.microcredits
     );
     let delegator4_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator4.aleo')?.microcredits ||
         default_bond_state?.microcredits
     );
     let delegator5_bonded: bigint = BigInt.asUintN(
       64,
-      this.credits.bonded.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.bonded.get('delegator5.aleo')?.microcredits ||
         default_bond_state?.microcredits
     );
     // Get all of the unbonding balances
@@ -1937,27 +1937,27 @@ export class pondo_core_protocolProgram {
     };
     let delegator1_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator1.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator1.aleo')?.microcredits ||
         default_unbond_state?.microcredits
     );
     let delegator2_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator2.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator2.aleo')?.microcredits ||
         default_unbond_state?.microcredits
     );
     let delegator3_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator3.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator3.aleo')?.microcredits ||
         default_unbond_state?.microcredits
     );
     let delegator4_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator4.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator4.aleo')?.microcredits ||
         default_unbond_state?.microcredits
     );
     let delegator5_unbonding: bigint = BigInt.asUintN(
       64,
-      this.credits.unbonding.get('pondo_delegator5.aleo')?.microcredits ||
+      this.credits.unbonding.get('delegator5.aleo')?.microcredits ||
         default_unbond_state?.microcredits
     );
     // Get the core protocol balance

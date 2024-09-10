@@ -1,5 +1,5 @@
 import credits.aleo;
-import pondo_oracle.aleo;
+import validator_oracle.aleo;
 
 program reference_delegator.aleo {
   // The address of the person who controls this program
@@ -20,7 +20,7 @@ program reference_delegator.aleo {
     let f1: Future = credits.aleo/bond_public(VALIDATOR, self.address, MIN_DELEGATION);
 
     // Register the reference delegation with the pondo oracle
-    let f2: Future = pondo_oracle.aleo/propose_delegator(VALIDATOR);
+    let f2: Future = validator_oracle.aleo/propose_delegator(VALIDATOR);
 
     return finalize_initialize(f0, f1, f2);
   }
@@ -55,7 +55,7 @@ program reference_delegator.aleo {
     let f0: Future = credits.aleo/unbond_public(self.address, amount);
 
     // Remove the reference delegator
-    let f1: Future = pondo_oracle.aleo/remove_delegator();
+    let f1: Future = validator_oracle.aleo/remove_delegator();
 
     return finalize_remove(f0, f1);
   }

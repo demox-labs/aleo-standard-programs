@@ -1,14 +1,14 @@
 import { credits } from '../src/contracts/pondoProgramsIndex';
 import {
   TokenOwner,
-  multi_token_support_programProgram,
-} from '../src/contracts/multi_token_support_program';
+  token_registryProgram,
+} from '../src/contracts/token_registry';
 import { block } from '../src/pondo/ChainEmulator';
 
 describe('MTSP tests', () => {
   let block: block;
   let creditsContract: credits;
-  let mtsp: multi_token_support_programProgram;
+  let mtsp: token_registryProgram;
 
   const ADDRESS =
     'aleo1ap9w8dkfrahs2msqhr439whxtz8pvnx3c3clln3ps6tklefj6g8shgmtsp';
@@ -25,7 +25,7 @@ describe('MTSP tests', () => {
     // Setup
     block = { height: BigInt(0) };
     creditsContract = new credits(block);
-    mtsp = new multi_token_support_programProgram(creditsContract);
+    mtsp = new token_registryProgram(creditsContract);
   });
 
   // This test fails but should pass after audit fix

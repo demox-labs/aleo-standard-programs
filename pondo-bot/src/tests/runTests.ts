@@ -18,7 +18,7 @@ import { pondoPrograms } from '../compiledPrograms';
 import { formatAleoString } from '../util';
 
 const MTSP_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('multi_token_support_program')
+  program.includes('token_registry')
 );
 
 const fundTestAccountIfNecessary = async (address: string) => {

@@ -9,38 +9,38 @@ type CalculatedFees = {
 };
 
 export const calculatedFees: CalculatedFees = {
-  "multi_token_support_programv1.aleo": { initialize: "48650" },
-  "mtsp_creditsv1.aleo": {},
-  "pondo_oraclev1.aleo": {
+  "token_registryv1.aleo": { initialize: "48650" },
+  "wrapped_creditsv1.aleo": {},
+  "validator_oraclev1.aleo": {
     initialize: "238840",
     add_delegator: "169508",
     update_data: "1222149",
     boost_validator: "85601"
   },
-  "pondo_staked_aleo_tokenv1.aleo": {},
-  "pondo_tokenv1.aleo": {},
-  "pondo_delegator1v1.aleo": {
+  "paleo_tokenv1.aleo": {},
+  "pondo_protocol_tokenv1.aleo": {},
+  "delegator1v1.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator2v1.aleo": {
+  "delegator2v1.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator3v1.aleo": {
+  "delegator3v1.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator4v1.aleo": {
+  "delegator4v1.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator5v1.aleo": {},
-  "pondo_core_protocolv1.aleo": {
+  "delegator5v1.aleo": {},
+  "pondo_protocolv1.aleo": {
     initialize: "1032812",
     prep_rebalance: "355766", // Manually set to lower value
     deposit_public_as_signer: "487534", // Manually set to lower value
@@ -53,38 +53,38 @@ export const calculatedFees: CalculatedFees = {
     set_oracle_tvl: "293434",
   },
   "reference_delegatorgizgkl.aleo": { initialize: "543166" },
-  "multi_token_support_program.aleo": { initialize: "48650" },
-  "mtsp_credits.aleo": {},
-  "pondo_oracle.aleo": {
+  "token_registry.aleo": { initialize: "48650" },
+  "wrapped_credits.aleo": {},
+  "validator_oracle.aleo": {
     initialize: "238840",
     add_delegator: "169508",
     update_data: "1222149",
     boost_validator: "85601"
   },
-  "pondo_staked_aleo_token.aleo": {},
-  "pondo_token.aleo": {},
-  "pondo_delegator1.aleo": {
+  "paleo_token.aleo": {},
+  "pondo_protocol_token.aleo": {},
+  "delegator1.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator2.aleo": {
+  "delegator2.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator3.aleo": {
+  "delegator3.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator4.aleo": {
+  "delegator4.aleo": {
     bond: "217640", // Manually set to lower value
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "pondo_delegator5.aleo": {},
-  "pondo_core_protocol.aleo": {
+  "delegator5.aleo": {},
+  "pondo_protocol.aleo": {
     initialize: "1032812",
     prep_rebalance: "355766", // Manually set to lower value
     deposit_public_as_signer: "487534", // Manually set to lower value

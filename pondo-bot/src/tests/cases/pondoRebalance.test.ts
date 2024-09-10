@@ -65,25 +65,25 @@ describe("Rebalance State Machine Tests", () => {
   
 
   const pondoDelegatorId1: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator1')
+    program.includes('delegator1')
   )!;
   const pondoDelegatorId2: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator2')
+    program.includes('delegator2')
   )!;
   const pondoDelegatorId3: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator3')
+    program.includes('delegator3')
   )!;
   const pondoDelegatorId4: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator4')
+    program.includes('delegator4')
   )!;
   const pondoDelegatorId5: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator5')
+    program.includes('delegator5')
   )!;
   const oracleId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_oracle')
+    program.includes('validator_oracle')
   )!;
   const pondoCoreProtocolId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_core_protocol')
+    program.includes('pondo_protocol')
   )!;
 
   const TOLERANCE = BigInt(1_000_000);
@@ -208,7 +208,7 @@ describe("Rebalance State Machine Tests", () => {
     it('should not be able to call retrieve credits without all delegators being in terminal state', async () => {
       let delegatorBalances: bigint[] = [];
       for (let index = 1; index < 6; index++) {
-        const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+        const delegatorProgramId = `delegator${index}${VERSION}.aleo`;
         const delegatorProgram = await getProgram(delegatorProgramId);
         const delegatorProgramAddress = Aleo.Program.fromString(
           NETWORK!,

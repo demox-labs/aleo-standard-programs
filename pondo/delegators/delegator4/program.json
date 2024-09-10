@@ -1,0 +1,18 @@
+{
+    "program": "delegator4.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "license": "MIT",
+    "dependencies": [
+        {
+          "name": "credits.aleo",
+          "location": "network",
+            "network": "testnet"
+        },
+        {
+          "name": "validator_oracle.aleo",
+          "location": "local",
+          "path": "../../validator_oracle"
+        }
+    ]
+}

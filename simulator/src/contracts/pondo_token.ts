@@ -1,4 +1,4 @@
-import { multi_token_support_programProgram } from './multi_token_support_program';
+import { token_registryProgram } from './token_registry';
 
 import assert from 'assert';
 // interfaces
@@ -23,10 +23,10 @@ export interface TokenMetadata {
   external_authorization_required: boolean;
   external_authorization_party: string;
 }
-export class pondo_tokenProgram {
+export class pondo_protocol_tokenProgram {
   signer: string = 'not set';
   caller: string = 'not set';
-  address: string = 'pondo_token.aleo';
+  address: string = 'pondo_protocol_token.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -38,25 +38,25 @@ export class pondo_tokenProgram {
     '1751493913335802797273486270793650302076377624243810059080883537084141842600field';
   PONDO_TOKEN_ID =
     '1751493913335802797273486270793650302076377624243810059080883537084141842601field';
-  multi_token_support_program: multi_token_support_programProgram;
+  token_registry: token_registryProgram;
   constructor(
     // constructor args
-    multi_token_support_programContract: multi_token_support_programProgram
+    token_registryContract: token_registryProgram
   ) {
     // constructor body
-    this.multi_token_support_program = multi_token_support_programContract;
+    this.token_registry = token_registryContract;
   }
 
-  //program pondo_token.aleo {
-  // shadowed from multi_token_support_program.aleo
+  //program pondo_protocol_token.aleo {
+  // shadowed from token_registry.aleo
 
-  // shadowed from multi_token_support_program.aleo
+  // shadowed from token_registry.aleo
 
-  // shadowed from multi_token_support_program.aleo
+  // shadowed from token_registry.aleo
 
   // The Pondo token is only minted once and the total supply is fixed.
   initialize_token() {
-    assert(this.caller === 'pondo_core_protocol.aleo');
+    assert(this.caller === 'pondo_protocol.aleo');
 
     let name: bigint = BigInt.asUintN(
       128,
@@ -66,11 +66,11 @@ export class pondo_tokenProgram {
     let decimals: bigint = BigInt.asUintN(8, BigInt('6'));
     let max_supply: bigint = BigInt.asUintN(128, BigInt('1000000000000000'));
     let external_authorization_required: boolean = false;
-    let external_authorization_party: string = 'pondo_token.aleo';
+    let external_authorization_party: string = 'pondo_protocol_token.aleo';
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_token.aleo';
-    this.multi_token_support_program.register_token(
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol_token.aleo';
+    this.token_registry.register_token(
       this.PONDO_TOKEN_ID,
       name,
       symbol,
@@ -80,9 +80,9 @@ export class pondo_tokenProgram {
       external_authorization_party
     );
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_token.aleo';
-    this.multi_token_support_program.mint_public(
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol_token.aleo';
+    this.token_registry.mint_public(
       this.PONDO_TOKEN_ID,
       this.PONDO_FOUNDATION_ADDRESS,
       max_supply,
@@ -103,17 +103,17 @@ export class pondo_tokenProgram {
     let called_by_owner: boolean = this.caller == burner;
     assert(signed_by_owner || called_by_owner);
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_token.aleo';
-    this.multi_token_support_program.burn_public(
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol_token.aleo';
+    this.token_registry.burn_public(
       this.PONDO_TOKEN_ID,
       burner,
       amount
     );
 
-    this.multi_token_support_program.signer = this.signer;
-    this.multi_token_support_program.caller = 'pondo_token.aleo';
-    this.multi_token_support_program.transfer_public(
+    this.token_registry.signer = this.signer;
+    this.token_registry.caller = 'pondo_protocol_token.aleo';
+    this.token_registry.transfer_public(
       this.PALEO_TOKEN_ID,
       burner,
       paleo_amount
@@ -125,19 +125,19 @@ export class pondo_tokenProgram {
   finalize_burn_public(amount: bigint, paleo_amount: bigint) {
     // Get the total supply of pondo
     let pondo_supply_after: TokenMetadata =
-      this.multi_token_support_program.registered_tokens.get(
+      this.token_registry.registered_tokens.get(
         this.PONDO_TOKEN_ID
       )!;
     assert(pondo_supply_after !== undefined);
 
-    // Get the pondo_token's balance of paleo
+    // Get the pondo_protocol_token's balance of paleo
     let token_owner: TokenOwner = {
-      account: 'pondo_token.aleo',
+      account: 'pondo_protocol_token.aleo',
       token_id: this.PALEO_TOKEN_ID,
     };
     let balance_key: string = JSON.stringify(token_owner);
     let paleo_balance_after: Balance =
-      this.multi_token_support_program.authorized_balances.get(balance_key)!;
+      this.token_registry.authorized_balances.get(balance_key)!;
     assert(paleo_balance_after !== undefined);
 
     // Calculate the pondo to paleo ratio

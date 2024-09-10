@@ -25,7 +25,8 @@
     "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*",
     "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh",
     "buildLedger": "node ./dist/buildLedger.js",
-    "runOracleApproval": "node ./dist/runOracleApproval.js"
+    "runOracleApproval": "node ./dist/runOracleApproval.js",
+    "compareProgramChanges": "yarn build:dev && node ./dist/compareProgramChanges.js"
   },
   "repository": {
     "type": "git",
@@ -62,6 +63,7 @@
     "babel-loader": "^9.1.3",
     "babel-preset-env": "^1.7.0",
     "childprocess": "^2.0.2",
+    "diff": "^7.0.0",
     "dotenv-webpack": "^8.1.0",
     "eslint": "^8.28.0",
     "eslint-plugin-security": "^1.7.1",

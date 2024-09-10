@@ -36,7 +36,7 @@ on:
       paleo_token_id:
         required: true
         type: string
-      pondo_token_id:
+      pondo_protocol_token_id:
         required: true
         type: string
       bot_delay:
@@ -97,7 +97,7 @@ jobs:
         echo "REBALANCE_BLOCKS=${{ inputs.rebalance_blocks }}" >> .env
         echo "VERSION=${{ inputs.version }}" >> .env
         echo "PALEO_TOKEN_ID=${{ inputs.paleo_token_id }}" >> .env
-        echo "PONDO_TOKEN_ID=${{ inputs.pondo_token_id }}" >> .env
+        echo "PONDO_TOKEN_ID=${{ inputs.pondo_protocol_token_id }}" >> .env
         echo "RUN_PROTOCOL_ONLY=true" >> .env
         echo "BOT_DELAY=${{ inputs.bot_delay }}" >> .env
 

@@ -1,4 +1,4 @@
-import { pondo_oracleProgram } from './pondo_oracle';
+import { validator_oracleProgram } from './validator_oracle';
 import { creditsProgram } from './credits';
 
 import assert from 'assert';
@@ -11,10 +11,10 @@ export interface validator_state {
   validator: string;
   commission: bigint;
 }
-export class pondo_delegator5Program {
+export class delegator5Program {
   signer: string = 'not set';
   caller: string = 'not set';
-  address: string = 'pondo_delegator5.aleo';
+  address: string = 'delegator5.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -29,21 +29,21 @@ export class pondo_delegator5Program {
   UNBOND_ALLOWED = BigInt('2');
   UNBOND_NOT_ALLOWED = BigInt('1');
   BOND_ALLOWED = BigInt('0');
-  pondo_oracle: pondo_oracleProgram;
+  validator_oracle: validator_oracleProgram;
   credits: creditsProgram;
   constructor(
     // constructor args
-    pondo_oracleContract: pondo_oracleProgram,
+    validator_oracleContract: validator_oracleProgram,
     creditsContract: creditsProgram
   ) {
     // constructor body
-    this.pondo_oracle = pondo_oracleContract;
+    this.validator_oracle = validator_oracleContract;
     this.credits = creditsContract;
     this.block = this.credits.block;
   }
   // The 'delegator' program.
 
-  //program pondo_delegator5.aleo {// There are 4 potential states for a delegator:
+  //program delegator5.aleo {// There are 4 potential states for a delegator:
   // 1. 0u8 => Is allowed to bond
   // 2. 1u8 => Is not allowed to unbond
   // 3. 2u8 => Is allowed to unbond
@@ -64,7 +64,7 @@ export class pondo_delegator5Program {
 
   initialize() {
     assert(
-      this.caller === 'pondo_core_protocol.aleo',
+      this.caller === 'pondo_protocol.aleo',
       'Assert that the caller is the pondo core protocol'
     );
 
@@ -77,7 +77,7 @@ export class pondo_delegator5Program {
 
   prep_rebalance() {
     assert(
-      this.caller === 'pondo_core_protocol.aleo',
+      this.caller === 'pondo_protocol.aleo',
       'Assert that the caller is the pondo core protocol'
     );
 
@@ -97,7 +97,7 @@ export class pondo_delegator5Program {
 
   set_validator(new_validator: string, new_commission: bigint) {
     assert(
-      this.caller === 'pondo_core_protocol.aleo',
+      this.caller === 'pondo_protocol.aleo',
       'Assert that the caller is the pondo core protocol'
     );
     assert(
@@ -132,8 +132,8 @@ export class pondo_delegator5Program {
 
   bond(validator: string, amount: bigint) {
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_delegator5.aleo';
-    this.credits.bond_public(validator, 'pondo_delegator5.aleo', amount);
+    this.credits.caller = 'delegator5.aleo';
+    this.credits.bond_public(validator, 'delegator5.aleo', amount);
 
     return this.finalize_bond(validator);
   }
@@ -150,7 +150,7 @@ export class pondo_delegator5Program {
 
     let balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo')!
+      this.credits.account.get('delegator5.aleo')!
     );
     assert(balance !== undefined);
     assert(
@@ -180,15 +180,15 @@ export class pondo_delegator5Program {
     // Unbond the delegator, only works if there's actually something to unbond
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_delegator5.aleo';
-    this.credits.unbond_public('pondo_delegator5.aleo', amount);
+    this.credits.caller = 'delegator5.aleo';
+    this.credits.unbond_public('delegator5.aleo', amount);
 
     return this.finalize_unbond();
   }
 
   finalize_unbond() {
     // Should be entirely unbonded
-    let bonded: boolean = this.credits.bonded.has('pondo_delegator5.aleo');
+    let bonded: boolean = this.credits.bonded.has('delegator5.aleo');
     assert(bonded === false, 'Ensure the delegator was completely unbonded');
 
     // Get the current validator state
@@ -236,10 +236,10 @@ export class pondo_delegator5Program {
   }
 
   finalize_terminal_state() {
-    let bonded: boolean = this.credits.bonded.has('pondo_delegator5.aleo');
+    let bonded: boolean = this.credits.bonded.has('delegator5.aleo');
     assert(bonded === false, 'Ensure the delegator was completely unbonded');
     let is_unbonding: boolean = this.credits.unbonding.has(
-      'pondo_delegator5.aleo'
+      'delegator5.aleo'
     );
     assert(
       is_unbonding === false,
@@ -269,13 +269,13 @@ export class pondo_delegator5Program {
 
   transfer_to_core_protocol(amount: bigint) {
     assert(
-      this.caller === 'pondo_core_protocol.aleo',
+      this.caller === 'pondo_protocol.aleo',
       'Assert that the caller is the pondo core protocol'
     );
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'pondo_delegator5.aleo';
-    this.credits.transfer_public('pondo_core_protocol.aleo', amount);
+    this.credits.caller = 'delegator5.aleo';
+    this.credits.transfer_public('pondo_protocol.aleo', amount);
 
     return this.finalize_transfer_to_core_protocol();
   }
@@ -283,7 +283,7 @@ export class pondo_delegator5Program {
   finalize_transfer_to_core_protocol() {
     let balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo')!
+      this.credits.account.get('delegator5.aleo')!
     );
     assert(balance !== undefined);
     assert(balance === BigInt('0'), 'Ensure all the funds were transferred');
@@ -304,10 +304,10 @@ export class pondo_delegator5Program {
   }
 
   finalize_bond_failed() {
-    let bonded: boolean = this.credits.bonded.has('pondo_delegator5.aleo');
+    let bonded: boolean = this.credits.bonded.has('delegator5.aleo');
     assert(bonded === false, 'Ensure the delegator was not bonded');
     let is_unbonding: boolean = this.credits.unbonding.has(
-      'pondo_delegator5.aleo'
+      'delegator5.aleo'
     );
     assert(is_unbonding === false, 'Ensure the delegator is not unbonding');
 
@@ -354,16 +354,16 @@ export class pondo_delegator5Program {
   }
 
   finalize_insufficient_balance() {
-    let bonded: boolean = this.credits.bonded.has('pondo_delegator5.aleo');
+    let bonded: boolean = this.credits.bonded.has('delegator5.aleo');
     assert(bonded === false, 'Ensure the delegator was not bonded');
     let is_unbonding: boolean = this.credits.unbonding.has(
-      'pondo_delegator5.aleo'
+      'delegator5.aleo'
     );
     assert(is_unbonding === false, 'Ensure the delegator is not unbonding');
 
     let balance: bigint = BigInt.asUintN(
       64,
-      this.credits.account.get('pondo_delegator5.aleo')!
+      this.credits.account.get('delegator5.aleo')!
     );
     assert(balance !== undefined);
     assert(
@@ -385,9 +385,9 @@ export class pondo_delegator5Program {
   }
 
   ban_validator(validator: string) {
-    this.pondo_oracle.signer = this.signer;
-    this.pondo_oracle.caller = 'pondo_delegator5.aleo';
-    this.pondo_oracle.pondo_ban_validator(validator);
+    this.validator_oracle.signer = this.signer;
+    this.validator_oracle.caller = 'delegator5.aleo';
+    this.validator_oracle.pondo_ban_validator(validator);
 
     return this.finalize_ban_validator(validator);
   }

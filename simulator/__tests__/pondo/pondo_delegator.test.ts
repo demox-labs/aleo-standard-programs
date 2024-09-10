@@ -40,7 +40,7 @@ describe('Pondo delegator tests', () => {
     delegator.caller = 'not core protocol';
     expect(() => delegator.initialize()).toThrow();
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.initialize();
     expect(delegator.state_mapping.get(stateMappingKey)).toBe(
       delegator.TERMINAL
@@ -55,10 +55,10 @@ describe('Pondo delegator tests', () => {
   });
 
   it('set validator by can only be called when state is terminal', () => {
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     expect(() => delegator.set_validator(VALIDATOR, testCommission)).toThrow();
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.set_validator(VALIDATOR, testCommission);
   });
@@ -71,7 +71,7 @@ describe('Pondo delegator tests', () => {
     };
     creditsContract.committee.set(VALIDATOR, state);
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     expect(() => delegator.set_validator(VALIDATOR, commission)).toThrow();
   });
@@ -83,7 +83,7 @@ describe('Pondo delegator tests', () => {
     };
     creditsContract.committee.set(validator, state);
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.set_validator(validator, testCommission);
   };
@@ -146,7 +146,7 @@ describe('Pondo delegator tests', () => {
     };
     creditsContract.committee.set(VALIDATOR, state);
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.set_validator(VALIDATOR, BigInt('1'));
 
@@ -179,7 +179,7 @@ describe('Pondo delegator tests', () => {
     };
     creditsContract.committee.set(VALIDATOR, state);
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.set_validator(VALIDATOR, delegator.MAX_COMMISSION);
 
@@ -210,15 +210,15 @@ describe('Pondo delegator tests', () => {
 
   it('transfer to core protocol, must be called in TERMINAL state', () => {
     const amount = BigInt(MINIMUM_BOND_POOL);
-    delegator.caller = 'pondo_core_protocol.aleo';
-    creditsContract.account.set('pondo_delegator1.aleo', amount);
+    delegator.caller = 'pondo_protocol.aleo';
+    creditsContract.account.set('delegator1.aleo', amount);
     expect(() => delegator.transfer_to_core_protocol(amount)).toThrow();
   });
 
   it('transfer to core protocol', () => {
     const amount = BigInt(MINIMUM_BOND_POOL);
-    delegator.caller = 'pondo_core_protocol.aleo';
-    creditsContract.account.set('pondo_delegator1.aleo', amount);
+    delegator.caller = 'pondo_protocol.aleo';
+    creditsContract.account.set('delegator1.aleo', amount);
 
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.transfer_to_core_protocol(amount);
@@ -248,7 +248,7 @@ describe('Pondo delegator tests', () => {
     };
     creditsContract.committee.set(VALIDATOR, state);
 
-    delegator.caller = 'pondo_core_protocol.aleo';
+    delegator.caller = 'pondo_protocol.aleo';
     delegator.state_mapping.set(stateMappingKey, delegator.TERMINAL);
     delegator.set_validator(VALIDATOR, testCommission);
     creditsContract.account.set(delegator.address, MINIMUM_BOND_POOL);
@@ -256,13 +256,13 @@ describe('Pondo delegator tests', () => {
   });
 
   it('valid insufficient balance call', () => {
-    creditsContract.account.set('pondo_delegator1.aleo', BigInt('1'));
+    creditsContract.account.set('delegator1.aleo', BigInt('1'));
     delegator.state_mapping.set(stateMappingKey, delegator.BOND_ALLOWED);
     delegator.insufficient_balance();
   });
 
   it('invalid insufficient balance call', () => {
-    creditsContract.account.set('pondo_delegator1.aleo', BigInt('10000000000'));
+    creditsContract.account.set('delegator1.aleo', BigInt('10000000000'));
     delegator.state_mapping.set(stateMappingKey, delegator.BOND_ALLOWED);
     expect(() => delegator.insufficient_balance()).toThrow();
   });

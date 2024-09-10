@@ -56,25 +56,25 @@ describe("State Machine Tests", () => {
   
 
   const pondoDelegatorId1: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator1')
+    program.includes('delegator1')
   )!;
   const pondoDelegatorId2: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator2')
+    program.includes('delegator2')
   )!;
   const pondoDelegatorId3: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator3')
+    program.includes('delegator3')
   )!;
   const pondoDelegatorId4: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator4')
+    program.includes('delegator4')
   )!;
   const pondoDelegatorId5: string = pondoPrograms.find((program) =>
-    program.includes('pondo_delegator5')
+    program.includes('delegator5')
   )!;
   const oracleId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_oracle')
+    program.includes('validator_oracle')
   )!;
   const pondoCoreProtocolId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_core_protocol')
+    program.includes('pondo_protocol')
   )!;
 
   before(async () => {
@@ -99,7 +99,7 @@ describe("State Machine Tests", () => {
   });
 
   describe("Pondo delegators in protocol 'rebalance' state", () => {
-    it('should call prep_rebalance on the pondo_core_protocol program', async () => {
+    it('should call prep_rebalance on the pondo_protocol program', async () => {
       const expectedValidatorSet = [
         {
           validator: 'aleo1s3ws5tra87fjycnjrwsjcrnw2qxr8jfqqdugnf0xzqqw29q9m5pqem2u4t',
@@ -155,7 +155,7 @@ describe("State Machine Tests", () => {
       }
     });
 
-    it('should not be able to call prep_rebalance on the pondo_core_protocol program twice', async () => {
+    it('should not be able to call prep_rebalance on the pondo_protocol program twice', async () => {
       const imports = pondoDependencyTree[pondoCoreProtocolId];
       const resolvedImports = await resolveImports(imports);
       const pondoCoreProtocolProgram = await getProgram(pondoCoreProtocolId);

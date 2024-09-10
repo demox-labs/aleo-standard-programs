@@ -38,10 +38,10 @@ import { delay, formatAleoString } from '../util';
 import { ExecuteTransaction } from '../aleo/types';
 
 const PONDO_ORACLE_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_oracle')
+  program.includes('validator_oracle')
 );
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_core_protocol')
+  program.includes('pondo_protocol')
 );
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
 const MIN_LIQUIDITY_PERCENT = BigInt('250');
@@ -65,7 +65,7 @@ export const getPondoDelegatorStates = async (): Promise<string[]> => {
   for (let index = 1; index < 6; index++) {
     const pondoDelegatorState = (await getMappingValue(
       '0u8',
-      `pondo_delegator${index}${VERSION}.aleo`,
+      `delegator${index}${VERSION}.aleo`,
       'state_mapping'
     )) as PONDO_DELEGATOR_STATE;
     printStates.push({ delegator: index, state: PONDO_DELEGATOR_STATE_TO_VALUE[pondoDelegatorState] });
@@ -204,7 +204,7 @@ const rebalanceRetrieveCredits = async (): Promise<void> => {
   console.log('Rebalancing and retrieving credits');
   let delegatorBalances = [];
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+    const delegatorProgramId = `delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(
       NETWORK!,
@@ -297,7 +297,7 @@ const setOracleTVL = async (): Promise<void> => {
   const protocolBalance = await getPublicBalance(coreProtocolAddress);
   let pondoDelegatorTVLs = [];
   for (let index = 1; index < 6; index++) {
-    const delegatorProgramId = `pondo_delegator${index}${VERSION}.aleo`;
+    const delegatorProgramId = `delegator${index}${VERSION}.aleo`;
     const delegatorProgram = await getProgram(delegatorProgramId);
     const delegatorProgramAddress = Aleo.Program.fromString(NETWORK!, delegatorProgram).toAddress();
     const delegatorBalance = await getPublicBalance(delegatorProgramAddress);
@@ -415,7 +415,7 @@ export const runProtocol = async (): Promise<void> => {
   const updatePromises = [];
   for (let index = 1; index < 6; index++) {
     const pondoDelegatorState = pondoDelegatorStates[index - 1] as PONDO_DELEGATOR_STATE;
-    const updatePromise = handleDelegatorUpdate(`pondo_delegator${index}${VERSION}.aleo`, pondoDelegatorState);
+    const updatePromise = handleDelegatorUpdate(`delegator${index}${VERSION}.aleo`, pondoDelegatorState);
     updatePromises.push(updatePromise);
   }
   await Promise.all(updatePromises);

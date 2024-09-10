@@ -23,7 +23,7 @@ describe('oracleUpdate', async () => {
   let delegators: string[];
 
   const oracleId: string = pondoPrograms.find((program) =>
-    program.includes('pondo_oracle')
+    program.includes('validator_oracle')
   )!;
 
   before(async () => {

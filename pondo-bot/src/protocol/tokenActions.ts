@@ -12,7 +12,7 @@ import {
 } from '../compiledPrograms';
 
 const MTSP_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('multi_token_support_program')
+  program.includes('token_registry')
 );
 const MTSP_PROGRAM_CODE = pondoProgramToCode[MTSP_PROGRAM!];
 const MTSP_PROGRAM_IMPORTS = pondoDependencyTree[MTSP_PROGRAM!];
@@ -59,7 +59,7 @@ export const mintPondo = async (
   accountPrivateKey: string
 ) => {
   const PONDO_PROGRAM = pondoPrograms.find((program) =>
-    program.includes('pondo_token')
+    program.includes('pondo_protocol_token')
   )!;
   const PONDO_PROGRAM_CODE = pondoProgramToCode[PONDO_PROGRAM];
   const resolvedImports = await resolveImports(
@@ -84,7 +84,7 @@ export const burnPondo = async (
   burnAmount: bigint
 ) => {
   const PONDO_PROGRAM = pondoPrograms.find((program) =>
-    program.includes('pondo_token')
+    program.includes('pondo_protocol_token')
   )!;
   const pondoBalanceKey = getTokenOwnerHash(PONDO_PROGRAM, PALEO_TOKEN_ID);
   const pondoBalanceMapping = await getMappingValue(

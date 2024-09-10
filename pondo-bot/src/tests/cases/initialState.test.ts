@@ -9,18 +9,18 @@ import { getAddressFromProgram, getTokenOwnerHash } from "../../util";
 describe("initialState", async () => {
   const coreProtocolAddress = getAddressFromProgram(
     NETWORK!,
-    pondoProgramToCode["pondo_core_protocol.aleo"]
+    pondoProgramToCode["pondo_protocol.aleo"]
   );
 
   const oracleAddress = getAddressFromProgram(
     NETWORK!,
-    pondoProgramToCode["pondo_oracle.aleo"]
+    pondoProgramToCode["validator_oracle.aleo"]
   );
 
   it("core protocol should be in rebalancing state", async () => {
     const state = await getMappingValue(
       "0u8",
-      "pondo_core_protocol.aleo",
+      "pondo_protocol.aleo",
       "protocol_state"
     );
 
@@ -31,7 +31,7 @@ describe("initialState", async () => {
     for (let i = 1; i <= 5; i++) {
       const state = await getMappingValue(
         "0u8",
-        `pondo_delegator${i}.aleo`,
+        `delegator${i}.aleo`,
         "state_mapping"
       );
 
@@ -43,12 +43,12 @@ describe("initialState", async () => {
     for (let i = 1; i <= 5; i++) {
       const programAddress = Aleo.Program.fromString(
         NETWORK!,
-        pondoProgramToCode[`pondo_delegator${i}.aleo`]
+        pondoProgramToCode[`delegator${i}.aleo`]
       ).toAddress();
 
       const value = await getMappingValue(
         programAddress,
-        `pondo_oracle.aleo`,
+        `validator_oracle.aleo`,
         "control_addresses"
       );
 
@@ -61,7 +61,7 @@ describe("initialState", async () => {
   it("top validators should all be the oracle", async () => {
     const topValidators = await getMappingValue(
       "0u8",
-      `pondo_oracle.aleo`,
+      `validator_oracle.aleo`,
       "top_validators"
     );
 
@@ -87,13 +87,13 @@ describe("initialState", async () => {
   it("pALEO and PNDO should be registered in the MTSP", async () => {
     const pondo = await getMappingValue(
       PONDO_TOKEN_ID,
-      "multi_token_support_program.aleo",
+      "token_registry.aleo",
       "registered_tokens"
     );
 
     const paleo = await getMappingValue(
       PALEO_TOKEN_ID,
-      "multi_token_support_program.aleo",
+      "token_registry.aleo",
       "registered_tokens"
     );
 
@@ -108,7 +108,7 @@ describe("initialState", async () => {
 
     const result = await getMappingValue(
       balanceKey,
-      "multi_token_support_program.aleo",
+      "token_registry.aleo",
       "authorized_balances"
     );
 

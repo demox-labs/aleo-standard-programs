@@ -1,0 +1,13 @@
+{
+    "program": "paleo_token.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "license": "MIT",
+    "dependencies": [
+        {
+            "name": "token_registry.aleo",
+            "location": "local",
+            "path": "../../token_registry"
+        }
+    ]
+}

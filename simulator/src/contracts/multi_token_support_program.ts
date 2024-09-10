@@ -36,10 +36,10 @@ export interface Token {
   external_authorization_required: boolean;
   authorized_until: bigint;
 }
-export class multi_token_support_programProgram {
+export class token_registryProgram {
   signer: string = 'not set';
   caller: string = 'not set';
-  address: string = 'multi_token_support_program.aleo';
+  address: string = 'token_registry.aleo';
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -65,7 +65,7 @@ export class multi_token_support_programProgram {
   }
 
   // The 'mtsp' program.
-  //program multi_token_support_program.aleo {
+  //program token_registry.aleo {
 
   // -------------------------
   // Called by token admins
@@ -1236,7 +1236,7 @@ export class multi_token_support_programProgram {
 
   deposit_credits_public(amount: bigint) {
     this.credits.signer = this.signer;
-    this.credits.caller = 'multi_token_support_program.aleo';
+    this.credits.caller = 'token_registry.aleo';
     this.credits.transfer_public_as_signer(this.address, amount);
 
     return this.finalize_deposit_credits_public(amount, this.signer);
@@ -1270,7 +1270,7 @@ export class multi_token_support_programProgram {
 
   deposit_credits_private(input_record: credits, amount: bigint) {
     this.credits.signer = this.signer;
-    this.credits.caller = 'multi_token_support_program.aleo';
+    this.credits.caller = 'token_registry.aleo';
     let transfer_output: credits = this.credits.transfer_private_to_public(
       input_record,
       this.address,
@@ -1293,7 +1293,7 @@ export class multi_token_support_programProgram {
 
   withdraw_credits_public(amount: bigint) {
     this.credits.signer = this.signer;
-    this.credits.caller = 'multi_token_support_program.aleo';
+    this.credits.caller = 'token_registry.aleo';
     this.credits.transfer_public(this.caller, amount);
 
     return this.finalize_withdraw_credits_public(amount, this.caller);
@@ -1322,7 +1322,7 @@ export class multi_token_support_programProgram {
     assert(input_token.token_id == this.CREDITS_RESERVED_TOKEN_ID);
 
     this.credits.signer = this.signer;
-    this.credits.caller = 'multi_token_support_program.aleo';
+    this.credits.caller = 'token_registry.aleo';
     let transfer_output: credits = this.credits.transfer_public_to_private(
       input_token.owner,
       amount

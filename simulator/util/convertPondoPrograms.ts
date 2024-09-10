@@ -11,19 +11,19 @@ enum ConvertOption {
 const prefix = '../pondo';
 const args = process.argv.slice(2);
 
-const coreProtocol = ['/pondo_core_protocol'];
+const coreProtocol = ['/pondo_protocol'];
 
-const oracle = [/*'/pondo_oracle',*/ '/reference_delegator'];
+const oracle = [/*'/validator_oracle',*/ '/reference_delegator'];
 
 const delegators = [
-  '/delegators/pondo_delegator1',
-  '/delegators/pondo_delegator2',
-  '/delegators/pondo_delegator3',
-  '/delegators/pondo_delegator4',
-  '/delegators/pondo_delegator5',
+  '/delegators/delegator1',
+  '/delegators/delegator2',
+  '/delegators/delegator3',
+  '/delegators/delegator4',
+  '/delegators/delegator5',
 ];
 
-const tokens = ['/pondo_staked_aleo_token', '/pondo_token'];
+const tokens = ['/paleo_token', '/pondo_protocol_token'];
 
 let programPaths: string[];
 

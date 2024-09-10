@@ -49,7 +49,7 @@ const getCurrentValidators = async () => {
 
 // Returns the transaction history of all of the validators that were proposed as reference delegators
 export const getOracleProposalTransactionHistory = async () => {
-  const pondoOracleProgramId = pondoPrograms.filter(program => program.includes('pondo_oracle'))[0];
+  const pondoOracleProgramId = pondoPrograms.filter(program => program.includes('validator_oracle'))[0];
   if (!pondoOracleProgramId) {
     throw new Error('Pondo oracle program not found');
   }
@@ -62,7 +62,7 @@ export function extractValidatorAddressAndProgramName(tx: ExecuteTransaction): {
   let programName: string | null = null;
 
   for (const transition of transitions) {
-      if (transition.program.includes("pondo_oracle") && transition.function === "propose_delegator") {
+      if (transition.program.includes("validator_oracle") && transition.function === "propose_delegator") {
           for (const input of transition.inputs) {
               if (input.type === "public" && input.value.startsWith("aleo")) {
                   validatorAddress = input.value;
