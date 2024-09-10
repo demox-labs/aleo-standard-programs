@@ -92,7 +92,7 @@ const finalizeToTerminalState = async (delegatorProgramId: string) => {
         Aleo.Program.getCreditsProgram(NETWORK).toString(),
         'claim_unbond_public',
         [delegatorProgramAddress],
-        2, // TODO: set the correct fee
+        0.078711,
       );
     } else {
       console.log(`Delegator ${delegatorProgramId} is still unbonding, skipping ${unbondHeight - currentHeight} blocks left`);
