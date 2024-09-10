@@ -15,6 +15,7 @@ export const calculatedFees: CalculatedFees = {
     initialize: "238840",
     add_delegator: "169508",
     update_data: "1222149",
+    boost_validator: "85601"
   },
   "pondo_staked_aleo_tokenv1.aleo": {},
   "pondo_tokenv1.aleo": {},
@@ -52,4 +53,48 @@ export const calculatedFees: CalculatedFees = {
     set_oracle_tvl: "293434",
   },
   "reference_delegatorgizgkl.aleo": { initialize: "543166" },
+  "multi_token_support_program.aleo": { initialize: "48650" },
+  "mtsp_credits.aleo": {},
+  "pondo_oracle.aleo": {
+    initialize: "238840",
+    add_delegator: "169508",
+    update_data: "1222149",
+    boost_validator: "85601"
+  },
+  "pondo_staked_aleo_token.aleo": {},
+  "pondo_token.aleo": {},
+  "pondo_delegator1.aleo": {
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
+    terminal_state: "69096",
+  },
+  "pondo_delegator2.aleo": {
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
+    terminal_state: "69096",
+  },
+  "pondo_delegator3.aleo": {
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
+    terminal_state: "69096",
+  },
+  "pondo_delegator4.aleo": {
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
+    terminal_state: "69096",
+  },
+  "pondo_delegator5.aleo": {},
+  "pondo_core_protocol.aleo": {
+    initialize: "1032812",
+    prep_rebalance: "355766", // Manually set to lower value
+    deposit_public_as_signer: "487534", // Manually set to lower value
+    distribute_deposits: "346768", // Manually set to lower value
+    instant_withdraw_public: "556319", // Manually set to lower value
+    withdraw_public: "532935", // Manually set to lower value
+    claim_withdrawal_public: "126015", // Manually set to lower value
+    rebalance_retrieve_credits: "732545", // Manually set to lower value
+    rebalance_redistribute: "677000", // Manually set to lower value
+    set_oracle_tvl: "293434",
+  },
+  "reference_delegator.aleo": { initialize: "543166" },
 };

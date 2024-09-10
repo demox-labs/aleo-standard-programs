@@ -15,6 +15,7 @@ import {
   pondoProgramToCode,
   pondoPrograms,
 } from '../compiledPrograms';
+import { boostValidator } from './boostValidator';
 import {
   CREDITS_PROGRAM,
   EPOCH_BLOCKS,
@@ -22,6 +23,7 @@ import {
   ORACLE_UPDATE_BLOCKS,
   PRIVATE_KEY,
   REBALANCE_BLOCKS,
+  VALIDATOR_TO_BOOST,
   VERSION,
   ZERO_ADDRESS,
 } from '../constants';
@@ -401,6 +403,8 @@ export const runProtocol = async (): Promise<void> => {
   } else {
     // Set the oracle TVL if it's changed by more than 50%
     await setOracleTVL();
+    // Boost the validator if necessary
+    await boostValidator(VALIDATOR_TO_BOOST, BigInt(blockHeight) / BigInt(EPOCH_BLOCKS));
   }
 
   // Can be run in any epoch period
