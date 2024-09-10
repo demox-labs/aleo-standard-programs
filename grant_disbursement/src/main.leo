@@ -1,29 +1,23 @@
 import credits.aleo;
 import multi_token_support_program.aleo;
 import pondo_core_protocol.aleo;
+import time_oracle.aleo;
 
 // The 'grant_disbursement' program.
 program grant_disbursement.aleo {
-  // Admins who set the global timestamp
-  const ADMIN_0: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
-  const ADMIN_1: address = aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr;
-  const ADMIN_2: address = aleo19x0ctad8llm9y0qssw7eup045c5wxxp6k4al3n0d5r8maulkzu8sh3jwew;
-  const ADMIN_3: address = aleo16ycrg9g4208lp5y4g5s3gn43xknc5gdsr7wjrpqq9htznj5qk5yqd6px5a;
-  const ADMIN_4: address = aleo1q59hxe2zmexlu4vgtmtmvyxm4ew047zlf50h5l5zsrdvljusdvrqn78u7s;
+  const GRANTEE_REWARDS_KEY: address = aleo12shtwnmf49t5atmad2jnk3e58ahtp749d9trctt9z3wryxyzt5pspp0nd0;
+  const GRANTEE_PRINCIPAL_KEY: address = aleo1z9y9afh0h6dnyj3f0hvjc4mhayjy06fj42ppcq0rvpmmyky6fuzs449sjr;
+  const CREDITS_AMOUNT: u64 = 1_000_000_000u64;
+  const START_TIMESTAMP: u64 = 0u64;
+  const CLIFF_TIMESTAMP: u64 = 1_000_000_000u64;
+  const FULLY_VESTED_TIMESTAMP: u64 = 2_000_000_000u64;
 
-  struct admin_operation {
-    arg: field,
-    op_type: u8,
-    request_id: u64
-  }
-
-  // The admin operation types
-  const UPDATE_TIMESTAMP_OPERATION: u8 = 0u8;
-  const UPDATE_ADMIN_OPERATION: u8 = 1u8;
+  const PALEO_TOLERANCE: u128 = 9_999u128;
+  const PALEO_PRECISION: u128 = 10_000u128;
 
   struct Grant {
     credits_amount: u64, // The amount of Aleo credits to be distributed
-    paleo_amount: u64, // The amount of paleo to be distributed
+    paleo_amount: u128, // The amount of paleo to be distributed
     recipient_rewards_key: address, // The address that can withdraw the rewards
     recipient_principal_key: address, // The address that can withdraw the principal
     start_timestamp: u64, // The timestamp at which the grant was created
@@ -31,10 +25,7 @@ program grant_disbursement.aleo {
     fully_vested_timestamp: u64 // The timestamp at which the recipient can withdraw the full principal
   }
 
-  mapping timestamp: u8 => u64;
-  mapping admin_operations: u64 => admin_operation;
-  mapping admins: address => bool;
-  mapping grants: u64 => Grant;
+  mapping grants: u8 => Grant;
 
   async transition initialize() -> Future {
     return finalize_initialize();
@@ -42,233 +33,106 @@ program grant_disbursement.aleo {
 
   async function finalize_initialize() {
     // Ensure the protocol is not already initialized
-    let already_initialized: bool = timestamp.contains(0u8);
+    let already_initialized: bool = grants.contains(0u8);
     assert(!already_initialized);
 
-    // Set the initial timestamp
-    timestamp.set(0u8, 0u64);
-
-    // Set the admins
-    admins.set(ADMIN_0, true);
-    admins.set(ADMIN_1, true);
-    admins.set(ADMIN_2, true);
-    admins.set(ADMIN_3, true);
-    admins.set(ADMIN_4, true);
-  }
-
-  async transition update_timestamp(
-    public new_timestamp: u64,
-    public sig_1: signature,
-    public admin_1: address,
-    public sig_2: signature,
-    public admin_2: address,
-    public sig_3: signature,
-    public admin_3: address,
-    public request_id: u64
-  ) -> Future {
-    let arg: field = BHP256::hash_to_field(new_timestamp);
-    let admin_op: admin_operation = admin_operation {
-      arg: arg,
-      op_type: UPDATE_TIMESTAMP_OPERATION,
-      request_id: request_id
+    // Create the initial grant
+    let initial_grant: Grant = Grant {
+      credits_amount: CREDITS_AMOUNT,
+      paleo_amount: 0u128,
+      recipient_rewards_key: GRANTEE_REWARDS_KEY,
+      recipient_principal_key: GRANTEE_PRINCIPAL_KEY,
+      start_timestamp: START_TIMESTAMP,
+      cliff_timestamp: CLIFF_TIMESTAMP,
+      fully_vested_timestamp: FULLY_VESTED_TIMESTAMP
     };
-    let op_hash: field = BHP256::hash_to_field(admin_op);
-    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
-    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
-    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
-    assert(is_verified_1 && is_verified_2 && is_verified_3);
 
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3); 
-
-    return finalize_update_timestamp(
-      new_timestamp,
-      admin_1,
-      admin_2,
-      admin_3,
-      admin_op
-      );
+    // Add the grant to the mapping
+    grants.set(0u8, initial_grant);
   }
 
-  async function finalize_update_timestamp(
-    public new_timestamp: u64,
-    public admin_1: address,
-    public admin_2: address,
-    public admin_3: address,
-    public admin_op: admin_operation
-  ) {
-    /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are each admins
-    let is_admin_1: bool = admins.get(admin_1);
-    let is_admin_2: bool = admins.get(admin_2);
-    let is_admin_3: bool = admins.get(admin_3);
-    assert(is_admin_1 && is_admin_2 && is_admin_3);
-
-    // Ensure the request hasn't been made before
-    let request_exists: bool = admin_operations.contains(admin_op.request_id);
-    assert_eq(request_exists, false);
-
-    // Set the admin operation
-    admin_operations.set(admin_op.request_id, admin_op);
-
-    /* End Verify Admin Operation */
-
-    // Set the new timestamp
-    timestamp.set(0u8, new_timestamp);
-  }
-
-  // Used for the multi-sig to update an admin addresses
-  async transition update_admin(
-    public old_admin: address,
-    public new_admin: address,
-    public sig_1: signature,
-    public admin_1: address,
-    public sig_2: signature,
-    public admin_2: address,
-    public sig_3: signature,
-    public admin_3: address,
-    public request_id: u64
+  async transition process_grant(
+    grant_id: u8,
+    credits_amount: u64,
+    paleo_amount: u128,
   ) -> Future {
-    let args: [address; 2] = [old_admin, new_admin];
-    let arg: field = BHP256::hash_to_field(args);
-    let admin_op: admin_operation = admin_operation {
-      arg: arg,
-      op_type: UPDATE_ADMIN_OPERATION,
-      request_id: request_id
-    };
-    let op_hash: field = BHP256::hash_to_field(admin_op);
-    let is_verified_1: bool = sig_1.verify(admin_1, op_hash);
-    let is_verified_2: bool = sig_2.verify(admin_2, op_hash);
-    let is_verified_3: bool = sig_3.verify(admin_3, op_hash);
-    assert(is_verified_1 && is_verified_2 && is_verified_3);
-
-    // Ensure the admin addresses are not the same
-    assert_neq(admin_1, admin_2);
-    assert_neq(admin_1, admin_3);
-    assert_neq(admin_2, admin_3);
-
-    return finalize_update_admin(old_admin, new_admin, admin_1, admin_2, admin_3, admin_op);
-  }
-
-  async function finalize_update_admin(
-    public old_admin: address,
-    public new_admin: address,
-    public admin_1: address,
-    public admin_2: address,
-    public admin_3: address,
-    public admin_op: admin_operation
-  ) {
-    /* Start Verify Admin Operation */
-
-    // Ensure the admin addresses are each admins
-    let is_admin_1: bool = admins.get(admin_1);
-    let is_admin_2: bool = admins.get(admin_2);
-    let is_admin_3: bool = admins.get(admin_3);
-    assert(is_admin_1 && is_admin_2 && is_admin_3);
-
-    // Ensure the request hasn't been made before
-    let request_exists: bool = admin_operations.contains(admin_op.request_id);
-    assert_eq(request_exists, false);
-
-    // Set the admin operation
-    admin_operations.set(admin_op.request_id, admin_op);
-
-    /* End Verify Admin Operation */
-
-    // Remove the old admin
-    admins.remove(old_admin);
-
-    // Set the new admin
-    admins.set(new_admin, true);
-  }
-
-  async transition create_grant(
-    public id: u64,
-    public credits_amount: u64,
-    public paleo_amount: u64,
-    public recipient_rewards_key: address,
-    public recipient_principal_key: address,
-    public start_timestamp: u64,
-    public cliff_timestamp: u64,
-    public fully_vested_timestamp: u64
-  ) -> Future {
+    // Transfer the credits to signer temporarily to deposit into the pondo core protocol
+    let f0: Future = credits.aleo/transfer_public(self.caller, credits_amount);
     // Deposit the credits into the pondo core protocol
-    let f0: Future = pondo_core_protocol.aleo/deposit_public_as_signer(credits_amount, paleo_amount, self.address);
+    let f1: Future = pondo_core_protocol.aleo/deposit_public_as_signer(credits_amount, paleo_amount as u64, self.address);
     // Transfer the pAleo to the grant disbursement program
-    let f1: Future = multi_token_support_program.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount as u128);
+    let f2: Future = multi_token_support_program.aleo/transfer_public_as_signer(PALEO_TOKEN_ID, self.address, paleo_amount);
 
-    assert(start_timestamp > cliff_timestamp);
-    assert(fully_vested_timestamp > cliff_timestamp);
-
-    return finalize_create_grant(
-      f0,
-      f1,
-      id,
-      credits_amount,
-      paleo_amount,
-      recipient_rewards_key,
-      recipient_principal_key,
-      start_timestamp,
-      cliff_timestamp,
-      fully_vested_timestamp
-      );
+    return finalize_process_grant(f0, f1, f2, grant_id, credits_amount, paleo_amount);
   }
 
-  async function finalize_create_grant(
+  async function finalize_process_grant(
     f0: Future,
     f1: Future,
-    id: u64,
+    f2: Future,
+    grant_id: u8,
     credits_amount: u64,
-    paleo_amount: u64,
-    recipient_rewards_key: address,
-    recipient_principal_key: address,
-    start_timestamp: u64,
-    cliff_timestamp: u64,
-    fully_vested_timestamp: u64
+    paleo_amount: u128
   ) {
     f0.await();
     f1.await();
+    f2.await();
 
-    let grant: Grant = Grant {
-      credits_amount: credits_amount,
+    /* START Verify deposit as sufficient */
+
+    // Calculate the total pAleo
+    let minted_paleo: u128 = multi_token_support_program.aleo/registered_tokens.get(PALEO_TOKEN_ID).supply;
+    let paleo_commission: u64 = pondo_core_protocol.aleo/owed_commission.get(0u8);
+    let total_paleo_pool: u128 = minted_paleo + paleo_commission as u128 - paleo_amount;
+
+    // Calculate the total credits
+    let delegated_credits: u64 = pondo_core_protocol.aleo/balances.get(DELEGATED_BALANCE);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
+    let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal - credits_amount;
+
+    // Calculate the amount of pAleo that should be minted
+    let ideal_paleo_to_mint: u128 = ((credits_amount as u128) * total_paleo_pool) / (total_credits_pool as u128);
+    let min_paleo_to_mint: u128 = ideal_paleo_to_mint * PALEO_TOLERANCE / PALEO_PRECISION;
+
+    // Ensure the amount of pAleo minted is within the tolerance
+    assert(paleo_amount >= min_paleo_to_mint);
+
+    /* END Verify deposit as sufficient */
+
+    // Get the grant
+    let grant: Grant = grants.get(grant_id);
+
+    // Assert the credits amount is the same
+    assert_eq(credits_amount, grant.credits_amount);
+
+    // Update the grant, with the new paleo amount
+    let updated_grant: Grant = Grant {
+      credits_amount: grant.credits_amount,
       paleo_amount: paleo_amount,
-      recipient_rewards_key: recipient_rewards_key,
-      recipient_principal_key: recipient_principal_key,
-      start_timestamp: start_timestamp,
-      cliff_timestamp: cliff_timestamp,
-      fully_vested_timestamp: fully_vested_timestamp
+      recipient_rewards_key: grant.recipient_rewards_key,
+      recipient_principal_key: grant.recipient_principal_key,
+      start_timestamp: grant.start_timestamp,
+      cliff_timestamp: grant.cliff_timestamp,
+      fully_vested_timestamp: grant.fully_vested_timestamp
     };
-
-    // Get the current timestamp
-    let current_timestamp: u64 = timestamp.get(0u8);
-
-    // Ensure the cliff timestamp is in the future
-    assert(current_timestamp < grant.start_timestamp);
-
-    // Ensure the mapping doesn't already contain the id
-    assert(!grants.contains(id));
-
-    // Add the grant to the mapping
-    grants.set(id, grant);
+    grants.set(grant_id, updated_grant);
   }
 
   async transition withdraw_rewards(
-    id: u64,
-    paleo_amount: u64
+    id: u8,
+    paleo_amount: u128
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
-    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
+    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount);
 
     return finalize_withdraw_rewards(f0, id, paleo_amount, self.caller);
   }
 
   async function finalize_withdraw_rewards(
     f0: Future,
-    id: u64,
-    paleo_amount: u64,
+    id: u8,
+    paleo_amount: u128,
     caller: address
   ) {
     f0.await();
@@ -280,14 +144,14 @@ program grant_disbursement.aleo {
     assert_eq(caller, grant.recipient_rewards_key);
 
     // Get the current timestamp
-    let current_timestamp: u64 = timestamp.get(0u8);
+    let current_timestamp: u64 = time_oracle.aleo/timestamp.get(0u8);
 
     // Assert that the grant is before the cliff
     assert(current_timestamp < grant.cliff_timestamp);
     assert(current_timestamp >= grant.start_timestamp);
 
     // Subtract the amount from the grant
-    let remaining_paleo: u64 = grant.paleo_amount - paleo_amount;
+    let remaining_paleo: u128 = grant.paleo_amount - paleo_amount;
 
     // Assert Pondo not in rebalancing state
     let current_state: u8 = pondo_core_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
@@ -305,7 +169,7 @@ program grant_disbursement.aleo {
     let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
-    let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
+    let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo / total_paleo_pool;
     assert(grantee_credits_balance >= grant.credits_amount as u128);
 
     // Update the grant
@@ -322,19 +186,19 @@ program grant_disbursement.aleo {
   }
 
   async transition withdraw_principal(
-    id: u64,
-    paleo_amount: u64
+    id: u8,
+    paleo_amount: u128
   ) -> Future {
     // Transfer the pAleo to the recipient_rewards_key
-    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount as u128);
+    let f0: Future = multi_token_support_program.aleo/transfer_public(PALEO_TOKEN_ID, self.caller, paleo_amount);
 
     return finalize_withdraw_principal(f0, id, paleo_amount, self.caller);
   }
 
   async function finalize_withdraw_principal(
     f0: Future,
-    id: u64,
-    paleo_amount: u64,
+    id: u8,
+    paleo_amount: u128,
     caller: address
   ) {
     f0.await();
@@ -346,13 +210,13 @@ program grant_disbursement.aleo {
     assert_eq(caller, grant.recipient_principal_key);
 
     // Get the current timestamp
-    let current_timestamp: u64 = timestamp.get(0u8);
+    let current_timestamp: u64 = time_oracle.aleo/timestamp.get(0u8);
 
     // Assert that the grant is before the cliff
     assert(current_timestamp >= grant.cliff_timestamp);
 
     // Subtract the amount from the grant
-    let remaining_paleo: u64 = grant.paleo_amount - paleo_amount;
+    let remaining_paleo: u128 = grant.paleo_amount - paleo_amount;
 
     // Assert Pondo not in rebalancing state
     let current_state: u8 = pondo_core_protocol.aleo/protocol_state.get(PROTOCOL_STATE_KEY);
@@ -370,7 +234,7 @@ program grant_disbursement.aleo {
     let reserved_for_withdrawal: u64 = pondo_core_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
-    let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo as u128 / total_paleo_pool;
+    let grantee_credits_balance: u128 = total_credits_pool as u128 * remaining_paleo / total_paleo_pool;
 
     // Calculate the vested credits
     let timestamps_since_start: u64 = current_timestamp - grant.start_timestamp;

@@ -18,6 +18,11 @@
             "name": "pondo_core_protocol.aleo",
             "location": "local",
             "path": "../pondo/pondo_core_protocol"
-        }
+        },
+        {
+          "name": "time_oracle.aleo",
+          "location": "local",
+          "path": "../time_oracle"
+      }
     ]
 }
