@@ -278,22 +278,22 @@ export const resolveImports = async (imports: string[]) => {
 export const deploymentCost = (program: string) => {
   let fee = 1;
 
-  if (program.indexOf('multi_token_support') !== -1) {
-    fee = 76.51; // At time of writing, the fee for deploying the multi-token support program is 76501550 microcredits
+  if (program.indexOf('token_registry') !== -1) {
+    fee = 75.798350; // At time of writing, the fee for deploying the multi-token support program is 75798350 microcredits
   } else if (program.indexOf('wrapped_credits') !== -1) {
-    fee = 15.88; // At time of writing, the fee for deploying the mtsp credits program is 15845775 microcredits
+    fee = 15.630250; // At time of writing, the fee for deploying the mtsp credits program is 15630250 microcredits
   } else if (program.indexOf('validator_oracle') !== -1) {
-    fee = 97.168650; // At time of writing, the fee for deploying the pondo oracle program is 97158650 microcredits
+    fee = 97.375450; // At time of writing, the fee for deploying the pondo oracle program is 97375450 microcredits
   } else if (program.indexOf('paleo_token') !== -1) {
-    fee = 3.999275; // At time of writing, the fee for deploying the pondo token program is 3998275 microcredits
+    fee = 3.822825; // At time of writing, the fee for deploying the pondo token program is 3822825 microcredits
   } else if (program.indexOf('pondo_protocol_token') !== -1) {
-    fee = 8.886275; // At time of writing, the fee for deploying the pondo token program is 8876275 microcredits
-  } else if (program.indexOf('delegator') !== -1) {
-    fee = 17.982675; // At time of writing, the fee for deploying the pondo delegator program is 17972675 microcredits
-  } else if (program.indexOf('pondo_protocol') !== -1) {
-    fee = 63.669475; // At time of writing, the fee for deploying the pondo vault program is 63659475 microcredits
+    fee = 8.766525; // At time of writing, the fee for deploying the pondo token program is 8766525 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
-    fee = 7.882425; // At time of writing, the fee for deploying a reference delegator program is 7872425 microcredits
+    fee = 1; // At time of writing, the fee for deploying a reference delegator program is 7872425 microcredits
+  } else if (program.indexOf('delegator') !== -1) {
+    fee = 17.780250; // At time of writing, the fee for deploying the pondo delegator program is 17780250 microcredits
+  } else if (program.indexOf('pondo_protocol') !== -1) {
+    fee = 61.892425; // At time of writing, the fee for deploying the pondo vault program is 61892425 microcredits
   } else if (program.indexOf('grant_disbursement') !== -1) {
     fee = 1;
   } else if (program.indexOf('test_program') !== -1) {

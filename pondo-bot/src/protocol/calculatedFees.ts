@@ -59,7 +59,7 @@ export const calculatedFees: CalculatedFees = {
     initialize: "238840",
     add_delegator: "169508",
     update_data: "1222149",
-    boost_validator: "85601"
+    boost_validator: "85609"
   },
   "paleo_token.aleo": {},
   "pondo_protocol_token.aleo": {},

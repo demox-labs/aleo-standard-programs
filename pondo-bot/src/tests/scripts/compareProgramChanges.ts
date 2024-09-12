@@ -30,7 +30,12 @@ const oldPondoPrograms = [
   "pondo_delegator4.aleo",
   "pondo_delegator5.aleo",
   "pondo_core_protocol.aleo",
-  "reference_delegatornkpuru.aleo"
+  "reference_delegatornkpuru.aleo",
+  "reference_delegatorcmaxtm.aleo",
+  "reference_delegatorbdywey.aleo",
+  "reference_delegatorimgbph.aleo",
+  "reference_delegatordgndht.aleo",
+  "reference_delegatorzuhnsy.aleo"
 ];
 
 const newProgramToOldProgramMap = {
@@ -91,7 +96,7 @@ const generateAndSaveDiff = (oldFileName: string, newFileName: string, oldProgra
     newProgramContent,  // New file content
     '',                 // Optional old header (not used)
     '',                 // Optional new header (not used)
-    { context: 3 }      // Optional options for context lines
+    { context: 3, ignoreWhitespace: true, newlineIsToken: false }      // Optional options for context lines
   );
 
   // Write the diff output to a file

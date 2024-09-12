@@ -41,7 +41,7 @@ const PONDO_ORACLE_PROGRAM = pondoPrograms.find((program) =>
   program.includes('validator_oracle')
 );
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_protocol')
+  program.includes('pondo_protocol.aleo')
 );
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
 const MIN_LIQUIDITY_PERCENT = BigInt('250');

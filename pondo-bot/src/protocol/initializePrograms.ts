@@ -75,7 +75,7 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
       programCode,
       initializationFunction!,
       inputs,
-      75,
+      0.75,
       undefined,
       resolvedImports
     )
