@@ -21,7 +21,7 @@ import { getMappingValue, getProgram, getPublicBalance } from '../aleo/client';
 import { formatAleoString } from '../util';
 
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_protocol')
+  program.includes('pondo_protocol.aleo')
 );
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM!];
 

@@ -219,7 +219,7 @@ export const delegateDeployTransaction = async (
       deployment,
       fee_authorization: feeAuthorization,
       owner,
-      url: CLIENT_URL
+      url: 'http://host.docker.internal:3030'
     });
 
     return requestId;

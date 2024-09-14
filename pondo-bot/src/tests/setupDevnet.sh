@@ -1,7 +1,7 @@
 #!/bin/bash
 
-total_validators=20
-network_id=1
+total_validators=15
+network_id=0
 
 # rpc has a couple of passthrough methods, we need to add one for the history endpoint 
 

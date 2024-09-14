@@ -276,7 +276,7 @@ export const resolveImports = async (imports: string[]) => {
 };
 
 export const deploymentCost = (program: string) => {
-  let fee = 1;
+  let fee = 20;
 
   if (program.indexOf('token_registry') !== -1) {
     fee = 75.798350; // At time of writing, the fee for deploying the multi-token support program is 75798350 microcredits
@@ -289,11 +289,13 @@ export const deploymentCost = (program: string) => {
   } else if (program.indexOf('pondo_protocol_token') !== -1) {
     fee = 8.766525; // At time of writing, the fee for deploying the pondo token program is 8766525 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
-    fee = 1; // At time of writing, the fee for deploying a reference delegator program is 7872425 microcredits
+    fee = 7.899925; // At time of writing, the fee for deploying a reference delegator program is 7899825 microcredits
   } else if (program.indexOf('delegator') !== -1) {
     fee = 17.780250; // At time of writing, the fee for deploying the pondo delegator program is 17780250 microcredits
   } else if (program.indexOf('pondo_protocol') !== -1) {
     fee = 61.892425; // At time of writing, the fee for deploying the pondo vault program is 61892425 microcredits
+  } else if (program.indexOf('time_oracle')) {
+    fee = 20; // TODO: set the correct fee
   } else if (program.indexOf('grant_disbursement') !== -1) {
     fee = 1;
   } else if (program.indexOf('test_program') !== -1) {
@@ -363,6 +365,7 @@ export const deployAllProgramsIfNecessary = async (
       // Deploy the program
       console.log(`Deploying program ${program}`);
       let fee = deploymentCost(program);
+      console.log(`Imports: ${JSON.stringify(imports)}`);
       await deployProgram(
         network,
         privateKey,

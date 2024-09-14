@@ -32,7 +32,7 @@ export const initializeProgramsIfNecessary = async (): Promise<any> => {
   // For each of the pondo programs, initialize them if they haven't been initialized yet
   for (const program of pondoPrograms) {
     // Only the token_registry, validator_oracle, and pondo_protocol programs have initialization functions
-    if (!program.includes('token_registry') && !program.includes('validator_oracle') && !program.includes('pondo_protocol')) {
+    if (!program.includes('token_registry') && !program.includes('validator_oracle') && !program.includes('pondo_protocol.aleo')) {
       continue;
     }
 

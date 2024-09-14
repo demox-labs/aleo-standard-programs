@@ -12,8 +12,8 @@ program grant_disbursement.aleo {
   const CLIFF_TIMESTAMP: u64 = 1_000_000_000u64;
   const FULLY_VESTED_TIMESTAMP: u64 = 2_000_000_000u64;
 
-  const PALEO_TOLERANCE: u128 = 9_999u128;
-  const PALEO_PRECISION: u128 = 10_000u128;
+  const PALEO_TOLERANCE: u128 = 999u128;
+  const PALEO_PRECISION: u128 = 1_000u128;
 
   struct Grant {
     credits_amount: u64, // The amount of Aleo credits to be distributed
@@ -57,7 +57,7 @@ program grant_disbursement.aleo {
     paleo_amount: u128,
   ) -> Future {
     // Transfer the credits to signer temporarily to deposit into the pondo core protocol
-    let f0: Future = credits.aleo/transfer_public(self.caller, credits_amount);
+    let f0: Future = credits.aleo/transfer_public(self.signer, credits_amount);
     // Deposit the credits into the pondo core protocol
     let f1: Future = pondo_protocol.aleo/deposit_public_as_signer(credits_amount, paleo_amount as u64, self.address);
     // Transfer the pAleo to the grant disbursement program
@@ -87,7 +87,7 @@ program grant_disbursement.aleo {
 
     // Calculate the total credits
     let delegated_credits: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
-    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_protocol.aleo, 0u64);
     let reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal - credits_amount;
 
@@ -164,7 +164,7 @@ program grant_disbursement.aleo {
     let paleo_commission: u64 = pondo_protocol.aleo/owed_commission.get(0u8);
     let total_paleo_pool: u128 = minted_paleo + paleo_commission as u128;
     let delegated_credits: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
-    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_protocol.aleo, 0u64);
     let reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
@@ -229,7 +229,7 @@ program grant_disbursement.aleo {
     let paleo_commission: u64 = pondo_protocol.aleo/owed_commission.get(0u8);
     let total_paleo_pool: u128 = minted_paleo + paleo_commission as u128;
     let delegated_credits: u64 = pondo_protocol.aleo/balances.get(DELEGATED_BALANCE);
-    let core_protocol_account: u64 = credits.aleo/account.get_or_use(self.address, 0u64);
+    let core_protocol_account: u64 = credits.aleo/account.get_or_use(pondo_protocol.aleo, 0u64);
     let reserved_for_withdrawal: u64 = pondo_protocol.aleo/balances.get(CLAIMABLE_WITHDRAWALS);
     let total_credits_pool: u64 = delegated_credits + core_protocol_account - reserved_for_withdrawal;
 
@@ -260,7 +260,7 @@ program grant_disbursement.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
   // Copied from pondo_protocol.aleo
   const PROTOCOL_STATE_KEY: u8 = 0u8;
-  const REBALANCING_STATE: u8 = 1u8;
+  const REBALANCING_STATE: u8 = 2u8;
   const DELEGATED_BALANCE: u8 = 0u8;
   const CLAIMABLE_WITHDRAWALS: u8 = 2u8;
 

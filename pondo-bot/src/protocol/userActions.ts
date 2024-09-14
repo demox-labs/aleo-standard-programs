@@ -34,7 +34,7 @@ const MTSP_CREDITS_PROGRAM = pondoPrograms.find((program) =>
 const MTSP_CREDITS_PROGRAM_CODE = pondoProgramToCode[MTSP_CREDITS_PROGRAM];
 
 const CORE_PROTOCOL_PROGRAM = pondoPrograms.find((program) =>
-  program.includes('pondo_protocol')
+  program.includes('pondo_protocol.aleo')
 )!;
 const CORE_PROTOCOL_PROGRAM_CODE = pondoProgramToCode[CORE_PROTOCOL_PROGRAM];
 const CORE_PROTOCOL_PROGRAM_IMPORTS =
