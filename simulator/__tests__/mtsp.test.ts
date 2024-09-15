@@ -99,7 +99,7 @@ describe('MTSP tests', () => {
       account: ADDRESS,
       token_id: tokenId,
     };
-    const balance = mtsp.authorized_balances.get(balanceKey.toString());
+    const balance = mtsp.authorized_balances.get(JSON.stringify(balanceKey));
     expect(balance?.balance).toBe(BigInt(1000));
   });
 
@@ -126,14 +126,14 @@ describe('MTSP tests', () => {
       account: ADDRESS,
       token_id: tokenId,
     };
-    const balance = mtsp.authorized_balances.get(balanceKey.toString());
+    const balance = mtsp.authorized_balances.get(JSON.stringify(balanceKey));
     expect(balance?.balance).toBe(BigInt(1000));
 
     // Burn tokens
     mtsp.burn_public(tokenId, ADDRESS, BigInt(500));
 
     // Check the balance of the user
-    const updatedBalance = mtsp.authorized_balances.get(balanceKey.toString());
+    const updatedBalance = mtsp.authorized_balances.get(JSON.stringify(balanceKey));
     expect(updatedBalance?.balance).toBe(BigInt(500));
   });
 });
