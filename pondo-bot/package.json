@@ -25,8 +25,9 @@
     "cleanDevnet": "rm -rf .history-* .ledger-* .logs-* .current-proposal-cache-*",
     "stopDevnetAtHeight": "./utils/stop-devnet-at-height.sh",
     "buildLedger": "node ./dist/buildLedger.js",
-    "runOracleApproval": "node ./dist/runOracleApproval.js",
-    "compareProgramChanges": "yarn build:dev && node ./dist/compareProgramChanges.js"
+    "runOracleApproval": "yarn build:dev && node ./dist/runOracleApproval.js",
+    "compareProgramChanges": "yarn build:dev && node ./dist/compareProgramChanges.js",
+    "runUpdateOracleTimestamp": "yarn build:dev && node ./dist/runUpdateOracleTimestamp.js"
   },
   "repository": {
     "type": "git",

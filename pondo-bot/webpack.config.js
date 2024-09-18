@@ -1,36 +1,36 @@
-const path = require("path");
-const nodeExternals = require("webpack-node-externals");
-const Dotenv = require("dotenv-webpack");
+const path = require('path');
+const nodeExternals = require('webpack-node-externals');
+const Dotenv = require('dotenv-webpack');
 
 // Determine the mode from the NODE_ENV environment variable
 const mode =
-  process.env.NODE_ENV === "production" ? "production" : "development";
+  process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
 const appConfig = {
   mode: mode,
-  target: "node",
+  target: 'node',
   devtool:
-    process.env.NODE_ENV === "production" ? "source-map" : "eval-source-map",
+    process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map',
   externals: [
     nodeExternals({
-      allowlist: ["@demox-labs/aleo-sdk"],
+      allowlist: ['@demox-labs/aleo-sdk'],
     }),
   ],
 
   // Entry point of the application
   entry: {
-    index: path.resolve(__dirname, "src") + "/index.ts",
+    index: path.resolve(__dirname, 'src') + '/index.ts',
   },
 
   // Output configuration
   output: {
     pathinfo: false,
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, 'dist'),
   },
 
   // Resolve .ts and .js files
   resolve: {
-    extensions: [".ts", ".js", ".wasm"],
+    extensions: ['.ts', '.js', '.wasm'],
   },
 
   // Module rules for TypeScript
@@ -38,11 +38,11 @@ const appConfig = {
     rules: [
       {
         test: /\.ts$/,
-        use: "babel-loader",
+        use: 'babel-loader',
       },
       {
         test: /\.wasm$/,
-        type: "asset/inline",
+        type: 'asset/inline',
       },
     ],
   },
@@ -57,10 +57,10 @@ const appConfig = {
 
 const workerConfig = {
   mode: process.env.NODE_ENV,
-  devtool: process.env.MODE_ENV === "development" ? "inline-source-map" : false,
+  devtool: process.env.MODE_ENV === 'development' ? 'inline-source-map' : false,
   externals: [
     nodeExternals({
-      allowlist: ["@demox-labs/aleo-sdk"],
+      allowlist: ['@demox-labs/aleo-sdk'],
     }),
   ],
   performance: {
@@ -70,30 +70,30 @@ const workerConfig = {
     asyncWebAssembly: true,
     syncWebAssembly: true,
   },
-  target: "node",
+  target: 'node',
   entry: {
     authorizeTransaction:
-      path.resolve(__dirname, "src") + "/workers/authorizeTransaction.ts",
+      path.resolve(__dirname, 'src') + '/workers/authorizeTransaction.ts',
     authorizeDeployment:
-      path.resolve(__dirname, "src") + "/workers/authorizeDeployment.ts",
+      path.resolve(__dirname, 'src') + '/workers/authorizeDeployment.ts',
   },
   output: {
     pathinfo: false,
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
-    extensions: [".ts", ".js", ".wasm"],
+    extensions: ['.ts', '.js', '.wasm'],
   },
   plugins: [new Dotenv()],
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: "babel-loader",
+        use: 'babel-loader',
       },
       {
         test: /\.wasm$/,
-        type: "asset/inline",
+        type: 'asset/inline',
       },
     ],
   },
@@ -101,78 +101,87 @@ const workerConfig = {
 
 const testConfig = {
   mode: mode,
-  target: "node",
+  target: 'node',
   devtool:
-    process.env.NODE_ENV === "production" ? "source-map" : "eval-source-map",
+    process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map',
   externals: [
     nodeExternals({
-      allowlist: ["@demox-labs/aleo-sdk"],
+      allowlist: ['@demox-labs/aleo-sdk'],
     }),
   ],
 
   // Entry point of the application
   entry: {
     runTestScript:
-      path.resolve(__dirname, "src") + "/tests/scripts/runTestScript.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/runTestScript.ts',
     getTokenOwnerHash:
-      path.resolve(__dirname, "src") + "/tests/scripts/getTokenOwnerHash.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/getTokenOwnerHash.ts',
     runTokenActions:
-      path.resolve(__dirname, "src") + "/tests/scripts/runTokenActions.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/runTokenActions.ts',
     runOracleApproval:
-      path.resolve(__dirname, "src") + "/tests/scripts/runOracleApproval.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/runOracleApproval.ts',
     testProgramCalls:
-      path.resolve(__dirname, "src") + "/tests/scripts/testProgramCalls.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/testProgramCalls.ts',
     estimateFees:
-      path.resolve(__dirname, "src") + "/tests/scripts/estimateFees.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/estimateFees.ts',
     snapshotLedger:
-      path.resolve(__dirname, "src") + "/tests/scripts/snapshotLedger.ts",
-    testRunner: path.resolve(__dirname, "src") + "/tests/testRunner.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/snapshotLedger.ts',
+    testRunner: path.resolve(__dirname, 'src') + '/tests/testRunner.ts',
     depositRebalanceTest:
-      path.resolve(__dirname, "src") + "/tests/cases/depositRebalance.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/depositRebalance.test.ts',
     withdrawNormalTest:
-      path.resolve(__dirname, "src") + "/tests/cases/withdrawNormal.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/withdrawNormal.test.ts',
     withdrawPostRebalanceTest:
-      path.resolve(__dirname, "src") + "/tests/cases/withdrawPostRebalance.test.ts",
+      path.resolve(__dirname, 'src') +
+      '/tests/cases/withdrawPostRebalance.test.ts',
     depositNormalTest:
-      path.resolve(__dirname, "src") + "/tests/cases/depositNormal.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/depositNormal.test.ts',
     depositNormalBondedTest:
-      path.resolve(__dirname, "src") + "/tests/cases/depositNormalBonded.test.ts",
+      path.resolve(__dirname, 'src') +
+      '/tests/cases/depositNormalBonded.test.ts',
     depositPrepRebalanceTest:
-      path.resolve(__dirname, "src") + "/tests/cases/depositPrepRebalance.test.ts",
+      path.resolve(__dirname, 'src') +
+      '/tests/cases/depositPrepRebalance.test.ts',
     initialStateTest:
-      path.resolve(__dirname, "src") + "/tests/cases/initialState.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/initialState.test.ts',
     oracleUpdateTest:
-      path.resolve(__dirname, "src") + "/tests/cases/oracleUpdate.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/oracleUpdate.test.ts',
     oracleNonUpdateTest:
-      path.resolve(__dirname, "src") + "/tests/cases/oracleNonUpdate.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/oracleNonUpdate.test.ts',
     pondoDelegatorNormalTest:
-      path.resolve(__dirname, "src") + "/tests/cases/pondoDelegatorNormal.test.ts",
+      path.resolve(__dirname, 'src') +
+      '/tests/cases/pondoDelegatorNormal.test.ts',
     pondoCorePrepRebalanceTest:
-      path.resolve(__dirname, "src") + "/tests/cases/pondoCorePrepRebalance.test.ts",
+      path.resolve(__dirname, 'src') +
+      '/tests/cases/pondoCorePrepRebalance.test.ts',
     pondoRebalanceTest:
-      path.resolve(__dirname, "src") + "/tests/cases/pondoRebalance.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/pondoRebalance.test.ts',
     pondoTokenTest:
-      path.resolve(__dirname, "src") + "/tests/cases/pondoToken.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/pondoToken.test.ts',
     grantDisbursementTest:
-      path.resolve(__dirname, "src") + "/tests/cases/grantDisbursement.test.ts",
+      path.resolve(__dirname, 'src') + '/tests/cases/grantDisbursement.test.ts',
     snapshotRpcDb:
-      path.resolve(__dirname, "src") + "/tests/scripts/snapshotRpcDb.ts",
-    swapRpcDb: path.resolve(__dirname, "src") + "/tests/scripts/swapRpcDb.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/snapshotRpcDb.ts',
+    swapRpcDb: path.resolve(__dirname, 'src') + '/tests/scripts/swapRpcDb.ts',
     buildLedger:
-      path.resolve(__dirname, "src") + "/tests/scripts/buildLedger.ts",
+      path.resolve(__dirname, 'src') + '/tests/scripts/buildLedger.ts',
     compareProgramChanges:
-      path.resolve(__dirname, "src") + "/tests/scripts/compareProgramChanges.ts"
+      path.resolve(__dirname, 'src') +
+      '/tests/scripts/compareProgramChanges.ts',
+    runUpdateOracleTimestamp:
+      path.resolve(__dirname, 'src') +
+      '/tests/scripts/runUpdateOracleTimestamp.ts',
   },
 
   // Output configuration
   output: {
     pathinfo: false,
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, 'dist'),
   },
 
   // Resolve .ts and .js files
   resolve: {
-    extensions: [".ts", ".js", ".wasm"],
+    extensions: ['.ts', '.js', '.wasm'],
   },
 
   // Module rules for TypeScript
@@ -180,11 +189,11 @@ const testConfig = {
     rules: [
       {
         test: /\.ts$/,
-        use: "babel-loader",
+        use: 'babel-loader',
       },
       {
         test: /\.wasm$/,
-        type: "asset/inline",
+        type: 'asset/inline',
       },
     ],
   },
