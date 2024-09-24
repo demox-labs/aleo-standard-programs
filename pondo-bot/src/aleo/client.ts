@@ -83,9 +83,7 @@ export async function getMTSPBalance(
   tokenId: string,
   authorized: boolean = false
 ): Promise<bigint> {
-  const MTSP_PROGRAM = pondoPrograms.find((program) =>
-    program.includes('token_registry')
-  );
+  const MTSP_PROGRAM = process.env.network === "TestnetV0" ? "multi_token_support_programv1.aleo" : "token_registry.aleo";
   const tokenOwnerString = `{ account: ${publicKey}, token_id: ${tokenId} }`;
     const tokenOwnerHash = Aleo.Plaintext.fromString(
       NETWORK,

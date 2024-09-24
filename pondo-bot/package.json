@@ -27,7 +27,8 @@
     "buildLedger": "node ./dist/buildLedger.js",
     "runOracleApproval": "yarn build:dev && node ./dist/runOracleApproval.js",
     "compareProgramChanges": "yarn build:dev && node ./dist/compareProgramChanges.js",
-    "runUpdateOracleTimestamp": "yarn build:dev && node ./dist/runUpdateOracleTimestamp.js"
+    "runUpdateOracleTimestamp": "yarn build:dev && node ./dist/runUpdateOracleTimestamp.js",
+    "calculateGDPWithdraw": "node ./dist/calculateGDPWithdraw.js"
   },
   "repository": {
     "type": "git",
