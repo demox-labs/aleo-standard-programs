@@ -46,13 +46,31 @@ async function calculateGDPWithdraw(
   let reserved_for_withdrawal = await getMappingValue("2u8", pondoProtocolProgramId, "balances");
   let reservedForWithdrawal = convertToNumber(reserved_for_withdrawal);
   let totalCreditsPool = delegatedCredits + coreProtocolAccount - reservedForWithdrawal;
-  let grantee_credits_balance = formattedGrantJson.credits_amount;
-  let granteeCreditsBalance = convertToNumber(grantee_credits_balance);
+  let grantee_credits_amount = formattedGrantJson.credits_amount;
+  let granteeCreditsAmount = convertToNumber(grantee_credits_amount);
   let grantee_paleo_balance = formattedGrantJson.paleo_amount;
   let granteePaleoBalance = convertToNumber(grantee_paleo_balance);
 
-  let maxWithdrawablePaleo = granteePaleoBalance - (granteeCreditsBalance * totalPaleoPool / totalCreditsPool);
-  console.log("maxWithdrawablePaleo", maxWithdrawablePaleo);
+  let maxWithdrawableRewardsPaleo = granteePaleoBalance - (granteeCreditsAmount * totalPaleoPool / totalCreditsPool);
+  console.log("maxWithdrawableRewardsPaleo", maxWithdrawableRewardsPaleo);
+
+  let start_timestamp = formattedGrantJson.start_timestamp;
+  let startTimestamp = convertToNumber(start_timestamp);
+  console.log("startTimestamp", startTimestamp);
+  let current_timestamp = await getMappingValue("0u8", "time_oracle.aleo", "timestamp");
+  let currentTimestamp = convertToNumber(current_timestamp);
+  console.log("currentTimestamp", currentTimestamp);
+  let end_timestamp = formattedGrantJson.fully_vested_timestamp;
+  let endTimestamp = convertToNumber(end_timestamp);
+
+  let timestampsSinceStart = currentTimestamp - startTimestamp;
+  let totalVestingTimestamps = endTimestamp - startTimestamp;
+  let vestedCredits = granteeCreditsAmount * timestampsSinceStart / totalVestingTimestamps;
+  let boundedVestedCredits = vestedCredits < granteeCreditsAmount ? vestedCredits : granteeCreditsAmount;
+  let minimumCreditsBalance = granteeCreditsAmount - boundedVestedCredits;
+  console.log("minimumCreditsBalance", minimumCreditsBalance);
+  let withdrawableTotalPaleo = granteePaleoBalance - (minimumCreditsBalance * totalPaleoPool / totalCreditsPool);
+  console.log("withdrawableTotalPaleo", withdrawableTotalPaleo);
 }
 
 calculateGDPWithdraw(parseInt(grant_num), programId);
