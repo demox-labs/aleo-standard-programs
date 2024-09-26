@@ -22,7 +22,8 @@ program grant_disbursement.aleo {
     recipient_principal_key: address, // The address that can withdraw the principal
     start_timestamp: u64, // The timestamp at which the grant was created
     cliff_timestamp: u64, // The timestamp at which the recipient can start withdrawing principal
-    fully_vested_timestamp: u64 // The timestamp at which the recipient can withdraw the full principal
+    fully_vested_timestamp: u64, // The timestamp at which the recipient can withdraw the full principal
+    is_processed: bool // Whether the grant has been processed
   }
 
   mapping grants: u8 => Grant;
@@ -44,7 +45,8 @@ program grant_disbursement.aleo {
       recipient_principal_key: GRANTEE_PRINCIPAL_KEY,
       start_timestamp: START_TIMESTAMP,
       cliff_timestamp: CLIFF_TIMESTAMP,
-      fully_vested_timestamp: FULLY_VESTED_TIMESTAMP
+      fully_vested_timestamp: FULLY_VESTED_TIMESTAMP,
+      is_processed: false
     };
 
     // Add the grant to the mapping
@@ -105,6 +107,8 @@ program grant_disbursement.aleo {
 
     // Assert the credits amount is the same
     assert_eq(credits_amount, grant.credits_amount);
+    // Assert that the grant has not been processed
+    assert(!grant.is_processed);
 
     // Update the grant, with the new paleo amount
     let updated_grant: Grant = Grant {
@@ -114,7 +118,8 @@ program grant_disbursement.aleo {
       recipient_principal_key: grant.recipient_principal_key,
       start_timestamp: grant.start_timestamp,
       cliff_timestamp: grant.cliff_timestamp,
-      fully_vested_timestamp: grant.fully_vested_timestamp
+      fully_vested_timestamp: grant.fully_vested_timestamp,
+      is_processed: true
     };
     grants.set(grant_id, updated_grant);
   }
@@ -179,7 +184,8 @@ program grant_disbursement.aleo {
       recipient_principal_key: grant.recipient_principal_key,
       start_timestamp: grant.start_timestamp,
       cliff_timestamp: grant.cliff_timestamp,
-      fully_vested_timestamp: grant.fully_vested_timestamp
+      fully_vested_timestamp: grant.fully_vested_timestamp,
+      is_processed: grant.is_processed
     };
     grants.set(id, updated_grant);
   }
@@ -251,7 +257,8 @@ program grant_disbursement.aleo {
       recipient_principal_key: grant.recipient_principal_key,
       start_timestamp: grant.start_timestamp,
       cliff_timestamp: grant.cliff_timestamp,
-      fully_vested_timestamp: grant.fully_vested_timestamp
+      fully_vested_timestamp: grant.fully_vested_timestamp,
+      is_processed: grant.is_processed
     };
     grants.set(id, updated_grant);
   }
