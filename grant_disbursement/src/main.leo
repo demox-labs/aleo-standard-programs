@@ -151,7 +151,7 @@ program grant_disbursement.aleo {
     // Get the current timestamp
     let current_timestamp: u64 = time_oracle.aleo/timestamp.get(0u8);
 
-    // Assert that the grant is before the cliff
+    // Assert that the current timestamp is before the cliff
     assert(current_timestamp < grant.cliff_timestamp);
 
     // Subtract the amount from the grant
@@ -217,7 +217,7 @@ program grant_disbursement.aleo {
     // Get the current timestamp
     let current_timestamp: u64 = time_oracle.aleo/timestamp.get(0u8);
 
-    // Assert that the grant is after the cliff
+    // Assert that the current timestamp is after the cliff
     assert(current_timestamp >= grant.cliff_timestamp);
 
     // Subtract the amount from the grant
