@@ -211,13 +211,13 @@ program grant_disbursement.aleo {
     // Get the grant
     let grant: Grant = grants.get(id);
 
-    // Ensure the caller is the recipient_rewards_key
+    // Ensure the caller is the recipient_principal_key
     assert_eq(caller, grant.recipient_principal_key);
 
     // Get the current timestamp
     let current_timestamp: u64 = time_oracle.aleo/timestamp.get(0u8);
 
-    // Assert that the grant is before the cliff
+    // Assert that the grant is after the cliff
     assert(current_timestamp >= grant.cliff_timestamp);
 
     // Subtract the amount from the grant
