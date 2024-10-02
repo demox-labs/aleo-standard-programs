@@ -83,7 +83,11 @@ export const calculatedFees: CalculatedFees = {
     unbond: "426138", // Manually set to lower value
     terminal_state: "69096",
   },
-  "delegator5.aleo": {},
+  "delegator5.aleo": {
+    bond: "217640", // Manually set to lower value
+    unbond: "426138", // Manually set to lower value
+    terminal_state: "69096"
+  },
   "pondo_protocol.aleo": {
     initialize: "1032812",
     prep_rebalance: "355766", // Manually set to lower value
