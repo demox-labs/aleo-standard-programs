@@ -407,7 +407,8 @@ describe('Pondo oracle tests', () => {
       setUpRemoveDelegator(true, true, true, true, rank);
       const initialTopTen = oracleInstance.top_validators.get(BigInt('0'))!;
       const expectedTopTen = initialTopTen
-        .toSpliced(rank, 1)
+        .slice(0, rank) // Get the part before the rank
+        .concat(initialTopTen.slice(rank + 1)) // Skip the element at the rank
         .concat([ZERO_GROUP_ADDRESS]);
 
       oracleInstance.caller = 'reference delegator';

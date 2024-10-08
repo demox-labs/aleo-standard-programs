@@ -76,6 +76,10 @@ export class token_registryProgram {
   }
 
   finalize_initialize() {
+    // Check if the CREDITS_RESERVED_TOKEN_ID token has already been initialized
+    let already_initialized: boolean = this.registered_tokens.has(this.CREDITS_RESERVED_TOKEN_ID);
+    assert(already_initialized == false);
+
     // Initialize the CREDITS_RESERVED_TOKEN_ID token
     let credits_reserved_token: TokenMetadata = {
       token_id: this.CREDITS_RESERVED_TOKEN_ID,
