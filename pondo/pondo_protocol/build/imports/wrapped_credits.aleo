@@ -44,13 +44,16 @@ function deposit_credits_private:
     call credits.aleo/transfer_private_to_public r0 wrapped_credits.aleo r1 into r2 r3;
     cast r1 into r4 as u128;
     call token_registry.aleo/mint_private 3443843282313283355522573239085696902919850365217539366784739393210722344986field r0.owner r4 false 4294967295u32 into r5 r6;
-    async deposit_credits_private into r7;
+    async deposit_credits_private r3 r6 into r7;
     output r2 as credits.aleo/credits.record;
     output r5 as token_registry.aleo/Token.record;
     output r7 as wrapped_credits.aleo/deposit_credits_private.future;
 
 finalize deposit_credits_private:
-    assert.eq true true;
+    input r0 as credits.aleo/transfer_private_to_public.future;
+    input r1 as token_registry.aleo/mint_private.future;
+    await r0;
+    await r1;
 
 
 
@@ -95,11 +98,14 @@ function withdraw_credits_private:
     call credits.aleo/transfer_public_to_private r0.owner r1 into r2 r3;
     cast r1 into r4 as u128;
     call token_registry.aleo/burn_private r0 r4 into r5 r6;
-    async withdraw_credits_private into r7;
+    async withdraw_credits_private r3 r6 into r7;
     output r5 as token_registry.aleo/Token.record;
     output r2 as credits.aleo/credits.record;
     output r7 as wrapped_credits.aleo/withdraw_credits_private.future;
 
 finalize withdraw_credits_private:
-    assert.eq true true;
+    input r0 as credits.aleo/transfer_public_to_private.future;
+    input r1 as token_registry.aleo/burn_private.future;
+    await r0;
+    await r1;
 
