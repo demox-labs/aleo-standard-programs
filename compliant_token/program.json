@@ -1,0 +1,14 @@
+{
+  "program": "compliant_token.aleo",
+  "version": "0.1.0",
+  "description": "",
+  "license": "MIT",
+  "network": "mainnet",
+  "dependencies": [
+        {
+            "name": "token_registry.aleo",
+            "location": "network",
+            "network": "mainnet"
+        }
+    ]
+}
