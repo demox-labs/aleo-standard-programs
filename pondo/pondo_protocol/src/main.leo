@@ -2,7 +2,7 @@ import credits.aleo;
 import token_registry.aleo;
 import wrapped_credits.aleo;
 import validator_oracle.aleo;
-import paleo_token.aleo;
+import pondo_token.aleo;
 import pondo_protocol_token.aleo;
 import delegator1.aleo;
 import delegator2.aleo;
@@ -112,7 +112,7 @@ program pondo_protocol.aleo {
     let f0: Future = credits.aleo/transfer_public_as_signer(self.address, transfer_amount);
 
     // Initialize pALEO and PNDO tokens
-    let f1: Future = paleo_token.aleo/register_token();
+    let f1: Future = pondo_token.aleo/register_token();
     let f2: Future = token_registry.aleo/mint_public(PALEO_TOKEN_ID, self.address, transfer_amount as u128, 4294967295u32);
     let f3: Future = pondo_protocol_token.aleo/initialize_token();
 
@@ -216,10 +216,10 @@ program pondo_protocol.aleo {
     // Mint pALEO to depositor
     let f1: Future = token_registry.aleo/mint_public(PALEO_TOKEN_ID, self.signer, expected_paleo_mint as u128, 4294967295u32);
 
-    return finalize_deposit_public_as_signer(f0, f1, credits_deposit, expected_paleo_mint);
+    return finalize_deposit_pub_as_signer(f0, f1, credits_deposit, expected_paleo_mint);
   }
 
-  async function finalize_deposit_public_as_signer(
+  async function finalize_deposit_pub_as_signer(
     public f0: Future,
     public f1: Future,
     public credits_deposit: u64,
@@ -487,10 +487,10 @@ program pondo_protocol.aleo {
     let f0: Future = token_registry.aleo/burn_public(PALEO_TOKEN_ID, self.caller, paleo_burn_amount as u128);
     let f1: Future = credits.aleo/transfer_public(self.caller, withdrawal_credits);
 
-    return finalize_instant_withdraw_public(f0, f1, paleo_burn_amount, withdrawal_credits, self.caller);
+    return finalize_instant_withdraw_pub(f0, f1, paleo_burn_amount, withdrawal_credits, self.caller);
   }
 
-  async function finalize_instant_withdraw_public(
+  async function finalize_instant_withdraw_pub(
     f0: Future,
     f1: Future,
     paleo_burn_amount: u64,
@@ -587,10 +587,10 @@ program pondo_protocol.aleo {
     let f0: Future = token_registry.aleo/burn_public(PALEO_TOKEN_ID, self.signer, paleo_burn_amount as u128);
     let f1: Future = credits.aleo/transfer_public(self.signer, withdrawal_credits);
 
-    return finalize_instant_withdraw_public_signer(f0, f1, paleo_burn_amount, withdrawal_credits, self.signer);
+    return finalize_instant_wd_pub_signer(f0, f1, paleo_burn_amount, withdrawal_credits, self.signer);
   }
 
-  async function finalize_instant_withdraw_public_signer(
+  async function finalize_instant_wd_pub_signer(
     f0: Future,
     f1: Future,
     paleo_burn_amount: u64,
@@ -794,10 +794,10 @@ program pondo_protocol.aleo {
   ) -> Future {
     // Burn pALEO for withdrawal
     let f0: Future = token_registry.aleo/burn_public(PALEO_TOKEN_ID, self.signer, paleo_burn_amount as u128);
-    return finalize_withdraw_public_as_signer(f0, paleo_burn_amount, self.signer);
+    return finalize_withdraw_pub_as_signer(f0, paleo_burn_amount, self.signer);
   }
 
-  async function finalize_withdraw_public_as_signer(
+  async function finalize_withdraw_pub_as_signer(
     public f0: Future,
     public paleo_burn_amount: u64,
     public signer: address
@@ -905,10 +905,10 @@ program pondo_protocol.aleo {
     // Transfer to the owner
     let f0: Future = credits.aleo/transfer_public(owner, amount);
 
-    return finalize_claim_withdrawal_public(f0, owner, amount);
+    return finalize_claim_withdrawal_pub(f0, owner, amount);
   }
 
-  async function finalize_claim_withdrawal_public(
+  async function finalize_claim_withdrawal_pub(
     f0: Future,
     owner: address,
     amount: u64
@@ -1034,10 +1034,10 @@ program pondo_protocol.aleo {
     let f4: Future = delegator5.aleo/transfer_to_core_protocol(transfer_amounts[4u8]);
     let f5: Future = token_registry.aleo/mint_public(PALEO_TOKEN_ID, pondo_protocol_token.aleo, commission_mint as u128, 4294967295u32);
 
-    return finalize_rebalance_retrieve_credits(f0, f1, f2, f3, f4, f5, transfer_amounts, commission_mint);
+    return finalize_rebalance_retrieve(f0, f1, f2, f3, f4, f5, transfer_amounts, commission_mint);
   }
 
-  async function finalize_rebalance_retrieve_credits(
+  async function finalize_rebalance_retrieve(
     f0: Future,
     f1: Future,
     f2: Future,

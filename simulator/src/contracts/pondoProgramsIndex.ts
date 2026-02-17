@@ -6,7 +6,7 @@ export { pondo_protocolProgram as coreProtocol } from "./pondo_protocol";
 export { validator_oracleProgram as oracle } from "./validator_oracle";
 export { reference_delegatorProgram as referenceDelegator } from "./reference_delegator";
 
-export { paleo_tokenProgram as pALEO } from "./paleo_token";
+export { paleo_tokenProgram as pALEO } from "./pondo_staked_aleo_token";
 export { pondo_protocol_tokenProgram as PNDO } from "./pondo_protocol_token";
 
 export { delegator1Program as delegator1 } from "./delegator1";

@@ -16,10 +16,10 @@ program wrapped_credits.aleo {
       4294967295u32
     );
 
-    return finalize_deposit_credits_public_signer(f0, f1);
+    return finalize_deposit_pub_signer(f0, f1);
   }
 
-  async function finalize_deposit_credits_public_signer(
+  async function finalize_deposit_pub_signer(
     f0: Future,
     f1: Future
   ) {
@@ -39,11 +39,15 @@ program wrapped_credits.aleo {
       false,
       4294967295u32
     );
-    return (transfer_output.0, mint_output.0, finalize_deposit_credits_private());
+    return (transfer_output.0, mint_output.0, finalize_deposit_priv(transfer_output.1, mint_output.1));
   }
 
-  async function finalize_deposit_credits_private() {
-    assert(true);
+  async function finalize_deposit_priv(
+    f0: Future,
+    f1: Future
+  ) {
+    f0.await();
+    f1.await();
   }
 
   async transition withdraw_credits_public(
@@ -55,10 +59,10 @@ program wrapped_credits.aleo {
       self.caller,
       amount as u128
     );
-    return finalize_withdraw_credits_public(f0, f1);
+    return finalize_withdraw_pub(f0, f1);
   }
 
-  async function finalize_withdraw_credits_public(
+  async function finalize_withdraw_pub(
     f0: Future,
     f1: Future
   ) {
@@ -75,10 +79,10 @@ program wrapped_credits.aleo {
       self.signer,
       amount as u128
     );
-    return finalize_withdraw_credits_public_signer(f0, f1);
+    return finalize_withdraw_pub_signer(f0, f1);
   }
 
-  async function finalize_withdraw_credits_public_signer(
+  async function finalize_withdraw_pub_signer(
     f0: Future,
     f1: Future
   ) {
@@ -96,10 +100,14 @@ program wrapped_credits.aleo {
       amount as u128
     );
 
-    return (burn_output.0, transfer_output.0, finalize_withdraw_credits_private());
+    return (burn_output.0, transfer_output.0, finalize_withdraw_priv(transfer_output.1, burn_output.1));
   }
 
-  async function finalize_withdraw_credits_private() {
-    assert(true);
+  async function finalize_withdraw_priv(
+    f0: Future,
+    f1: Future
+  ) {
+    f0.await();
+    f1.await();
   }
 }

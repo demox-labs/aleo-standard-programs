@@ -25,10 +25,10 @@ program test_program.aleo {
     let f0: Future = pondo_protocol.aleo/deposit_public_as_signer(deposit, expected_paleo, self.address);
     let f1: Future = pondo_protocol.aleo/withdraw_public_as_signer(expected_paleo);
 
-    return finalize_deposit_withdraw_as_signer(f0, f1);
+    return finalize_dep_withdraw_as_signer(f0, f1);
   }
 
-  async function finalize_deposit_withdraw_as_signer(f0: Future, f1: Future) {
+  async function finalize_dep_withdraw_as_signer(f0: Future, f1: Future) {
     f0.await();
     f1.await();
   }
@@ -39,10 +39,10 @@ program test_program.aleo {
     let expectedAleo: u128 = subtract_fee ? deposit as u128 - (deposit as u128 * INSTANT_WITHDRAW_FEE / PRECISION_UNSIGNED) : deposit as u128;
     let f1: Future = pondo_protocol.aleo/instant_withdraw_public_signer(expected_paleo, expectedAleo as u64);
 
-    return finalize_deposit_instant_withdraw_signer(f0, f1);
+    return finalize_dep_instant_wd_signer(f0, f1);
   }
 
-  async function finalize_deposit_instant_withdraw_signer(f0: Future, f1: Future) {
+  async function finalize_dep_instant_wd_signer(f0: Future, f1: Future) {
     f0.await();
     f1.await();
   }
@@ -72,10 +72,10 @@ program test_program.aleo {
     let f2: Future = pondo_protocol.aleo/deposit_public(deposit, expected_paleo, self.address);
     let f3: Future = pondo_protocol.aleo/instant_withdraw_public(expected_paleo, expectedAleo as u64);
 
-    return finalize_deposit_instant_withdraw(f0, f1, f2, f3);
+    return finalize_dep_instant_withdraw(f0, f1, f2, f3);
   }
 
-  async function finalize_deposit_instant_withdraw(f0: Future, f1: Future, f2: Future, f3: Future) {
+  async function finalize_dep_instant_withdraw(f0: Future, f1: Future, f2: Future, f3: Future) {
     f0.await();
     f1.await();
     f2.await();

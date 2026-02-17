@@ -119,10 +119,10 @@ program token_registry.aleo {
     public external_authorization_party: address
   ) -> Future {
     assert(token_id != CREDITS_RESERVED_TOKEN_ID);
-    return finalize_update_token_management(token_id, admin, external_authorization_party, self.caller);
+    return finalize_update_token_mgmt(token_id, admin, external_authorization_party, self.caller);
   }
 
-  async function finalize_update_token_management(
+  async function finalize_update_token_mgmt(
     token_id: field,
     admin: address,
     external_authorization_party: address,
@@ -673,10 +673,10 @@ program token_registry.aleo {
       token_id: token_id
     };
     let recipient_balance_key: field = BHP256::hash_to_field(recipient_key);
-    return finalize_transfer_public_as_signer(token_id, recipient, amount, self.signer, sender_key_hash, recipient_balance_key);
+    return finalize_transfer_pub_as_signer(token_id, recipient, amount, self.signer, sender_key_hash, recipient_balance_key);
   }
 
-  async function finalize_transfer_public_as_signer(
+  async function finalize_transfer_pub_as_signer(
     token_id: field,
     recipient: address,
     amount: u128,
@@ -876,10 +876,10 @@ program token_registry.aleo {
       token_id: token_id
     };
     let sender_key_hash: field = BHP256::hash_to_field(sender_key);
-    return (token, finalize_transfer_public_to_private(token_id, amount, self.caller, external_authorization_required, sender_key_hash));
+    return (token, finalize_transfer_pub_to_priv(token_id, amount, self.caller, external_authorization_required, sender_key_hash));
   }
 
-  async function finalize_transfer_public_to_private(
+  async function finalize_transfer_pub_to_priv(
     token_id: field,
     amount: u128,
     owner: address,
@@ -934,10 +934,10 @@ program token_registry.aleo {
     };
     let owner_key_hash: field = BHP256::hash_to_field(owner_key);
 
-    return (token, finalize_transfer_from_public_to_private(token_id, owner, amount, external_authorization_required, allowance_key, owner_key_hash));
+    return (token, finalize_tr_from_pub_to_priv(token_id, owner, amount, external_authorization_required, allowance_key, owner_key_hash));
   }
 
-  async function finalize_transfer_from_public_to_private(
+  async function finalize_tr_from_pub_to_priv(
     token_id: field,
     owner: address,
     amount: u128,
@@ -1022,7 +1022,7 @@ program token_registry.aleo {
     let recipient_balance_key: field = BHP256::hash_to_field(recipient_key);
 
     return (updated_record,
-      finalize_transfer_private_to_public(
+      finalize_transfer_priv_to_pub(
         input_record.token_id,
         recipient,
         amount,
@@ -1032,7 +1032,7 @@ program token_registry.aleo {
     ));
   }
 
-  async function finalize_transfer_private_to_public(
+  async function finalize_transfer_priv_to_pub(
     token_id: field,
     recipient: address,
     amount: u128,

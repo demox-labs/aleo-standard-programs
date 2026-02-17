@@ -25,9 +25,9 @@
             "path": "../validator_oracle"
         },
         {
-            "name": "paleo_token.aleo",
+            "name": "pondo_token.aleo",
             "location": "local",
-            "path": "../paleo_token"
+            "path": "../pondo_token"
         },
         {
             "name": "pondo_protocol_token.aleo",

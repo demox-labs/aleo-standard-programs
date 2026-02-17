@@ -1,9 +1,9 @@
 import token_registry.aleo;
 
 // -----------------------------------------------------------
-// pALEO Token Program
+// Pondo Token Program
 // -----------------------------------------------------------
-program paleo_token.aleo {
+program pondo_token.aleo {
   const PALEO_TOKEN_ID: field = 1751493913335802797273486270793650302076377624243810059080883537084141842600field;
 
   async transition register_token() -> Future {

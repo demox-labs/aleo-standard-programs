@@ -11,7 +11,7 @@ const filesToCopy = [
   '../wrapped_credits/build/main.aleo',
   '../pondo/pondo_protocol/build/main.aleo',
   '../pondo/validator_oracle/build/main.aleo',
-  '../pondo/paleo_token/build/main.aleo',
+  '../pondo/pondo_token/build/main.aleo',
   '../pondo/pondo_protocol_token/build/main.aleo',
   '../pondo/reference_delegator/build/main.aleo',
   '../pondo/delegators/delegator1/build/main.aleo',

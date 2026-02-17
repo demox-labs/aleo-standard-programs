@@ -207,10 +207,10 @@ program delegator3.aleo {
 
     let f0: Future = credits.aleo/transfer_public(pondo_protocol.aleo, amount);
 
-    return finalize_transfer_to_core_protocol(f0);
+    return finalize_transfer_to_core(f0);
   }
 
-  async function finalize_transfer_to_core_protocol(
+  async function finalize_transfer_to_core(
     f0: Future
   ) {
     f0.await();

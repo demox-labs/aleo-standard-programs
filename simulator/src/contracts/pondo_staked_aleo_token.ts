@@ -5,7 +5,7 @@ import assert from 'assert';
 export class paleo_tokenProgram {
   signer: string = "not set";
   caller: string = "not set";
-  address: string = "paleo_token.aleo";
+  address: string = "pondo_token.aleo";
   block: {
     height: bigint;
   } = { height: BigInt(0) };
@@ -23,7 +23,7 @@ export class paleo_tokenProgram {
 // -----------------------------------------------------------
 // pALEO Token Program
 // -----------------------------------------------------------
-  //program paleo_token.aleo {    
+  //program pondo_token.aleo {    
   register_token(
   ) {
     assert(this.caller === "pondo_protocol.aleo");
@@ -33,11 +33,11 @@ export class paleo_tokenProgram {
     let decimals: bigint = BigInt.asUintN(8, BigInt("6"));
     let max_supply: bigint = BigInt.asUintN(128, BigInt("1000000000000000"));
     let external_authorization_required: boolean = false;
-    let external_authorization_party: string = "paleo_token.aleo";
+    let external_authorization_party: string = "pondo_token.aleo";
     
     
       this.token_registry.signer = this.signer;
-      this.token_registry.caller = "paleo_token.aleo";
+      this.token_registry.caller = "pondo_token.aleo";
           this.token_registry.register_token(this.PALEO_TOKEN_ID, name, symbol, decimals, max_supply, external_authorization_required, external_authorization_party);
     
     
@@ -58,7 +58,7 @@ export class paleo_tokenProgram {
 // Mint the pALEO tokens to the receiver, with u32::MAX as the expiration time
     
       this.token_registry.signer = this.signer;
-      this.token_registry.caller = "paleo_token.aleo";
+      this.token_registry.caller = "pondo_token.aleo";
           this.token_registry.mint_public(this.PALEO_TOKEN_ID, receiver, amount, BigInt("4294967295"));
     
     return this.finalize_mint_public();
@@ -77,7 +77,7 @@ export class paleo_tokenProgram {
     
     
       this.token_registry.signer = this.signer;
-      this.token_registry.caller = "paleo_token.aleo";
+      this.token_registry.caller = "pondo_token.aleo";
           this.token_registry.burn_public(this.PALEO_TOKEN_ID, owner, amount);
     
     return this.finalize_burn_public();

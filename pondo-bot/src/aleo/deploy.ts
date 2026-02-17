@@ -284,10 +284,10 @@ export const deploymentCost = (program: string) => {
     fee = 15.630250; // At time of writing, the fee for deploying the mtsp credits program is 15630250 microcredits
   } else if (program.indexOf('validator_oracle') !== -1) {
     fee = 97.375450; // At time of writing, the fee for deploying the pondo oracle program is 97375450 microcredits
-  } else if (program.indexOf('paleo_token') !== -1) {
-    fee = 3.822825; // At time of writing, the fee for deploying the pondo token program is 3822825 microcredits
   } else if (program.indexOf('pondo_protocol_token') !== -1) {
     fee = 8.766525; // At time of writing, the fee for deploying the pondo token program is 8766525 microcredits
+  } else if (program.indexOf('pondo_token') !== -1) {
+    fee = 3.822825; // At time of writing, the fee for deploying the pondo token program is 3822825 microcredits
   } else if (program.indexOf('reference_delegator') !== -1) {
     fee = 7.899925; // At time of writing, the fee for deploying a reference delegator program is 7899825 microcredits
   } else if (program.indexOf('delegator') !== -1) {

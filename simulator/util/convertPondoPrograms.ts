@@ -23,7 +23,7 @@ const delegators = [
   '/delegators/delegator5',
 ];
 
-const tokens = ['/paleo_token', '/pondo_protocol_token'];
+const tokens = ['/pondo_token', '/pondo_protocol_token'];
 
 let programPaths: string[];
 

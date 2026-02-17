@@ -2,7 +2,7 @@ import credits.aleo;
 import token_registry.aleo;
 import wrapped_credits.aleo;
 import validator_oracle.aleo;
-import paleo_token.aleo;
+import pondo_token.aleo;
 import pondo_protocol_token.aleo;
 import delegator1.aleo;
 import delegator2.aleo;

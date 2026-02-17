@@ -27,7 +27,7 @@ describe("Rebalance State Machine Tests", () => {
   let pondoCoreAddress: string;
 
   const paleoTokenProgramId: string = pondoPrograms.find((program) =>
-    program.includes('paleo_token')
+    program.includes('pondo_token')
   )!;
   const pondoTokenProgramId: string = pondoPrograms.find((program) =>
     program.includes('pondo_protocol_token')

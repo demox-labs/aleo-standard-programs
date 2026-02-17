@@ -57,7 +57,7 @@ program validator_oracle.aleo {
   // The operation types
   const ADD_OPERATION: u8 = 0u8;
   const REMOVE_OPERATION: u8 = 1u8;
-  const UPDATE_DELEGATOR_ALLOCATIONS_OPERATION: u8 = 2u8;
+  const UPDATE_DELEG_ALLOCS_OPERATION: u8 = 2u8;
   const UPDATE_ADMIN_OPERATION: u8 = 3u8;
   const APPROVE_DELEGATOR_OPERATION: u8 = 4u8;
   const UNBAN_VALIDATOR_OPERATION: u8 = 5u8;
@@ -341,7 +341,7 @@ program validator_oracle.aleo {
     let multiple_hash: field = BHP256::hash_to_field(multiple);
     let admin_op: admin_operation = admin_operation {
       arg: multiple_hash,
-      op_type: UPDATE_DELEGATOR_ALLOCATIONS_OPERATION,
+      op_type: UPDATE_DELEG_ALLOCS_OPERATION,
       request_id: request_id
     };
     let op_hash: field = BHP256::hash_to_field(admin_op);
@@ -355,10 +355,10 @@ program validator_oracle.aleo {
     assert_neq(admin_1, admin_3);
     assert_neq(admin_2, admin_3);
 
-    return finalize_update_delegator_allocations(multiple, admin_1, admin_2, admin_3, admin_op);
+    return finalize_update_deleg_allocs(multiple, admin_1, admin_2, admin_3, admin_op);
   }
 
-  async function finalize_update_delegator_allocations(
+  async function finalize_update_deleg_allocs(
     public multiple: [u128; 10],
     public admin_1: address,
     public admin_2: address,
@@ -571,7 +571,7 @@ program validator_oracle.aleo {
     // The attack here is to prevent a validator from keeping many reference delegators and then choosing the most favorable range.
     let previous_update_epoch: u32 = existing_validator_datum.block_height / BLOCKS_PER_EPOCH;
     let did_update_last_epoch: bool = (previous_update_epoch + 1u32) == current_epoch;
-    let new_microcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
+    let new_mcredits_yield_per_epoch: u128 = did_update_last_epoch ? yield_per_epoch : 0u128;
 
     // Construct and save the new validator_datum for the delegator
     let new_validator_datum: validator_datum = validator_datum {
@@ -579,7 +579,7 @@ program validator_oracle.aleo {
       validator: existing_validator_datum.validator,
       block_height: block.height,
       bonded_microcredits: bonded.microcredits,
-      microcredits_yield_per_epoch: new_microcredits_yield_per_epoch,
+      microcredits_yield_per_epoch: new_mcredits_yield_per_epoch,
       commission: validator_committee_state.commission,
       boost: normalized_boost_amount
     };
@@ -859,8 +859,8 @@ program validator_oracle.aleo {
     assert_eq(withdraw_address, caller);
 
     // Assert that the validator is in the committee, will fail
-    let committee_state_contains_validator: bool = credits.aleo/committee.contains(validator);
-    assert(committee_state_contains_validator);
+    let committee_contains_validator: bool = credits.aleo/committee.contains(validator);
+    assert(committee_contains_validator);
 
     // Ban the validator
     banned_validators.set(validator, true);

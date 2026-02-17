@@ -4,7 +4,7 @@ import { delegator3Program } from './delegator3';
 import { delegator2Program } from './delegator2';
 import { delegator1Program } from './delegator1';
 import { pondo_protocol_tokenProgram } from './pondo_protocol_token';
-import { paleo_tokenProgram } from './paleo_token';
+import { paleo_tokenProgram } from './pondo_staked_aleo_token';
 import { validator_oracleProgram } from './validator_oracle';
 import { token_registryProgram } from './token_registry';
 import { creditsProgram } from './credits';
